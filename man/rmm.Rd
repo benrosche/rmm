@@ -1,4 +1,4 @@
-\name{hello}
+\name{rmm}
 \alias{hello}
 \title{Hello, World!}
 \usage{
