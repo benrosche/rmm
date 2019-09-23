@@ -2,3 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
+rmm.Rcheck/
+rmm*.tar.gz
+rmm*.tgz
