@@ -1,12 +1,12 @@
 Package: rmm
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Micro-macro regression
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Author: Benjamin Rosche
+Maintainer: Benjamin Rosche <benjamin.rosche@gmail.com>
+Description: The rmm package provides an interface to fit Bayesian regression models using JAGS. 
+    The focus of this package lies on micro-macro regressions.
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Imports: 

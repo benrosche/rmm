@@ -1,26 +1,65 @@
-#' Rmm
+#' @title Fit Bayesian micro-macro regression models using JAGS
 #'
-#' This function allows to run micro-macro regressions.
-#' @param formula Formula object
-#' @keywords cats
-#' @export
-#' @examples
-#' cat_function()
+#' @description Fit Bayesian micro-macro regression models using JAGS
+#'
+#' @param formula A symbolic description of the model in form of an R formula. More details below.
+#' @param family Character vector, either "Gaussian" or "Weibull"
+#' @param priors A list with parameter or variable names as tags and their prior specification as values. More details below.
+#' @param iter Total number of iterations
+#' @param burnin Number of iterations that will be discarded 
+#' @param chain Number of chains
+#' @param seed A random number
+#' @param data The datasets must have level 1 as unit of analysis. More details below.
+#'
+#' @return JAGS output
+#'
+#' @examples rmm(Y ~ 1 + X1 + mm(id(l1id, l2id), mmc(X2 + X3), mmw(w ~ 1/X4, constraint=1)),
+#'     family="Gaussian",
+#'     priors=list(var1="dnorm(0,0.0001)", tau.l1="dscaled.gamma(25, 1)"),
+#'     data=data)
+#'
+#' @export rmm
+#' @details 
 #' 
+#' \bold{General formula structure}  
+#' 
+#' \code{Y ~ 1 + X.L2 + mm(id(l1id, l2id), mmc(X.L1), mmw(w ~ 1 / X.W, constraint=1))} 
+#' \enumerate{
+#'   \item Dependent variable: Y 
+#'   \item Vector of level-2 predictors: X.L2, being something like 1 + X1 + ... + XN 
+#'   \item Micro-macro object: mm()
+#' }
+#' \bold{Dependent variable}  
+#' Currently supported: 
+#' \enumerate{
+#'   \item `Gaussian` continuous variable \bold{Y}
+#'   \item `Weibull` survival time: \bold{Surv(survivaltime, event)}
+#' }
+#' 
+#' \bold{Vector of level-2 predictors}
+#' 
+#' An intercept can be added by including a `1` at the beginning. Interaction terms have to be included as separate variables. 
+#' Currently no support for nonlinear relationships.
+#' 
+#' \bold{Micro-macro object}
+#' 
+#' \enumerate{
+#'   \item \code{id()} to indicate level-1 and level-2 ids
+#'   \item \code{mmc()} to specify level-1 predictors. No intercept allowed. Interaction terms have to be included as separate variables.
+#' Currently no support for nonlinear relationships.
+#'   \item \code{mmw()} to specify the weight function (i.e. aggregation). Function can be nonlinear and contain variables.
+#'   For instance, \code{w ~ 1/N} specifies mean-aggregation (with N being a variables that indicates the number of level-1 units per level-2 entity).
+#'   If no mmw() is specified, w ~ 1/N is assumed. Moreover, two different identification restrictions are provided:
+#'   \enumerate
+#'     \item \code{mmw(w ~ 1/N, constraint=1)}: \bold{constraint=1} restricts the weights to sum to 1 for each level-2 entity. 
+#'     \item \code{mmw(w ~ 1/N, constraint=2)}: \bold{constraint=2} restricts the weights to sum to the total number of level-2 entities over the whole dataset, allowing some level-2 entities to have weights smaller/larger than 1.
+#'   }
+#' }
 
-rm(list=ls())
-
-setwd("C:/Users/Ben/OneDrive - Cornell University/GitHub/rmm")
-
-library(tidyverse)
-library(R2jags)
-
-use_package("tidyverse")
-use_package("R2jags")
-
-rmm <- function(formula, family="Gaussian", priors, seed=1, burnin=100, iter=1000, data=NULL) {
+rmm <- function(formula, family="Gaussian", priors, iter=1000, burnin=100, chains=3, seed=NULL, data=NULL) {
 
   stopifnot(!is.null(data))
+  devtools::load_all()
 
   # 1. Dissect formula ========================================================================== #
   
@@ -178,6 +217,7 @@ rmm <- function(formula, family="Gaussian", priors, seed=1, burnin=100, iter=100
     jags.data   <- c("l1id", "l1i1", "l1i1.l1", "l1i2", "l1i2.l1", "Y", "X.l1", "X.l2", "X.w", "l1n", "n.l1", "n.ul1", "n.l2", "n.Xl1", "n.Xl2", "n.Xlw") 
     
     # Initial values
+    if(is.null(seed)) seed <- runif(1, 0,1000)
     jags.inits <- list( 
       list(".RNG.seed" = seed),
       list(".RNG.seed" = seed+1),
@@ -208,10 +248,7 @@ rmm <- function(formula, family="Gaussian", priors, seed=1, burnin=100, iter=100
 
 }
 
-rmm(formula=Surv(survival, event) ~ 1 + var1 + var2 + var3 + mm(id(pid, gid), mmc(var4 + var5), mmw(w~1/var6, constraint=1)), 
-    family="Weibull",
-    priors=list(var1="dnorm(0,0.0005)", var2="dunif(-100,100)", tau.l1="dscaled.gamma(25, 1)", sigma.l2="dexp(0.0001)"),
-    data=data)
+
 
 
 
