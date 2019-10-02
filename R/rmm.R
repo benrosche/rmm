@@ -18,9 +18,6 @@
 #'     priors=list(var1="dnorm(0,0.0001)", tau.l1="dscaled.gamma(25, 1)"),
 #'     data=data)
 #'
-#' @import dplyr
-#' @import stringr
-#' @import R2jags
 #' @export rmm
 #' @author Benjamin Rosche <benjamin.rosche@@gmail.com>
 #' @details 
