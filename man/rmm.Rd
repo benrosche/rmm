@@ -30,10 +30,46 @@ JAGS output
 \description{
 Fit Bayesian micro-macro regression models using JAGS
 }
+\details{
+\bold{General formula structure}  
+
+\code{Y ~ 1 + X.L2 + mm(id(l1id, l2id), mmc(X.L1), mmw(w ~ 1 / X.W, constraint=1))} 
+\itemize{
+  \item Dependent variable: Y 
+  \item Vector of level-2 predictors: X.L2, being something like 1 + X1 + ... + XN 
+  \item Micro-macro object: mm()
+}
+\bold{Currently supported dependent variables / link functions}  
+
+\itemize{
+  \item Gaussian continuous variable \bold{Y}
+  \item Weibull survival time: \bold{Surv(survivaltime, event)}
+}
+
+\bold{Vector of level-2 predictors}
+
+An intercept can be added by including a `1` at the beginning. Interaction terms have to be included as separate variables. 
+Currently no support for nonlinear relationships.
+
+\bold{Micro-macro object}
+
+\itemize{
+  \item \code{id()} to indicate level-1 and level-2 ids
+  \item \code{mmc()} to specify level-1 predictors. No intercept allowed. Interaction terms have to be included as separate variables. Currently no support for nonlinear relationships.
+  \item \code{mmw()} to specify the weight function (i.e. aggregation). Function can be nonlinear and contain variables. For instance, \code{w ~ 1/N} specifies mean-aggregation (with N being a variables that indicates the number of level-1 units per level-2 entity). If no mmw() is specified, w ~ 1/N is assumed. Moreover, two different identification restrictions are provided:
+  \itemize{
+    \item \code{mmw(w ~ 1/N, constraint=1)}: \code{constraint=1} restricts the weights to sum to 1 for each level-2 entity. 
+    \item \code{mmw(w ~ 1/N, constraint=2)}: \code{constraint=2} restricts the weights to sum to the total number of level-2 entities over the whole dataset, allowing some level-2 entities to have weights smaller/larger than 1.
+  }
+}
+}
 \examples{
 rmm(Y ~ 1 + X1 + mm(id(l1id, l2id), mmc(X2 + X3), mmw(w ~ 1/X4, constraint=1)),
     family="Gaussian",
     priors=list(var1="dnorm(0,0.0001)", tau.l1="dscaled.gamma(25, 1)"),
     data=data)
 
+}
+\author{
+Benjamin Rosche <benjamin.rosche@gmail.com>
 }

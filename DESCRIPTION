@@ -9,8 +9,12 @@ Description: The rmm package provides an interface to fit Bayesian regression mo
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Imports: 
+Depends: 
     dplyr,
     stringr,
     R2jags
+URL: http://benrosche.net/rmm
+BugReports: https://github.com/benrosche/rmm/issues
 RoxygenNote: 6.1.1
+Authors@R: person("Benjamin", "Rosche", role=c("aut", "cre"), 
+    email="benjamin.rosche@gmail.com", comment=c(ORCID="0000-0001-5196-625X"))

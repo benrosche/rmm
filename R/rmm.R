@@ -13,27 +13,31 @@
 #'
 #' @return JAGS output
 #'
-#' @examples rmm(Y ~ 1 + X1 + mm(id(l1id, l2id), mmc(X2 + X3), mmw(w ~ 1/X4, constraint=1)),
+#' @examples rmm(Y ~ 1 + X1 + mm(id(l1id, l2id), mmc(X2 + X3), mmw(w ~ 1/N, constraint=1)),
 #'     family="Gaussian",
 #'     priors=list(var1="dnorm(0,0.0001)", tau.l1="dscaled.gamma(25, 1)"),
 #'     data=data)
 #'
+#' @import dplyr
+#' @import stringr
+#' @import R2jags
 #' @export rmm
+#' @author Benjamin Rosche <benjamin.rosche@@gmail.com>
 #' @details 
 #' 
 #' \bold{General formula structure}  
 #' 
 #' \code{Y ~ 1 + X.L2 + mm(id(l1id, l2id), mmc(X.L1), mmw(w ~ 1 / X.W, constraint=1))} 
-#' \enumerate{
+#' \itemize{
 #'   \item Dependent variable: Y 
 #'   \item Vector of level-2 predictors: X.L2, being something like 1 + X1 + ... + XN 
 #'   \item Micro-macro object: mm()
 #' }
-#' \bold{Dependent variable}  
-#' Currently supported: 
-#' \enumerate{
-#'   \item `Gaussian` continuous variable \bold{Y}
-#'   \item `Weibull` survival time: \bold{Surv(survivaltime, event)}
+#' \bold{Currently supported dependent variables / link functions}  
+#' 
+#' \itemize{
+#'   \item Gaussian continuous variable \bold{Y}
+#'   \item Weibull survival time: \bold{Surv(survivaltime, event)}
 #' }
 #' 
 #' \bold{Vector of level-2 predictors}
@@ -43,24 +47,21 @@
 #' 
 #' \bold{Micro-macro object}
 #' 
-#' \enumerate{
+#' \itemize{
 #'   \item \code{id()} to indicate level-1 and level-2 ids
-#'   \item \code{mmc()} to specify level-1 predictors. No intercept allowed. Interaction terms have to be included as separate variables.
-#' Currently no support for nonlinear relationships.
-#'   \item \code{mmw()} to specify the weight function (i.e. aggregation). Function can be nonlinear and contain variables.
-#'   For instance, \code{w ~ 1/N} specifies mean-aggregation (with N being a variables that indicates the number of level-1 units per level-2 entity).
-#'   If no mmw() is specified, w ~ 1/N is assumed. Moreover, two different identification restrictions are provided:
-#'   \enumerate
-#'     \item \code{mmw(w ~ 1/N, constraint=1)}: \bold{constraint=1} restricts the weights to sum to 1 for each level-2 entity. 
-#'     \item \code{mmw(w ~ 1/N, constraint=2)}: \bold{constraint=2} restricts the weights to sum to the total number of level-2 entities over the whole dataset, allowing some level-2 entities to have weights smaller/larger than 1.
+#'   \item \code{mmc()} to specify level-1 predictors. No intercept allowed. Interaction terms have to be included as separate variables. Currently no support for nonlinear relationships.
+#'   \item \code{mmw()} to specify the weight function (i.e. aggregation). Function can be nonlinear and contain variables. For instance, \code{w ~ 1/N} specifies mean-aggregation (with N being a variables that indicates the number of level-1 units per level-2 entity). If no mmw() is specified, w ~ 1/N is assumed. Moreover, two different identification restrictions are provided:
+#'   \itemize{
+#'     \item \code{mmw(w ~ 1/N, constraint=1)}: \code{constraint=1} restricts the weights to sum to 1 for each level-2 entity. 
+#'     \item \code{mmw(w ~ 1/N, constraint=2)}: \code{constraint=2} restricts the weights to sum to the total number of level-2 entities over the whole dataset, allowing some level-2 entities to have weights smaller/larger than 1.
 #'   }
 #' }
 
 rmm <- function(formula, family="Gaussian", priors, iter=1000, burnin=100, chains=3, seed=NULL, data=NULL) {
 
   stopifnot(!is.null(data))
-  devtools::load_all()
-
+  #devtools::load_all()
+  
   # 1. Dissect formula ========================================================================== #
   
   getTerms <- function(e, x = list()) {
@@ -80,21 +81,21 @@ rmm <- function(formula, family="Gaussian", priors, iter=1000, burnin=100, chain
   mmstring <- rhs[mmi]
   
   # id()
-  ids <- el(str_split(gsub(".*id\\((.*?)\\).*", "\\1", mmstring), ","))
+  ids <- el(stringr::str_split(gsub(".*id\\((.*?)\\).*", "\\1", mmstring), ","))
   
   # mmc()
-  l1vars <- el(str_split(gsub(".*mmc\\((.*?)\\).*", "\\1", mmstring), "\\+"))
+  l1vars <- el(stringr::str_split(gsub(".*mmc\\((.*?)\\).*", "\\1", mmstring), "\\+"))
 
   # mmlw(), function
-  mmwstring <- el(str_split(gsub(".*mmw\\((.*?\\))\\).*", "\\1", mmstring), ","))
+  mmwstring <- el(stringr::str_split(gsub(".*mmw\\((.*?\\))\\).*", "\\1", mmstring), ","))
   mmwfunction <- mmwstring[1]
-  lwvars <- all.vars(as.formula(str_remove(mmwfunction, fixed("b*",))))[-1]
+  lwvars <- all.vars(as.formula(stringr::str_remove(mmwfunction, fixed("b*",))))[-1]
   
   for(i in 1:length(lwvars)) {
-    mmwfunction <- str_replace(mmwfunction, fixed(lwvars[i]), paste0("X.w[i,", i, "]"))
-    mmwfunction <- str_replace(mmwfunction, fixed(paste0("b*X.w[i,", i, "]")), paste0("b.w[", i, "]*X.w[i,", i, "]"))
+    mmwfunction <- stringr::str_replace(mmwfunction, fixed(lwvars[i]), paste0("X.w[i,", i, "]"))
+    mmwfunction <- stringr::str_replace(mmwfunction, fixed(paste0("b*X.w[i,", i, "]")), paste0("b.w[", i, "]*X.w[i,", i, "]"))
   }
-  mmwfunction <- str_replace(mmwfunction, "w~", "uw[i] <- ")
+  mmwfunction <- stringr::str_replace(mmwfunction, "w~", "uw[i] <- ")
   
   # mmlw(), constraint
   mmwconstraint <- ifelse(length(mmwstring)>1, as.numeric(gsub("\\D", "", mmwstring[2])), 1)
@@ -114,10 +115,8 @@ rmm <- function(formula, family="Gaussian", priors, iter=1000, burnin=100, chain
   
   # Load modelstring
   if(family=="Gaussian") {
-    source("R/Gaussian.R")
     modelstring <- Model_Gaussian
   } else if(family=="Weibull") {
-    source("R/Weibull.R")
     modelstring <- Model_Weibull
   }
   
@@ -247,8 +246,3 @@ rmm <- function(formula, family="Gaussian", priors, iter=1000, burnin=100, chain
   jags(data=jags.data, inits = jags.inits, parameters.to.save = jags.params, n.chains = 3, n.iter = iter, n.burnin = burnin, model.file = modelstring)
 
 }
-
-
-
-
-
