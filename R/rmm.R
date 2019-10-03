@@ -13,7 +13,8 @@
 #'
 #' @return JAGS output
 #'
-#' @examples rmm(Y ~ 1 + X1 + mm(id(l1id, l2id), mmc(X2 + X3), mmw(w ~ 1/N, constraint=1)),
+#' @examples data(govsurv)
+#' rmm(Y ~ 1 + X1 + mm(id(l1id, l2id), mmc(X2 + X3), mmw(w ~ 1/N, constraint=1)),
 #'     family="Gaussian",
 #'     priors=list(var1="dnorm(0,0.0001)", tau.l1="dscaled.gamma(25, 1)"),
 #'     data=govsurv)
