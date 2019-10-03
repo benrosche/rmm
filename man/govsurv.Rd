@@ -4,7 +4,7 @@
 \name{govsurv}
 \alias{govsurv}
 \title{Artificial dataset on coalition government survival}
-\format{An object of class \code{grouped_df} (inherits from \code{tbl_df}, \code{tbl}, \code{data.frame}) with 21 rows and 11 columns.}
+\format{An object of class \code{grouped_df} (inherits from \code{tbl_df}, \code{tbl}, \code{data.frame}) with 21 rows and 9 columns.}
 \usage{
 data(govsurv)
 }
