@@ -1,2 +1,2 @@
 # rmm
-### R package to fit a Bayesian micro-macro regression
+### R package to fit Bayesian multiple membership multilevel models with endogenized weights using 'JAGS'
