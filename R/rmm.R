@@ -102,9 +102,8 @@
 #' @return JAGS output. More details the output ...
 #'
 #' @examples data(coalgov)
-#' rmm(Y ~ 1 + mm(id(gid, pid), mmc(fdep), mmw(w ~ 1/offset(n), constraint=1)) + majority + hm(id=cid, name=cname, type=FE, showFE=F),
-#'     family="Gaussian",
-#'     data=coalgov)
+#' rmm(Surv(govdur, earlyterm) ~ 1 + mm(id(gid, pid), mmc(fdep), mmw(w ~ 1/offset(n), constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
+#'     family="Weibull", monitor=T, data=coalgov)
 #'
 #' @export rmm
 #' @author Benjamin Rosche <benjamin.rosche@@gmail.com>
