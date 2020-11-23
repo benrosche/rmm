@@ -102,9 +102,8 @@
 #' @return JAGS output. More details the output ...
 #'
 #' @examples data(coalgov)
-#' rmm(Y ~ 1 + mm(id(l1id, l2id), mmc(X11 + X12), mmw(w ~ 1/offset(N)^exp(-(X1+X4)), constraint=1)) + X21 + X31 + hm(id=l3id, name=l3name, type=FE, showFE=F),
+#' rmm(Y ~ 1 + mm(id(gid, pid), mmc(fdep), mmw(w ~ 1/offset(n), constraint=1)) + majority + hm(id=cid, name=cname, type=FE, showFE=F),
 #'     family="Gaussian",
-#'     priors=list(X11="dnorm(0,0.0001)", tau.l1="dscaled.gamma(25, 1)"),
 #'     data=coalgov)
 #'
 #' @export rmm
