@@ -107,8 +107,13 @@ An intercept at the main level 2 is added whether or not a \code{1} is specified
         
         Two different identification restrictions are provided:
   \itemize{
-    \item \code{mmw(w ~ 1/N, constraint=1)}: \code{constraint=1} restricts the weights to sum to 1 for each level-2 entity. (default)
-    \item \code{mmw(w ~ 1/N, constraint=2)}: \code{constraint=2} restricts the weights to sum to the total number of level-2 entities over the whole dataset, allowing some level-2 entities to have weights smaller/larger than 1.
+    \item \code{mmw(w ~ ..., constraint=1)}: \code{constraint=1} restricts the weights to sum to 1 for each level-2 entity. (default)
+    \item \code{mmw(w ~ ..., constraint=2)}: \code{constraint=2} restricts the weights to sum to the total number of level-2 entities over the whole dataset, allowing some level-2 entities to have weights smaller/larger than 1.
+  }
+  
+  \itemize{
+    \item \code{mmw(w ~ ..., ar=TRUE)}: Allows random effects of level-1 units to change across memberships in level-2 entities.
+    \item \code{mmw(w ~ ..., ar=FALSE)}: Assumes all level-1 units to have one random effect
   }
 }
 

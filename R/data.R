@@ -8,7 +8,7 @@
 #' @docType data
 #'
 #' @usage data(coalgov)
-#' @format A data frame with 1286 rows and 14 variables:
+#' @format A data frame with 1286 rows and 21 variables:
 #' \describe{
 #'   \item{Col1}{description of Col1}
 #' ...

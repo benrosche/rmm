@@ -61,7 +61,7 @@ crDat <- function(party=c(0,0,0), gov=c(1,3,3,0), country=c(3,0), weight=c(0,0,0
   # Variable selection
   dat <- 
     dat.party %>% 
-    dplyr::select(pid, gid, cid, pipd, finance1, pseatrel) %>% dplyr::rename(ipd=pipd, fdep=finance1) %>%
+    dplyr::select(pid, gid, cid, prime, pipd, finance1, pseatrel) %>% dplyr::rename(ipd=pipd, fdep=finance1) %>%
     dplyr::inner_join(dat.gov %>% 
                         dplyr::select(gid, cid, country, gstart, gend, nPG, majority, mwc, rilegov2) %>% 
                         dplyr::rename(n=nPG, cname=country, hetero=rilegov2), by=c("gid", "cid")) %>% # add gov vars
@@ -134,5 +134,6 @@ crDat <- function(party=c(0,0,0), gov=c(1,3,3,0), country=c(3,0), weight=c(0,0,0
 # ================================================================================================ #
 
 # coalgov <- crDat(party=c(3,3,1), gov=c(1,3,3,1), country=c(3,1), weight=c(0,0,0), Sigma=matrix(c(1,0,0, 0,1,0, 0,0,1),3,3), level=1, seed=1)
-# var_label(coalgov) <- c("Unique party ID", "Unique government ID", "Unique country ID", "Country name", "Government start date", "Government end date", "# government parties", "Intra-party democracy", "Financial dependency", "Party's relative seat share within coalition", "Majority government", "Minimal winning coalition", "SD(rile) of goverment / SD(rile) of parliament", "Investiture vote", "Prime ministerial powers", "Discretionary early termination ", "Government duration", "Simulated weights", "Simulated linear outcome", "Simulated survival time", "Simulated event status")
+# var_label(coalgov) <- c("Unique party ID", "Unique government ID", "Unique country ID", "Country name", "Government start date", "Government end date", "# government parties", "Prime minister party", "Intra-party democracy", "Financial dependency", "Party's relative seat share within coalition", "Majority government", "Minimal winning coalition", "SD(rile) of goverment / SD(rile) of parliament", "Investiture vote", "Prime ministerial powers", "Discretionary early termination ", "Government duration", "Simulated weights", "Simulated linear outcome", "Simulated survival time", "Simulated event status")
 # save(coalgov, file="data/coalgov.RData")
+

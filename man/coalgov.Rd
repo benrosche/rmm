@@ -5,7 +5,7 @@
 \alias{coalgov}
 \title{Coalition governments in comparative perspective (1944-2013)}
 \format{
-A data frame with 1286 rows and 14 variables:
+A data frame with 1286 rows and 21 variables:
 \describe{
   \item{Col1}{description of Col1}
 ...

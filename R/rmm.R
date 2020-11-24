@@ -58,8 +58,13 @@
 #'         
 #'         Two different identification restrictions are provided:
 #'   \itemize{
-#'     \item \code{mmw(w ~ 1/N, constraint=1)}: \code{constraint=1} restricts the weights to sum to 1 for each level-2 entity. (default)
-#'     \item \code{mmw(w ~ 1/N, constraint=2)}: \code{constraint=2} restricts the weights to sum to the total number of level-2 entities over the whole dataset, allowing some level-2 entities to have weights smaller/larger than 1.
+#'     \item \code{mmw(w ~ ..., constraint=1)}: \code{constraint=1} restricts the weights to sum to 1 for each level-2 entity. (default)
+#'     \item \code{mmw(w ~ ..., constraint=2)}: \code{constraint=2} restricts the weights to sum to the total number of level-2 entities over the whole dataset, allowing some level-2 entities to have weights smaller/larger than 1.
+#'   }
+#'   
+#'   \itemize{
+#'     \item \code{mmw(w ~ ..., ar=TRUE)}: Allows random effects of level-1 units to change across memberships in level-2 entities.
+#'     \item \code{mmw(w ~ ..., ar=FALSE)}: Assumes all level-1 units to have one random effect
 #'   }
 #' }
 #' 
@@ -112,7 +117,7 @@
 
 rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, chains=3, seed=NULL, run=T, modelfile=NULL, monitor=F, hdi=0.95, r=3, data=NULL) {
 
-  # formula <- sim_y ~ 1 + mwc + investiture + hetero + mm(id(pid, gid), mmc(ipd +fdep), mmw(w ~ 1/offset(n), c=1)) + hm(id="cid", type=RE); family <- "Weibull"; priors=NULL; iter=1000; burnin=100; chains <- 3; seed <- NULL; run <- T; modelfile <- NULL; monitor <- F; hdi=0.95; r=3; data <- coalgov;
+  #formula <- Surv(govdur, earlyterm) ~ 1 + mwc + investiture + hetero + mm(id(pid, gid), mmc(ipd +fdep), mmw(w ~ 1/offset(n)^exp(-pmpower), c=2)) + hm(id="cid", type=RE); family <- "Weibull"; priors=NULL; iter=1000; burnin=100; chains <- 3; seed <- NULL; run <- T; modelfile <- NULL; monitor <- F; hdi=0.95; r=3; data <- coalgov;
   
   if(is.null(data)) stop("No data supplied.")
   DIR <- system.file(package = "rmm")
