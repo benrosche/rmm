@@ -229,9 +229,10 @@ rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, 
     showFE <- if(is.na(showFE)) FALSE else as.logical(showFE)
     
   } else {
+    l3id <- "one_vec" # an existing variable
+    l3name <- c()
     l3type <- FALSE
     showFE <- FALSE
-    l3id <- "one_vec" # an existing variable
   }
   
   # Level 2 + 3 vars------------------------------------------------------------------------------ #
