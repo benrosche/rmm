@@ -117,7 +117,7 @@
 
 rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, chains=3, seed=NULL, run=T, modelfile=NULL, monitor=F, hdi=0.95, r=3, data=NULL) {
 
-  #formula <- Surv(govdur, earlyterm) ~ 1 + mwc + investiture + hetero + mm(id(pid, gid), mmc(ipd +fdep), mmw(w ~ 1/offset(n)^exp(-pmpower), c=2)) + hm(id="cid", type=RE); family <- "Weibull"; priors=NULL; iter=1000; burnin=100; chains <- 3; seed <- NULL; run <- T; modelfile <- NULL; monitor <- F; hdi=0.95; r=3; data <- coalgov;
+  # formula <- Surv(govdur, earlyterm) ~ 1 + mwc + investiture + hetero + mm(id(pid, gid), mmc(ipd +fdep), mmw(w ~ 1/offset(n)^exp(-pmpower), c=2)) + hm(id="cid", type=RE); family <- "Weibull"; priors=NULL; iter=1000; burnin=100; chains <- 3; seed <- NULL; run <- T; modelfile <- NULL; monitor <- F; hdi=0.95; r=3; data <- coalgov;
   
   if(is.null(data)) stop("No data supplied.")
   DIR <- system.file(package = "rmm")
@@ -229,6 +229,8 @@ rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, 
     showFE <- if(is.na(showFE)) FALSE else as.logical(showFE)
     
   } else {
+    l3type <- FALSE
+    showFE <- FALSE
     l3id <- "one_vec" # an existing variable
   }
   
