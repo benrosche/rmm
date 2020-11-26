@@ -300,6 +300,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, 
     }
     
   } else {
+    l2vars <- l23vars
     l3vars <- c()
     level3 <- NULL
   }
