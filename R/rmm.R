@@ -109,6 +109,7 @@
 #' @param hdi Numeric or False. If confidence level \code{x} is specified (default \code{x=0.95}), \code{mode} and \code{(x*100)%} HDI estimates are given. If \code{False} is specified, \code{mean} and \code{95% CI} are given.
 #' @param r Numeric. Rounding value. Default is 3.
 #' @param transform Character vector or FALSE. Specifying \code{center} or \code{std} to center or standardize continuous predictors before estimation.
+#' @param modelfile Character vector or TRUE|False. If TRUE, the JAGS model is saved in rmm/temp/modelstring.txt. If a file path is supplied as string, rmm will just create the data structure and use the provided modelfile. 
 #' @param data Dataframe object. The dataset must have level 1 as unit of analysis. More details below.
 #'
 #' @return JAGS output. More details the output ...
@@ -122,7 +123,7 @@
 #' @references 
 #' Rosche (XXXX): The multilevel structure of coalition government outcomes
 
-rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, chains=3, seed=NULL, run=T, monitor=F, hdi=0.95, r=3, transform="center", data=NULL) {
+rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, chains=3, seed=NULL, run=T, monitor=F, hdi=0.95, r=3, transform="center", modelfile=F, data=NULL) {
 
   # formula <- sim_y ~ 1 + mwc + investiture + hetero + mm(id(pid, gid), mmc(ipd+fdep), mmw(w ~ 1/offset(n)^exp(-pmpower), c=2)) + hm(id="cid", type=RE); family <- "Gaussian"; priors=NULL; iter=1000; burnin=100; chains <- 3; seed <- NULL; run <- T; modelfile <- NULL; monitor <- F; hdi=0.95; r=3; transform="center"; data <- coalgov
   
@@ -455,7 +456,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, 
     }
   }
 
-  # if(is.null(modelfile)) readr::write_file(modelstring, paste0(DIR, "/temp/modelstring.txt"))
+  if(modelfile==T) readr::write_file(modelstring, paste0(DIR, "/temp/modelstring.txt"))
   
   # ---------------------------------------------------------------------------------------------- #
   # 4. Set up JAGS
@@ -529,7 +530,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, 
     
   }
   
-  #if(is.null(modelfile)) modelfile <- paste0(DIR, "/temp/modelstring.txt")
+  if(is.character(modelfile)) modelstring <- readr::read_file(modelfile) 
   
   # ---------------------------------------------------------------------------------------------- #
   # Run JAGS 

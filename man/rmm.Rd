@@ -17,6 +17,7 @@ rmm(
   hdi = 0.95,
   r = 3,
   transform = "center",
+  modelfile = F,
   data = NULL
 )
 }
@@ -42,6 +43,8 @@ rmm(
 \item{r}{Numeric. Rounding value. Default is 3.}
 
 \item{transform}{Character vector or FALSE. Specifying \code{center} or \code{std} to center or standardize continuous predictors before estimation.}
+
+\item{modelfile}{Character vector or TRUE|False. If TRUE, the JAGS model is saved in rmm/temp/modelstring.txt. If a file path is supplied as string, rmm will just create the data structure and use the provided modelfile.}
 
 \item{data}{Dataframe object. The dataset must have level 1 as unit of analysis. More details below.}
 }
