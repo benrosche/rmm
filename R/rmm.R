@@ -125,7 +125,7 @@
 
 rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, chains=3, seed=NULL, run=T, monitor=F, hdi=0.95, r=3, transform="center", modelfile=F, data=NULL) {
 
-  # formula <- sim_y ~ 1 + mwc + investiture + hetero + mm(id(pid, gid), mmc(ipd+fdep), mmw(w ~ 1/offset(n)^exp(-pmpower), c=2)) + hm(id="cid", type=RE); family <- "Gaussian"; priors=NULL; iter=1000; burnin=100; chains <- 3; seed <- NULL; run <- T; modelfile <- NULL; monitor <- F; hdi=0.95; r=3; transform="center"; data <- coalgov
+  # formula = sim_y ~ 1 + mwc + investiture + hetero + mm(id(pid, gid), mmc(ipd+fdep), mmw(w ~ 1/offset(n)^exp(-pmpower), c=2)) + hm(id="cid", type=RE); family = "Gaussian"; priors=NULL; iter=1000; burnin=100; chains = 3; seed = NULL; run = T; monitor = F; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
   
   if(is.null(data)) stop("No data supplied.")
   DIR <- system.file(package = "rmm")
@@ -188,7 +188,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, 
       mmwfunction <- stringr::str_replace(mmwfunction, fixed(paste0("offset(", lwvars[i], ")")), paste0("(X.w[i,", i, "])")) # without coefficient
     } else {
       mmwfunction <- stringr::str_replace(mmwfunction, fixed(lwvars[i]), paste0("(b.w[", i, "]*X.w[i,", i, "])")) # with coefficient
-      mmwcoefstring  <- append(mmwcoefstring, paste0("b.w[", i, "] ~ dnorm(0,0.0001)\r\n  ppp.b.w[", i, "] <- step(b.w[", i, "])\r\n  "))
+      mmwcoefstring  <- append(mmwcoefstring, paste0("b.w[", i, "] ~ dnorm(0,0.0001)\n  ppp.b.w[", i, "] <- step(b.w[", i, "])\n  "))
     }
   }
   mmwfunction <- stringr::str_replace(mmwfunction, "w~", "uw[i] <- ")
@@ -401,31 +401,37 @@ rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, 
     modelstring <- if(length(hmi)>0) readr::read_file(paste0(DIR, "/JAGS/Weibull_l123.txt")) else readr::read_file(paste0(DIR, "/JAGS/Weibull_l12.txt")) # levels
   }
   
+  win2unix <- function(str) {
+    gsub("\r\n", "\n", str, fixed = TRUE)
+  }
+  
+  modelstring <- win2unix(modelstring)
+  
   # No covariates at level 3?
   if(length(hmi)>0 & is.null(n.Xl3)) { 
-    modelstring <- stringr::str_remove(modelstring,  fixed("for(x in 1:n.Xl3) {\r\n    b.l3[x] ~ dnorm(0,0.0001)\r\n    ppp.b.l3[x] <- step(b.l3[x])\r\n  }\r\n  \r\n"))
+    modelstring <- stringr::str_remove(modelstring,  fixed("for(x in 1:n.Xl3) {\n    b.l3[x] ~ dnorm(0,0.0001)\n    ppp.b.l3[x] <- step(b.l3[x])\n  }\n  \n"))
     modelstring <- stringr::str_replace(modelstring, fixed("l3[k] <- inprod(X.l3[k,], b.l3) + re.l3[k]"), "l3[k] <- re.l3[k]")
   }
   
   # No covariates at level 1?
   if(length(l1vars)==0) { 
-    modelstring <- stringr::str_remove(modelstring,  fixed("  for(x in 1:n.Xl1) {\r\n    b.l1[x] ~ dnorm(0,0.0001)\r\n    ppp.b.l1[x] <- step(b.l1[x])\r\n  }\r\n  \r\n"))
+    modelstring <- stringr::str_remove(modelstring,  fixed("  for(x in 1:n.Xl1) {\n    b.l1[x] ~ dnorm(0,0.0001)\n    ppp.b.l1[x] <- step(b.l1[x])\n  }\n  \n"))
     modelstring <- stringr::str_replace(modelstring, fixed("l1[i] <- inprod(X.l1[i,], b.l1) + re.l1[l1id[i]]"), "l1[i] <- re.l1[l1id[i]]")
   }
   
   # Auto-regressive l1 effect?
   if(mmwar==T) { 
     modelstring <- stringr::str_replace(modelstring, fixed("re.l1[l1id[i]]"), "re.l1[l1id[i], n.GPn[i]]")
-    modelstring <- stringr::str_replace(modelstring, fixed("re.l1[i] ~ dnorm(0, tau.l1)\r\n  "), "re.l1[i,1] ~ dnorm(0, tau.l1)\r\n    for(j in 2:n.GPN) {\r\n      re.l1[i,j] ~ dnorm(re.l1[i,j-1], tau.l1)\r\n    }\r\n  ")
+    modelstring <- stringr::str_replace(modelstring, fixed("re.l1[i] ~ dnorm(0, tau.l1)\n  "), "re.l1[i,1] ~ dnorm(0, tau.l1)\n    for(j in 2:n.GPN) {\n      re.l1[i,j] ~ dnorm(re.l1[i,j-1], tau.l1)\n    }\n  ")
   }
   
   # Weight function
   if(mmwfunction != "uw[i] <- 1/X.w[i,1]") modelstring <- stringr::str_replace(modelstring, fixed("uw[i] <- 1/X.w[i,1]"), mmwfunction)
   if(mmwconstraint == 2) modelstring <- stringr::str_replace(modelstring, fixed("w[i] <- uw[i] / sum(uw[l1i1.l1[i]:l1i2.l1[i]])"), "w[i] <- uw[i] * n.l2/sum(uw[]) # rescale to sum up to n.l1 overall")
   if(stringr::str_detect(mmwfunction, "b.w\\[.\\]")) { 
-    modelstring <- stringr::str_replace(modelstring, fixed("b.w\r\n"), paste0(mmwcoefstring, collapse = "")) 
+    modelstring <- stringr::str_replace(modelstring, fixed("b.w\n"), paste0(mmwcoefstring, collapse = "")) 
   } else {
-    modelstring <- stringr::str_replace(modelstring, fixed("b.w\r\n"), "") 
+    modelstring <- stringr::str_replace(modelstring, fixed("b.w\n"), "") 
   }
   
   # Priors
@@ -531,14 +537,6 @@ rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, 
   }
   
   if(is.character(modelfile)) modelstring <- readr::read_file(modelfile) 
-  
-  print(modelstring)
-  
-  unix2win <- function(str) {
-    gsub("\n", "\r\n", str, fixed = TRUE)
-  }
-  
-  modelstring <- unix2win(modelstring)
   
   # ---------------------------------------------------------------------------------------------- #
   # Run JAGS 
