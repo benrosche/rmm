@@ -532,6 +532,8 @@ rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, 
   
   if(is.character(modelfile)) modelstring <- readr::read_file(modelfile) 
   
+  print(modelstring)
+  
   # ---------------------------------------------------------------------------------------------- #
   # Run JAGS 
   # ---------------------------------------------------------------------------------------------- #
