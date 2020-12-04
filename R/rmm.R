@@ -534,11 +534,11 @@ rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, 
   
   print(modelstring)
   
-  win2unix <- function(str) {
-    gsub("\r\n", "\n", str, fixed = TRUE)
+  unix2win <- function(str) {
+    gsub("\n", "\r\n", str, fixed = TRUE)
   }
   
-  modelstring <- win2unix(modelstring)
+  modelstring <- unix2win(modelstring)
   
   # ---------------------------------------------------------------------------------------------- #
   # Run JAGS 
