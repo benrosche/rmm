@@ -85,11 +85,18 @@
 #' 
 #' \bold{More details on adding a third level}
 #' 
-#' ....
+#' ...
 #'
 #' \bold{More details on constructing the data}
+#' 
 #' ...
 #' 
+#' \bold{Common JAGS errors}
+#' 
+#' \code{Error in update.jags(model, n.iter, ...) : Error in node w[1285] Invalid parent values} The weight function must be designed such that the distribution of weights is in 
+#' line with the priors for all other parameters. This error could, for instance, be caused if weights can be negative but negative weights cause the distribution of other parameters to be outside of the distribution of their priors.
+#' Carefully designing the weight function so that it is properly bounded may therefore help. Specifying \code{transform="std"} may help as well. 
+#' ...
 #' @param formula A symbolic description of the model in form of an R formula. More details below.
 #' @param family Character vector. Currently supported are "Gaussian", "Logit", "Condlogit", "Weibull", or "Cox".
 #' @param priors A list with parameter or variable names as tags and their prior specification as values. More details below.
@@ -98,10 +105,10 @@
 #' @param chains Number of chains.
 #' @param seed A random number.
 #' @param run A logical value (True or False) indicating whether JAGS should estimate the model.
-#' @param modelfile Path to modelfile. If \code{NULL}, the modelfile is created and will be located at \code{'rmm/temp/modelstring.txt'}.
 #' @param monitor A logical value (True or False). If \code{True}, weights and random effects are monitored and saved in the global environment.
 #' @param hdi Numeric or False. If confidence level \code{x} is specified (default \code{x=0.95}), \code{mode} and \code{(x*100)%} HDI estimates are given. If \code{False} is specified, \code{mean} and \code{95% CI} are given.
 #' @param r Numeric. Rounding value. Default is 3.
+#' @param transform Character vector or FALSE. Specifying \code{center} or \code{std} to center or standardize continuous predictors before estimation.
 #' @param data Dataframe object. The dataset must have level 1 as unit of analysis. More details below.
 #'
 #' @return JAGS output. More details the output ...
@@ -115,9 +122,9 @@
 #' @references 
 #' Rosche (XXXX): The multilevel structure of coalition government outcomes
 
-rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, chains=3, seed=NULL, run=T, modelfile=NULL, monitor=F, hdi=0.95, r=3, data=NULL) {
+rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, chains=3, seed=NULL, run=T, monitor=F, hdi=0.95, r=3, transform="center", data=NULL) {
 
-  # formula <- Surv(govdur, earlyterm) ~ 1 + mwc + investiture + hetero + mm(id(pid, gid), mmc(ipd +fdep), mmw(w ~ 1/offset(n)^exp(-pmpower), c=2)) + hm(id="cid", type=RE); family <- "Weibull"; priors=NULL; iter=1000; burnin=100; chains <- 3; seed <- NULL; run <- T; modelfile <- NULL; monitor <- F; hdi=0.95; r=3; data <- coalgov;
+  # formula <- sim_y ~ 1 + mwc + investiture + hetero + mm(id(pid, gid), mmc(ipd+fdep), mmw(w ~ 1/offset(n)^exp(-pmpower), c=2)) + hm(id="cid", type=RE); family <- "Gaussian"; priors=NULL; iter=1000; burnin=100; chains <- 3; seed <- NULL; run <- T; modelfile <- NULL; monitor <- F; hdi=0.95; r=3; transform="center"; data <- coalgov
   
   if(is.null(data)) stop("No data supplied.")
   DIR <- system.file(package = "rmm")
@@ -244,6 +251,17 @@ rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, 
   # 2. Disentangle vars and data into l1-3
   # ---------------------------------------------------------------------------------------------- #
   
+  # Center or Standardize
+  cen_std <- function(x) { 
+    if(transform=="center") {
+      if(is.numeric(x) & dim(table(x))>2) x-mean(x) else x 
+    } else if(transform=="std") {
+      if(is.numeric(x) & dim(table(x))>2) (x-mean(x))/sqrt(var(x)) else x 
+    } else {
+      x
+    }
+  }
+  
   data <- # rename and regroup ids and sort
     data %>% 
     dplyr::rename(l1id = !!l12ids[1], l2id = !!l12ids[2]) %>%
@@ -253,13 +271,13 @@ rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, 
     dplyr::group_by(l2id) %>% dplyr::mutate(l2id = cur_group_id()) %>% dplyr::ungroup() %>%
     dplyr::group_by(l3id) %>% dplyr::mutate(l3id = cur_group_id()) %>% dplyr::ungroup() %>%
     dplyr::arrange(l2id, l1id) 
-    
+  
   # Level 1
   level1 <-
     data %>% 
     dplyr::arrange(l2id, l1id) %>% # important
     dplyr::select(l1id, l2id, !!l1vars) %>%
-    dplyr::mutate_at(l1vars, function(x) { if(is.numeric(x) & dim(table(x))>2) x-mean(x) else x }) # center continuous vars 
+    dplyr::mutate_at(l1vars, cen_std) # center continuous vars 
 
   # Level 3
   if(length(hmi)>0) {
@@ -299,7 +317,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, 
         dplyr::summarise_all(.funs = first) %>%
         dplyr::ungroup() %>%
         dplyr::arrange(l3id) %>% 
-        dplyr::mutate_at(l3vars, function(x) { if(is.numeric(x) & dim(table(x))>2) x-mean(x) else x }) 
+        dplyr::mutate_at(l3vars, cen_std) 
     }
     
   } else {
@@ -322,7 +340,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, 
     dplyr::mutate(X0 = 1) %>%
     dplyr::select(l2id, l1i1, l1i2, l1n, !!lhs, !!l2vars) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate_at(l2vars, function(x) { if(is.numeric(x) & dim(table(x))>2) x-mean(x) else x }) 
+    dplyr::mutate_at(l2vars, cen_std) 
   
   # ---------------------------------------------------------------------------------------------- #
   # 3. Transform data to JAGS format
@@ -437,7 +455,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, 
     }
   }
 
-  if(is.null(modelfile)) readr::write_file(modelstring, paste0(DIR, "/temp/modelstring.txt"))
+  # if(is.null(modelfile)) readr::write_file(modelstring, paste0(DIR, "/temp/modelstring.txt"))
   
   # ---------------------------------------------------------------------------------------------- #
   # 4. Set up JAGS
@@ -511,7 +529,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, 
     
   }
   
-  if(is.null(modelfile)) modelfile <- paste0(DIR, "/temp/modelstring.txt")
+  #if(is.null(modelfile)) modelfile <- paste0(DIR, "/temp/modelstring.txt")
   
   # ---------------------------------------------------------------------------------------------- #
   # Run JAGS 
@@ -519,7 +537,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, 
   
   if(run==T) {
     
-    jags.out <<- jags(data=jags.data, inits = jags.inits, parameters.to.save = jags.params, n.chains = 3, n.iter = iter, n.burnin = burnin, model.file = modelfile)
+    jags.out <- jags(data=jags.data, inits = jags.inits, parameters.to.save = jags.params, n.chains = 3, n.iter = iter, n.burnin = burnin, model.file = textConnection(modelstring)) 
     
     # -------------------------------------------------------------------------------------------- #
     # Format results
@@ -633,12 +651,12 @@ rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, 
       dplyr::mutate_at(3:7, list(~round(as.numeric(.), r))) %>%
       tibble::column_to_rownames(var = "name") 
     
+    # Return ------------------------------------------------------------------------------------- #
+    
+    return(reg.table)
+    
+  } else {
+    message("Data and model were created without errors")
   }
   
-  # -------------------------------------------------------------------------------------------- #
-  # Return
-  # -------------------------------------------------------------------------------------------- #
-  
-  return(reg.table)
-
 }

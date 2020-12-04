@@ -13,10 +13,10 @@ rmm(
   chains = 3,
   seed = NULL,
   run = T,
-  modelfile = NULL,
   monitor = F,
   hdi = 0.95,
   r = 3,
+  transform = "center",
   data = NULL
 )
 }
@@ -37,11 +37,11 @@ rmm(
 
 \item{run}{A logical value (True or False) indicating whether JAGS should estimate the model.}
 
-\item{modelfile}{Path to modelfile. If \code{NULL}, the modelfile is created and will be located at \code{'rmm/temp/modelstring.txt'}.}
-
 \item{monitor}{A logical value (True or False). If \code{True}, weights and random effects are monitored and saved in the global environment.}
 
 \item{r}{Numeric. Rounding value. Default is 3.}
+
+\item{transform}{Character vector or FALSE. Specifying \code{center} or \code{std} to center or standardize continuous predictors before estimation.}
 
 \item{data}{Dataframe object. The dataset must have level 1 as unit of analysis. More details below.}
 }
@@ -134,9 +134,17 @@ The general weight function as proposed in Rosche (XXXX: XX) is implemented by \
 
 \bold{More details on adding a third level}
 
-....
+...
 
 \bold{More details on constructing the data}
+
+...
+
+\bold{Common JAGS errors}
+
+\code{Error in update.jags(model, n.iter, ...) : Error in node w[1285] Invalid parent values} The weight function must be designed such that the distribution of weights is in 
+line with the priors for all other parameters. This error could, for instance, be caused if weights can be negative but negative weights cause the distribution of other parameters to be outside of the distribution of their priors.
+Carefully designing the weight function so that it is properly bounded may therefore help. Specifying \code{transform="std"} may help as well. 
 ...
 }
 \examples{

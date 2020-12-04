@@ -42,16 +42,26 @@ simWeib <- function(N, lambda, rho, LP, rateC) {
 # Function to create data
 # ================================================================================================ #
 
-crDat <- function(party=c(0,0,0), gov=c(1,3,3,0), country=c(3,0), weight=c(0,0,0), Sigma=matrix(c(1,0,0, 0,1,0, 0,0,1),3,3), level=1, seed=NULL) {
+crDat <- function(party=3, gov=c(1,3), country=3, weight=c(0,0,0), Sigma=matrix(c(1,0,0, 0,1,0, 0,0,1),3,3), level=1, transform=FALSE, seed=NULL) {
   
   if(!level %in% c(1,2)) stop("Level can only be 1 or 2")
+  
+  # Function to center / standardize the data
+  cen_std <- function(x) { 
+    if(transform=="center") {
+      if(is.numeric(x) & dim(table(x))>2) x-mean(x) else x 
+    } else if(transform=="std") {
+      if(is.numeric(x) & dim(table(x))>2) (x-mean(x))/sqrt(var(x)) else x 
+    } else {
+      x
+    }
+  }
   
   # Create X ------------------------------------------------------------------------------------- #
   
   # Sigma = covariance matrix of party, gov, and country random effects 
   
-  if(is.null(seed)) seed <- runif(1, 0, 1000)
-  set.seed(seed)
+  if(!is.null(seed)) set.seed(seed)
   
   # Load data 
   dat.party   <- read_dta("C:/Users/benja/OneDrive - Cornell University/GitHub/govsurvival/data/Rosche2017-party.dta")
@@ -66,7 +76,8 @@ crDat <- function(party=c(0,0,0), gov=c(1,3,3,0), country=c(3,0), weight=c(0,0,0
                         dplyr::select(gid, cid, country, gstart, gend, nPG, majority, mwc, rilegov2) %>% 
                         dplyr::rename(n=nPG, cname=country, hetero=rilegov2), by=c("gid", "cid")) %>% # add gov vars
     dplyr::inner_join(dat.country %>% dplyr::select(cid, investiture, pmpower), by=c("cid")) %>% # add country vars
-    dplyr::relocate(c(cname, gstart, gend, n), .after=cid) 
+    dplyr::relocate(c(cname, gstart, gend, n), .after=cid) %>%
+    dplyr::mutate(across(!c(pid, gid, cid, cname, gstart, gend, n), cen_std)) # standardize continuous vars
   
   # Create RE
   
@@ -75,9 +86,9 @@ crDat <- function(party=c(0,0,0), gov=c(1,3,3,0), country=c(3,0), weight=c(0,0,0
     message("Sigma changed")
   }
   
-  re.party   <- mvrnorm(n = length(unique(dat %>% .$pid)), mu=c(0,0,0), Sigma)[,1]
-  re.gov     <- mvrnorm(n = length(unique(dat %>% .$gid)), mu=c(0,0,0), Sigma)[,2]
-  re.country <- mvrnorm(n = length(unique(dat %>% .$cid)), mu=c(0,0,0), Sigma)[,3]
+  re.party   <<- mvrnorm(n = length(unique(dat %>% .$pid)), mu=c(0,0,0), Sigma)[,1]
+  re.gov     <<- mvrnorm(n = length(unique(dat %>% .$gid)), mu=c(0,0,0), Sigma)[,2]
+  re.country <<- mvrnorm(n = length(unique(dat %>% .$cid)), mu=c(0,0,0), Sigma)[,3]
   
   # Add RE
   dat <- 
@@ -95,12 +106,12 @@ crDat <- function(party=c(0,0,0), gov=c(1,3,3,0), country=c(3,0), weight=c(0,0,0
     dplyr::inner_join(dat.gov %>% 
                         dplyr::select(gid, cid, event_wkb, dur_wkb) %>% 
                         dplyr::rename(earlyterm=event_wkb, govdur=dur_wkb), by=c("gid", "cid")) %>%
-    dplyr::mutate(partyeffect=party[1]*ipd+party[2]*fdep+party[3]*re.party) %>%
+    dplyr::mutate(partyeffect=party*fdep+re.party) %>%
     dplyr::mutate(w=1/n^exp(-(weight[1]*pseatrel+weight[2]*hetero+weight[3]*pmpower)), ng=max(gid), w=w*ng/sum(w)) %>%
     dplyr::group_by(gid) %>%
     dplyr::mutate(aggpartyeffect=sum(w*partyeffect)) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(LP=aggpartyeffect+gov[1]+gov[2]*majority+gov[3]*mwc+gov[4]*re.gov+country[1]*investiture+country[2]*re.country) %>%
+    dplyr::mutate(LP=(gov[1]+gov[2]*majority+re.gov) + (aggpartyeffect) + (country*investiture+re.country)) %>%
     dplyr::select(-partyeffect, -aggpartyeffect, -re.party, -re.gov, -re.country) %>%
     dplyr::rename(sim_w=w)
   
@@ -112,6 +123,8 @@ crDat <- function(party=c(0,0,0), gov=c(1,3,3,0), country=c(3,0), weight=c(0,0,0
     dplyr::rename(sim_st=survtime, sim_e=event) %>%
     dplyr::select(-LP, -ng)
 
+  pidl <- "Unique party ID"
+  simwl <- "Simulated weights"
   
   # Aggregate to second level 
   if(level==2) {
@@ -122,18 +135,19 @@ crDat <- function(party=c(0,0,0), gov=c(1,3,3,0), country=c(3,0), weight=c(0,0,0
       dplyr::filter(row_number()==1) %>%
       dplyr::ungroup() %>%
       dplyr::select(-pid, -sim_w)
+    pidl <- c()
+    simwl <- c()
   }
   
+  var_label(crY) <- c(pidl, "Unique government ID", "Unique country ID", "Country name", "Government start date", "Government end date", "# government parties", "Prime minister party", "Intra-party democracy", "Financial dependency", "Party's relative seat share within coalition", "Majority government", "Minimal winning coalition", "SD(rile) of goverment / SD(rile) of parliament", "Investiture vote", "Prime ministerial powers", "Discretionary early termination ", "Government duration", simwl, "Simulated linear outcome", "Simulated survival time", "Simulated event status")
+  
   return(crY)
+  
 }
-
-
 
 # ================================================================================================ #
 # Save data for rmm() package
 # ================================================================================================ #
 
-# coalgov <- crDat(party=c(3,3,1), gov=c(1,3,3,1), country=c(3,1), weight=c(0,0,0), Sigma=matrix(c(1,0,0, 0,1,0, 0,0,1),3,3), level=1, seed=1)
-# var_label(coalgov) <- c("Unique party ID", "Unique government ID", "Unique country ID", "Country name", "Government start date", "Government end date", "# government parties", "Prime minister party", "Intra-party democracy", "Financial dependency", "Party's relative seat share within coalition", "Majority government", "Minimal winning coalition", "SD(rile) of goverment / SD(rile) of parliament", "Investiture vote", "Prime ministerial powers", "Discretionary early termination ", "Government duration", "Simulated weights", "Simulated linear outcome", "Simulated survival time", "Simulated event status")
+# coalgov <- crDat(party=3, gov=c(1,3), country=3, weight=c(0,0,0), Sigma=matrix(c(1,0,0, 0,1,0, 0,0,1),3,3), level=1, seed=1)
 # save(coalgov, file="data/coalgov.RData")
-
