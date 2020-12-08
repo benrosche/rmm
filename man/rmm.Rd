@@ -152,7 +152,7 @@ Carefully designing the weight function so that it is properly bounded may there
 }
 \examples{
 data(coalgov)
-rmm(Surv(govdur, earlyterm) ~ 1 + mm(id(gid, pid), mmc(fdep), mmw(w ~ 1/offset(n), constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
+rmm(Surv(govdur, earlyterm) ~ 1 + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/offset(n), constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
     family="Weibull", monitor=T, data=coalgov)
 
 }

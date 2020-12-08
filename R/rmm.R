@@ -115,7 +115,7 @@
 #' @return JAGS output. More details on the output ...
 #'
 #' @examples data(coalgov)
-#' rmm(Surv(govdur, earlyterm) ~ 1 + mm(id(gid, pid), mmc(fdep), mmw(w ~ 1/offset(n), constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
+#' rmm(Surv(govdur, earlyterm) ~ 1 + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/offset(n), constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
 #'     family="Weibull", monitor=T, data=coalgov)
 #'
 #' @export rmm
@@ -125,7 +125,7 @@
 
 rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, chains=3, seed=NULL, run=T, monitor=F, hdi=0.95, r=3, transform="center", modelfile=F, data=NULL) {
 
-  #formula = Surv(sim_st, sim_e) ~ 1 + mwc + investiture + hetero + mm(id(pid, gid), mmc(ipd+fdep), mmw(w ~ 1/offset(n))) + hm(id="cid", type=RE); family = "Weibull"; priors=NULL; iter=1000; burnin=100; chains = 3; seed = NULL; run = T; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
+  #formula = sim_y ~ 1 + mwc + investiture + hetero + mm(id(pid, gid), mmc(ipd+fdep), mmw(w ~ 1/offset(n), ar=T)) + hm(id="cid", type=RE); family = "Gaussian"; priors=NULL; iter=1000; burnin=100; chains = 3; seed = NULL; run = T; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
   #source("./R/dissectFormula.R"); source("./R/createData.R"); source("./R/editModelstring.R"); source("./R/createJagsVars.R"); source("./R/formatJags.R"); 
   
   if(is.null(data)) stop("No data supplied.")
@@ -135,7 +135,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, 
   # 1. Dissect formula 
   # ---------------------------------------------------------------------------------------------- #
   
-  c(ids, vars, l3, mm) %<-%  dissectFormula(formula, family)
+  c(ids, vars, l3, mm) %<-%  dissectFormula(formula, family, data)
   
   # ---------------------------------------------------------------------------------------------- #
   # 2. Disentangle vars and data into l1-3
@@ -151,13 +151,13 @@ rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, 
   # 3. Edit modelstring 
   # ---------------------------------------------------------------------------------------------- #
   
-  modelstring <- editModelstring(family, priors, modelfile, mm, level1, level2, level3)
+  modelstring <- editModelstring(family, priors, mm, level1, level2, level3, DIR, modelfile)
 
   # ---------------------------------------------------------------------------------------------- #
   # 4. Transform data into JAGS format
   # ---------------------------------------------------------------------------------------------- #
   
-  c(ids, Ns, Xs, Ys, jags.params, jags.inits, jags.data) %<-% createJagsVars(family, data, level1, level2, level3, ids, vars, l3, monitor, seed)
+  c(ids, Ns, Xs, Ys, jags.params, jags.inits, jags.data) %<-% createJagsVars(family, data, level1, level2, level3, ids, vars, mm, l3, monitor, modelfile, seed)
   
   list2env(c(ids, Ns, Xs, Ys), envir=environment())
   
@@ -169,9 +169,9 @@ rmm <- function(formula, family="Gaussian", priors=NULL, iter=1000, burnin=100, 
     
     jags.out  <- jags(data=jags.data, inits = jags.inits, parameters.to.save = jags.params, n.chains = 3, n.iter = iter, n.burnin = burnin, model.file = textConnection(modelstring)) 
     
-    reg.table <- formatJags(jags.out, vars, Ns, mm, l3, level3)
+    c(reg.table, w, re.l1, re.l3) %<-% formatJags(jags.out, hdi, r, monitor, vars, Ns, mm, l3, level3)
     
-    return(reg.table)
+    return(list("reg.table"=reg.table, "w"=w, "re.l1"=re.l1, "re.l3"=re.l3))
     
   } else {
     

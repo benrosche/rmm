@@ -17,6 +17,7 @@ createData <- function(data, ids, vars, l3, transform) {
   
   hm <- l3$hm
   l3type <- l3$l3type
+  l3name <- l3$l3name
   
   # Center or Standardize ------------------------------------------------------------------------ #
   
@@ -113,7 +114,7 @@ createData <- function(data, ids, vars, l3, transform) {
     dplyr::mutate(X0 = 1) %>%
     dplyr::select(l2id, l1i1, l1i2, l1n, !!lhs, !!l2vars) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate_at(l2vars, cen_std) 
+    dplyr::mutate_at(l2vars, cen_std)
   
   # Collect return ------------------------------------------------------------------------------- #
   

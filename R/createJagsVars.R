@@ -2,7 +2,7 @@
 # Function createJagsVars
 # ================================================================================================ #
 
-createJagsVars <- function(family, data, level1, level2, level3, ids, vars, l3, monitor, seed) {
+createJagsVars <- function(family, data, level1, level2, level3, ids, vars, mm, l3, monitor, modelfile, seed) {
    
   # Unpack lists --------------------------------------------------------------------------------- #
   
@@ -115,17 +115,9 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, l3, 
   
   # Level 1 -------------------------------------------------------------------------------------- #
   
-  if(mmwar==T) { # AR==T
-    re.param <- c()
-    for(j in 1:n.ul1) {
-      re.param <- append(re.param, paste0("re.l1[", j, "," , seq(1,n.GPNi[j]), "]"))
-    }
-    l1.param <- if(monitor==T) c("sigma.l1", re.param) else c("sigma.l1")
-    l1.data  <- c("l1id", "l1i1", "l1i2", "n.l1", "n.ul1", "n.GPn", "n.GPN")
-  } else { # AR==F
-    l1.param <- if(monitor==T) c("sigma.l1", "re.l1") else c("sigma.l1")
-    l1.data  <- c("l1id", "l1i1", "l1i2", "n.l1", "n.ul1")
-  }
+  l1.param <- c("sigma.l1"); if(monitor==T) l1.param <- append(l1.param, c("re.l1")) 
+  l1.data  <- c("l1id", "l1i1", "l1i2", "n.l1", "n.ul1"); if(mmwar==T) l1.data <- append(l1.data, c("n.GPn", "n.GPNi"))
+
   if(!is.null(n.Xl1)) { l1.data <- append(l1.data, c("X.l1", "n.Xl1")); l1.param <- append(l1.param, c("b.l1", "ppp.b.l1")) }
   
   # Level 2 -------------------------------------------------------------------------------------- #
@@ -153,7 +145,8 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, l3, 
   # Initial values ------------------------------------------------------------------------------- #
   
   if(is.null(seed)) seed <- runif(1, 0, 1000)
-  # 2do: change so that adding inits is easier and maybe also a parameter of rmm()
+  # 2do: change so that inits responds to chains
+  # 2do: change so that adding inits is easier  and maybe also a parameter of rmm()
   
   # ---------------------------------------------------------------------------------------------- #
   # Other model-specifics 

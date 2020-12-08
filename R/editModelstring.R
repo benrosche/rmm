@@ -2,7 +2,7 @@
 # Function editModelstring 
 # ================================================================================================ #
 
-editModelstring <- function(family, priors, modelfile, mm, level1, level2, level3) {
+editModelstring <- function(family, priors, mm, level1, level2, level3, DIR, modelfile) {
   
   # Unpack lists --------------------------------------------------------------------------------- #
   
@@ -42,7 +42,7 @@ editModelstring <- function(family, priors, modelfile, mm, level1, level2, level
   # Auto-regressive l1 effect?
   if(mmwar==T) { 
     modelstring <- stringr::str_replace(modelstring, fixed("re.l1[l1id[i]]"), "re.l1[l1id[i], n.GPn[i]]")
-    modelstring <- stringr::str_replace(modelstring, fixed("re.l1[i] ~ dnorm(0, tau.l1)\n  "), "re.l1[i,1] ~ dnorm(0, tau.l1)\n    for(j in 2:n.GPN) {\n      re.l1[i,j] ~ dnorm(re.l1[i,j-1], tau.l1)\n    }\n  ")
+    modelstring <- stringr::str_replace(modelstring, fixed("re.l1[i] ~ dnorm(0, tau.l1)\n  "), "re.l1[i,1] ~ dnorm(0, tau.l1)\n    for(j in 2:n.GPNi[ i ]) {\n      re.l1[i,j] ~ dnorm(re.l1[i,j-1], tau.l1)\n    }\n  ")
   }
   
   # No covariates at level 3?

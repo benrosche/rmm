@@ -2,8 +2,8 @@
 # Function formatJags
 # ================================================================================================ #
 
-formatJags <- function(jags.out, vars, Ns, mm, l3, level3) {
-  
+formatJags <- function(jags.out, hdi, r, monitor, vars, Ns, mm, l3, level3) {
+
   # Unpack lists --------------------------------------------------------------------------------- #
 
   l1vars <- vars$l1vars
@@ -14,8 +14,10 @@ formatJags <- function(jags.out, vars, Ns, mm, l3, level3) {
   l3name <- l3$l3name
   l3type <- l3$l3type
   
-  n.l2 <- Ns$n.l2
+  n.ul1 <- Ns$n.ul1
   l1n  <- Ns$l1n
+  n.l2 <- Ns$n.l2
+  n.GPN <- Ns$n.GPN
   
   mmwar <- mm$mmwar
   lwvars <- vars$lwvars
@@ -34,7 +36,7 @@ formatJags <- function(jags.out, vars, Ns, mm, l3, level3) {
     dplyr::mutate_at(.vars=c("name"), .funs=function(x) str_remove(x, "ppp.")) %>%
     dplyr::select(-sd, -lb, -ub)
   
-  # 2DO: ppp values for variance terms
+  # 2do: ppp values for variance terms
   
   # Mean and 95% CI or Mode and HDI -------------------------------------------------------------- #
   
@@ -61,7 +63,7 @@ formatJags <- function(jags.out, vars, Ns, mm, l3, level3) {
     
     # Level-1 RE
     re.l1 <- reg.table %>% dplyr::filter(startsWith(name, "re.l1")) %>% dplyr::select(-sd, -lb, -ub) %>% dplyr::mutate(estimate = round(as.numeric(estimate), r))
-    
+   
     if(mmwar==T) { # AR == T
       
       re.l1 <- 
@@ -78,32 +80,34 @@ formatJags <- function(jags.out, vars, Ns, mm, l3, level3) {
         remat[re.l1[i,"i"], re.l1[i,"j"]] <- re.l1[i, "estimate"] 
       }
       
-      re.l1 <<- remat
+      re.l1 <- remat
       
     } else { # AR == F
-      re.l1 <<- re.l1 %>% .$estimate
+      re.l1 <- re.l1 %>% .$estimate
     }
     
     reg.table <- reg.table %>% dplyr::filter(!startsWith(name, "re.l1["))
     
     # Level-3 RE
-    re.l3 <<- reg.table %>% dplyr::filter(startsWith(name, "re.l3")) %>% dplyr::mutate(estimate = round(as.numeric(estimate), r)) %>% .$estimate
+    re.l3 <- reg.table %>% dplyr::filter(startsWith(name, "re.l3")) %>% dplyr::mutate(estimate = round(as.numeric(estimate), r)) %>% .$estimate
     reg.table <- reg.table %>% dplyr::filter(!startsWith(name, "re.l3[")) 
     
     # Weights
-    wmat <- matrix(NA, nrow = n.l2, ncol = max(l1n))
     w <- reg.table %>% dplyr::filter(startsWith(name, "w")) %>% dplyr::mutate(estimate = round(as.numeric(estimate), r)) %>% .$estimate
     
     id1 <- cumsum(l1n)-l1n+1
     id2 <- cumsum(l1n)
     
+    wmat <- matrix(NA, nrow = n.l2, ncol = max(l1n))
+    rownames(wmat) <- paste0("L2 unit ", seq(1,n.l2))
+    colnames(wmat) <- paste0("W", seq(1,max(l1n)))
     for(i in 1:n.l2) {
       wmat[i,1:l1n[i]] <- w[id1[i]:id2[i]]
     }
     
-    w <<- wmat
-    
+    w <- wmat
     reg.table <- reg.table %>% dplyr::filter(!startsWith(name, "w")) 
+    
   }
   
   # PPP values (add as separate column, must be after HDI) 
@@ -124,15 +128,15 @@ formatJags <- function(jags.out, vars, Ns, mm, l3, level3) {
   
   reg.table <- 
     reg.table %>% 
-    rename(coefficients=estimate) %>% # compatibility with lm() etc
+    rename(coefficients=estimate) %>% # compatibility with lm() 
     dplyr::mutate(variable=newnames) %>% relocate(variable, .before = coefficients) %>%
     filter(!variable=="deviance") %>%
     rbind(c("DIC", "DIC", jags.out$BUGSoutput$DIC, NA, NA, NA, NA)) %>%
     dplyr::mutate_at(3:7, list(~round(as.numeric(.), r))) %>%
-    tibble::column_to_rownames(var = "name") 
+    tibble::column_to_rownames(var = "name")
   
   # Return --------------------------------------------------------------------------------------- #
   
-  return(reg.table)
+  if(monitor==T) return(list("reg.table"=reg.table, "w"=w, "re.l1"=re.l1, "re.l3"=re.l3)) else return(list("reg.table"=reg.table, "w"=c(), "re.l1"=c(), "re.l3"=c()))
   
 }

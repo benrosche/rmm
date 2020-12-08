@@ -2,7 +2,7 @@
 # Function dissectFormula 
 # ================================================================================================ #
 
-dissectFormula <- function(formula, family) {
+dissectFormula <- function(formula, family, data) {
   
   # This function has two arguments:
   # ...
@@ -37,7 +37,7 @@ dissectFormula <- function(formula, family) {
   # id() ----------------------------------------------------------------------------------------- #
   
   l12ids <- if(stringr::str_detect(mmstring, "id\\(.*\\)")) unlist(stringr::str_split(stringr::str_replace(mmstring, ".*id\\((.*?)\\).*", "\\1"), ",")) else stop("'id(l1id,l2id)' missing within 'mm()'")
-  
+
   if(all(l12ids %in% names(data))==FALSE) stop("Either l1id or l2id could not be found in the dataset.")
   
   # mmc() ---------------------------------------------------------------------------------------- #
