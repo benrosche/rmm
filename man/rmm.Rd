@@ -49,7 +49,7 @@ rmm(
 \item{data}{Dataframe object. The dataset must have level 1 as unit of analysis. More details below.}
 }
 \value{
-JAGS output. More details the output ...
+JAGS output. More details on the output ...
 }
 \description{
 The \strong{rmm} package provides an interface to fit Bayesian multiple membership 

@@ -18,7 +18,8 @@ Depends:
     R2jags,
     HDInterval,
     MCMCvis,
-    mcmcplots
+    mcmcplots,
+    zeallot
 URL: http://benrosche.net/rmm
 BugReports: https://github.com/benrosche/rmm/issues
 RoxygenNote: 7.1.1
