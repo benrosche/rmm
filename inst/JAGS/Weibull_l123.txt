@@ -60,7 +60,7 @@ model {
   sigma.l1 <- 1/sqrt(tau.l1)
    
   shape ~ dexp(0.0001) 
-  sigma.l2 <- 3.141593^2/(6*shape)-1.5 # approximation
+  sigma.l2 <- sqrt(3.142^2/(6*exp(2*log(shape))))
   
   tau.l3 ~ dscaled.gamma(25, 1) 
   sigma.l3 <- 1/sqrt(tau.l3)
