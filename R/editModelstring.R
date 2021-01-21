@@ -2,15 +2,16 @@
 # Function editModelstring 
 # ================================================================================================ #
 
-editModelstring <- function(family, priors, mm, level1, level2, level3, DIR, modelfile) {
+editModelstring <- function(family, priors, mm, l3, level1, level2, level3, DIR, modelfile) {
   
   # Unpack lists --------------------------------------------------------------------------------- #
-  
-  hm <- !is.null(level3$dat)
   
   l1vars <- level1$vars
   l2vars <- level2$vars
   l3vars <- level3$vars
+  
+  hm <- l3$hm
+  l3type <- l3$l3type
   
   mmwfunction <- mm$mmwfunction
   mmwcoefstring <- mm$mmwcoefstring
@@ -49,6 +50,13 @@ editModelstring <- function(family, priors, mm, level1, level2, level3, DIR, mod
   if(hm & length(l3vars)==0) { 
     modelstring <- stringr::str_remove(modelstring,  fixed("for(x in 1:n.Xl3) {\n    b.l3[x] ~ dnorm(0,0.0001)\n    ppp.b.l3[x] <- step(b.l3[x])\n  }\n  \n"))
     modelstring <- stringr::str_replace(modelstring, fixed("l3[k] <- inprod(X.l3[k,], b.l3) + re.l3[k]"), "l3[k] <- re.l3[k]")
+  }
+  
+  # Fixed effect at level 3?
+  if(hm & l3type=="FE") {
+    modelstring <- stringr::str_remove(modelstring,  fixed("for (k in 1:n.l3) {\n    re.l3[k] ~ dnorm(0, tau.l3)\n  }\n  \n"))
+    modelstring <- stringr::str_remove(modelstring,  fixed("tau.l3 ~ dscaled.gamma(25, 1)\n  sigma.l3 <- 1/sqrt(tau.l3)\n  \n"))
+    modelstring <- stringr::str_replace(modelstring, fixed("l3[k] <- inprod(X.l3[k,], b.l3) + re.l3[k]"), "l3[k] <- inprod(X.l3[k,], b.l3)")
   }
   
   # Weight function
@@ -91,4 +99,3 @@ editModelstring <- function(family, priors, mm, level1, level2, level3, DIR, mod
   return(modelstring)
   
 }
-

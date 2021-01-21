@@ -62,7 +62,7 @@ model {
   shape ~ dexp(0.0001) 
   sigma.l2 <- sqrt(3.142^2/(6*exp(2*log(shape))))
   
-  tau.l3 ~ dscaled.gamma(25, 1) 
+  tau.l3 ~ dscaled.gamma(25, 1)
   sigma.l3 <- 1/sqrt(tau.l3)
   
 }

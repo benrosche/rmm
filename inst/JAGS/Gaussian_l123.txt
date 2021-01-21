@@ -61,7 +61,7 @@ model {
   tau.l2 ~ dscaled.gamma(25, 1)
   sigma.l2 <- 1/sqrt(tau.l2)
   
-  tau.l3 ~ dscaled.gamma(25, 1) 
+  tau.l3 ~ dscaled.gamma(25, 1)
   sigma.l3 <- 1/sqrt(tau.l3)
   
 }

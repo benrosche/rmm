@@ -73,11 +73,11 @@ createData <- function(data, ids, vars, l3, transform) {
         data %>% 
         dplyr::rename(l3name=!!l3name) %>%
         dplyr::select(l3id, l3name) %>%
-        group_by(l3id) %>%
-        filter(row_number()==1) %>%
-        ungroup() %>%
-        mutate(rn = row_number(), val = 1) %>%
-        pivot_wider(names_from = l3id, names_prefix="l3id", values_from = val, values_fill = list(val = 0)) %>%
+        dplyr::group_by(l3id) %>%
+        dplyr::filter(row_number()==1) %>%
+        dplyr::ungroup() %>%
+        dplyr::mutate(rn = row_number(), val = 1) %>%
+        tidyr::pivot_wider(names_from = l3id, names_prefix="l3id", values_from = val, values_fill = list(val = 0)) %>%
         dplyr::rename(l3id=rn) 
       
       l3vars <- paste0("l3id", 2:dim(level3)[1]) # leave out first country

@@ -1,17 +1,18 @@
-rm(list=ls())
-
 library(dplyr)
 library(haven)
 library(labelled)
 library(MASS)
 library(lqmm)
 library(rmm)
+library(Hmisc)
+
+DIR <- "C:/Users/benja/OneDrive - Cornell University/GitHub/govsurvival"
 
 # ================================================================================================ #
 # Function to create Weibull data
 # ================================================================================================ #
 
-simWeib <- function(N, lambda, rho, LP, rateC) {
+crWeib <- function(N, lambda, rho, LP, rateC) {
     
     # Bender et al 2005: Generating survival times to simulate Cox proportional hazards models
     # https://onlinelibrary.wiley.com/doi/abs/10.1002/sim.2059
@@ -42,7 +43,9 @@ simWeib <- function(N, lambda, rho, LP, rateC) {
 # Function to create data
 # ================================================================================================ #
 
-crDat <- function(party=3, gov=c(1,3), country=3, weight=c(0,0,0), Sigma=matrix(c(1,0,0, 0,1,0, 0,0,1),3,3), level=1, transform=FALSE, seed=NULL) {
+crDat <- function(party=3, gov=c(1,3), country=3, weight=c(0,0,0), Sigma=matrix(c(1,0,0, 0,1,0, 0,0,1),3,3), level=1, missing=FALSE, transform=FALSE, seed=NULL) {
+  
+  # party=3; gov=c(1,3); country=3; weight=c(0,0,0); Sigma=matrix(c(1,0,0, 0,1,0, 0,0,1),3,3); level=1; transform=FALSE; missing=T; seed=NULL
   
   if(!level %in% c(1,2)) stop("Level can only be 1 or 2")
   
@@ -64,9 +67,9 @@ crDat <- function(party=3, gov=c(1,3), country=3, weight=c(0,0,0), Sigma=matrix(
   if(!is.null(seed)) set.seed(seed)
   
   # Load data 
-  dat.party   <- read_dta("C:/Users/benja/OneDrive - Cornell University/GitHub/govsurvival/data/Rosche2017-party.dta")
-  dat.gov     <- read_dta("C:/Users/benja/OneDrive - Cornell University/GitHub/govsurvival/data/Rosche2017-government.dta")
-  dat.country <- read_dta("C:/Users/benja/OneDrive - Cornell University/GitHub/govsurvival/data/Rosche2017-country.dta")
+  dat.party   <- read_dta(paste0(DIR, "./data/Rosche2017-party.dta"))
+  dat.gov     <- read_dta(paste0(DIR, "./data/Rosche2017-government.dta"))
+  dat.country <- read_dta(paste0(DIR, "./data/Rosche2017-country.dta"))
   
   # Variable selection
   dat <- 
@@ -86,9 +89,9 @@ crDat <- function(party=3, gov=c(1,3), country=3, weight=c(0,0,0), Sigma=matrix(
     message("Sigma changed")
   }
   
-  re.party   <<- mvrnorm(n = length(unique(dat %>% .$pid)), mu=c(0,0,0), Sigma)[,1]
-  re.gov     <<- mvrnorm(n = length(unique(dat %>% .$gid)), mu=c(0,0,0), Sigma)[,2]
-  re.country <<- mvrnorm(n = length(unique(dat %>% .$cid)), mu=c(0,0,0), Sigma)[,3]
+  re.party   <- mvrnorm(n = length(unique(dat %>% .$pid)), mu=c(0,0,0), Sigma^2)[,1]
+  re.gov     <- mvrnorm(n = length(unique(dat %>% .$gid)), mu=c(0,0,0), Sigma^2)[,2]
+  re.country <- mvrnorm(n = length(unique(dat %>% .$cid)), mu=c(0,0,0), Sigma^2)[,3]
   
   # Add RE
   dat <- 
@@ -100,7 +103,7 @@ crDat <- function(party=3, gov=c(1,3), country=3, weight=c(0,0,0), Sigma=matrix(
   
   # Create Y ------------------------------------------------------------------------------------- #
   
-  # Create LP
+  # Create linear predictor
   crLP <- 
     dat %>%
     dplyr::inner_join(dat.gov %>% 
@@ -113,35 +116,67 @@ crDat <- function(party=3, gov=c(1,3), country=3, weight=c(0,0,0), Sigma=matrix(
     dplyr::ungroup() %>%
     dplyr::mutate(LP=(gov[1]+gov[2]*majority+re.gov) + (aggpartyeffect) + (country*investiture+re.country)) %>%
     dplyr::select(-partyeffect, -aggpartyeffect, -re.party, -re.gov, -re.country) %>%
-    dplyr::rename(sim_w=w)
+    dplyr::rename(sim.w=w)
   
-  # Create DVs
-  crY <-
+  # Create outcomes
+  finalDat <-
     crLP %>%
-    dplyr::mutate(sim_y=LP) %>%
-    cbind(simWeib(N=dim(crLP)[1], lambda=0.01, rho=1, LP=crLP %>% .$LP, rateC=0.001)) %>% 
-    dplyr::rename(sim_st=survtime, sim_e=event) %>%
+    dplyr::mutate(sim.y=LP) %>%
+    cbind(crWeib(N=dim(crLP)[1], lambda=0.01, rho=1, LP=crLP %>% .$LP, rateC=0.001)) %>% 
+    dplyr::rename(sim.st=survtime, sim.e=event) %>%
     dplyr::select(-LP, -ng)
 
+  # Labels and vars that depend on missing==T and level==2
   pidl <- "Unique party ID"
+  fdepl <- "Financial dependency"
   simwl <- "Simulated weights"
+  partyvars <- c("ipd", "fdep", "pseatrel")
+  
+  # Induce missingness 
+  if(missing==TRUE) {
+    
+    # Induce missingness based on ipd: the higher ipd, the more likely fdep is observed.
+    ipd_dist <- finalDat %>% .$ipd
+    is_observed <- as.logical(rbinom(dim(finalDat)[1],1, sapply(finalDat %>% .$ipd, function(x) { sum(ipd_dist<=x)/length(ipd_dist) })))
+    
+    crMissing <-
+      finalDat %>% 
+      dplyr::mutate(fdep.mi=case_when(is_observed==TRUE ~ fdep,
+                                      TRUE ~ NA_real_)) %>%
+      dplyr::mutate(fdep.imp=fdep.mi) %>%
+      dplyr::relocate(c(fdep.mi, fdep.imp), .after = fdep)
+    
+    # Impute values again with Hmisc: aregImpute
+    imputed <- aregImpute(fdep.mi~ipd, n.impute = 1, type = "pmm", data = crMissing)$imputed$fdep.mi
+    crMissing$fdep.imp[which(is.na(crMissing$fdep.im))] <- as.vector(imputed)
+     
+    # MICE: Impute fdep.mi and save in fdep.imp
+    # imputed_mice <- complete(mice(data=crY %>% dplyr::select(gid, pid, ipd, fdep.mi), m = 1, defaultMethod = "pmm"))
+    # crY$fdep.imp <- imputed_mice$fdep.mi
+    
+    finalDat <- crMissing
+
+    # Add labels and vars
+    fdepl <- append(fdepl, c("fdep with missing values", "fdep, missing values imputed"))
+    partyvars <- append(partyvars, c("fdep.mi", "fdep.imp"))
+  }
   
   # Aggregate to second level 
   if(level==2) {
-    crY <- 
-      crY %>%
+    finalDat <- 
+      finalDat %>%
       dplyr::group_by(gid) %>%
-      dplyr::mutate(ipd=mean(ipd), fdep=mean(fdep)) %>%
+      dplyr::mutate(across(!!partyvars, ~mean(.x, na.rm = TRUE))) %>%
       dplyr::filter(row_number()==1) %>%
       dplyr::ungroup() %>%
-      dplyr::select(-pid, -sim_w)
-    pidl <- c()
+      dplyr::select(-pid, -sim.w) 
+    pidl  <- c()
     simwl <- c()
   }
   
-  var_label(crY) <- c(pidl, "Unique government ID", "Unique country ID", "Country name", "Government start date", "Government end date", "# government parties", "Prime minister party", "Intra-party democracy", "Financial dependency", "Party's relative seat share within coalition", "Majority government", "Minimal winning coalition", "SD(rile) of goverment / SD(rile) of parliament", "Investiture vote", "Prime ministerial powers", "Discretionary early termination ", "Government duration", simwl, "Simulated linear outcome", "Simulated survival time", "Simulated event status")
+  var_label(finalDat) <- c(pidl, "Unique government ID", "Unique country ID", "Country name", "Government start date", "Government end date", "# government parties", "Prime minister party", "Intra-party democracy", fdepl, "Party's relative seat share within coalition", "Majority government", "Minimal winning coalition", "SD(rile) of goverment / SD(rile) of parliament", "Investiture vote", "Prime ministerial powers", "Discretionary early termination ", "Government duration", simwl, "Simulated linear outcome", "Simulated survival time", "Simulated event status")
   
-  return(crY)
+  return(finalDat)
   
 }
 
@@ -149,5 +184,5 @@ crDat <- function(party=3, gov=c(1,3), country=3, weight=c(0,0,0), Sigma=matrix(
 # Save data for rmm() package
 # ================================================================================================ #
 
-# coalgov <- crDat(party=3, gov=c(1,3), country=3, weight=c(0,0,0), Sigma=matrix(c(1,0,0, 0,1,0, 0,0,1),3,3), level=1, seed=1)
+# coalgov <- crDat(party=3, gov=c(0,3), country=3, weight=c(0,0,0), Sigma=matrix(c(1,0,0, 0,1,0, 0,0,1),3,3), level=1, seed=1)
 # save(coalgov, file="data/coalgov.RData")

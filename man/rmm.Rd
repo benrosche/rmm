@@ -8,11 +8,13 @@ rmm(
   formula,
   family = "Gaussian",
   priors = NULL,
+  inits = NULL,
   iter = 1000,
   burnin = 100,
   chains = 3,
   seed = NULL,
   run = T,
+  parallel = F,
   monitor = F,
   hdi = 0.95,
   r = 3,
@@ -27,6 +29,8 @@ rmm(
 \item{family}{Character vector. Currently supported are "Gaussian", "Logit", "Condlogit", "Weibull", or "Cox".}
 
 \item{priors}{A list with parameter or variable names as tags and their prior specification as values. More details below.}
+
+\item{inits}{A list with parameter as tags and their initial values as values. This list will be used in all chains. If NULL, JAGS and rmm select appropriate inits.}
 
 \item{iter}{Total number of iterations.}
 

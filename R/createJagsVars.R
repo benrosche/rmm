@@ -2,7 +2,7 @@
 # Function createJagsVars
 # ================================================================================================ #
 
-createJagsVars <- function(family, data, level1, level2, level3, ids, vars, mm, l3, monitor, modelfile, seed) {
+createJagsVars <- function(family, data, level1, level2, level3, ids, vars, mm, l3, monitor, modelfile, seed, chains, inits) {
    
   # Unpack lists --------------------------------------------------------------------------------- #
   
@@ -50,14 +50,14 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, mm, 
   
   # Ns ------------------------------------------------------------------------------------------- #
   
-  n.l1 <- length(l1id)
+  n.l1  <- length(l1id)
   n.ul1 <- length(unique(l1id))
-  n.l2 <- length(l2id)
-  n.l3 <- length(unique(l3id))
+  n.l2  <- length(l2id)
+  n.l3  <- length(unique(l3id))
   n.Xl1 <- dim(X.l1)[2]
   n.Xl2 <- dim(X.l2)[2]
   n.Xl3 <- dim(X.l3)[2]
-  n.Xw <- dim(X.w)[2]
+  n.Xw  <- dim(X.w)[2]
   
   n.GPN  <- l1dat %>% group_by(l1id) %>% count() %>% .$n %>% as.numeric() %>% max() # max number of gov participations
   n.GPNi <- l1dat %>% arrange(l1id) %>% group_by(l1id) %>% count() %>% .$n %>% as.numeric() # number of gov partipations per party, sorted l1id=1,2,3,...
@@ -128,7 +128,7 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, mm, 
   
   # Level 3 -------------------------------------------------------------------------------------- #
   
-  l3.param <- if(hm & monitor==T) c("sigma.l3", "re.l3") else if(hm & monitor==F) c("sigma.l3") else c()
+  l3.param <- if(hm & l3type=="RE" & monitor==T) c("sigma.l3", "re.l3") else if(hm & l3type=="RE" & monitor==F) c("sigma.l3") else c()
   l3.data  <- if(hm) c("l3id", "n.l3") else c()
   if(!is.null(n.Xl3)) l3.data <- append(l3.data, c("X.l3", "n.Xl3"))
   if(!is.null(n.Xl3) & (l3type=="RE" | (l3type=="FE" & showFE==T))) l3.param <- append(l3.param, c("b.l3", "ppp.b.l3")) 
@@ -142,11 +142,9 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, mm, 
   jags.params <- c(l1.param, l2.param, l3.param, lw.param)
   jags.data   <- c(l1.data, l2.data, l3.data, lw.data)
   
-  # Initial values ------------------------------------------------------------------------------- #
+  # Seed ----------------------------------------------------------------------------------------- #
   
-  if(is.null(seed)) seed <- runif(1, 0, 1000)
-  # 2do: change so that inits responds to chains
-  # 2do: change so that adding inits is easier  and maybe also a parameter of rmm()
+  if(is.null(seed)) seed <- round(runif(1, 0, 1000))
   
   # ---------------------------------------------------------------------------------------------- #
   # Other model-specifics 
@@ -157,12 +155,10 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, mm, 
     # Dependent variable
     jags.data <- append(jags.data, "Y")
     
-    jags.inits <- list( 
-      list(".RNG.seed" = seed+1, tau.l1=1.5, tau.l2=0.5),
-      list(".RNG.seed" = seed+2, tau.l1=1.0, tau.l2=1.0),
-      list(".RNG.seed" = seed+3, tau.l1=0.5, tau.l2=1.5))
+    # Initial values
+    if(is.null(inits)) jags.inits <- list(".RNG.seed" = seed, tau.l1=1, tau.l2=1)
     
-    if(hm) jags.inits <- lapply(jags.inits, FUN=function(x) { append(x, list(tau.l3=1.0)) }) 
+    if(hm & l3type=="RE") jags.inits <- lapply(jags.inits, FUN=function(x) { append(x, list(tau.l3=1.0)) }) 
 
   } else if(family=="Weibull") {
     
@@ -174,10 +170,7 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, mm, 
     t.init[] <- NA
     t.init[censored==1] <- t.cen[censored==1] + 1 
     
-    jags.inits <- list( 
-      list(".RNG.seed" = seed+1, t=t.init, shape=1.3, tau.l1=0.5),
-      list(".RNG.seed" = seed+2, t=t.init, shape=1.1, tau.l1=1.0),
-      list(".RNG.seed" = seed+3, t=t.init, shape=0.9, tau.l1=1.5))
+    if(is.null(inits)) jags.inits <- list(".RNG.seed" = seed, t=t.init, shape=1.3, tau.l1=0.5)
     
   } else if(family=="Cox") {
     
@@ -185,12 +178,14 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, mm, 
     jags.data   <- append(jags.data, c("Y", "dN", "t.unique", "n.tu", "c", "d"))
     
     # Initial values
-    jags.inits <- list( 
-      list(".RNG.seed" = seed+1, dL0 = rep(1.0, n.tu), tau.l1=0.5),
-      list(".RNG.seed" = seed+2, dL0 = rep(1.0, n.tu), tau.l1=1.0),
-      list(".RNG.seed" = seed+3, dL0 = rep(1.0, n.tu), tau.l1=1.5))
+    if(is.null(inits)) jags.inits <- list(".RNG.seed" = seed, dL0 = rep(1.0, n.tu), tau.l1=0.5)
+
   }
   
+  # Repeat inits n.chains times
+  jags.inits <- lapply(1:chains, function(x) { jags.inits[".RNG.seed"] <- seed+x; jags.inits } )
+  
+  # Read model in if provided
   if(is.character(modelfile)) modelstring <- readr::read_file(modelfile) 
   
   # Collect return ------------------------------------------------------------------------------- #

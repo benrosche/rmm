@@ -48,4 +48,3 @@ model {
   sigma.l2 <- 1/sqrt(tau.l2)
   
 }
-

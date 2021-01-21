@@ -49,4 +49,3 @@ model {
   sigma.l2 <- sqrt(3.142^2/(6*exp(2*log(shape))))
   
 }
-
