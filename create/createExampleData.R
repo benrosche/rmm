@@ -184,5 +184,5 @@ crDat <- function(party=3, gov=c(1,3), country=3, weight=c(0,0,0), Sigma=matrix(
 # Save data for rmm() package
 # ================================================================================================ #
 
-# coalgov <- crDat(party=3, gov=c(0,3), country=3, weight=c(0,0,0), Sigma=matrix(c(1,0,0, 0,1,0, 0,0,1),3,3), level=1, seed=1)
+# coalgov <- crDat(party=3, gov=c(0,3), country=3, weight=c(1,1,1), Sigma=matrix(c(1,0,0, 0,1,0, 0,0,1),3,3), level=1, seed=1)
 # save(coalgov, file="data/coalgov.RData")
