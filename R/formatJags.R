@@ -2,7 +2,7 @@
 # Function formatJags
 # ================================================================================================ #
 
-formatJags <- function(jags.out, hdi, r, monitor, vars, Ns, mm, l3, level3) {
+formatJags <- function(jags.out, hdi, r, monitor, vars, Ns, l1, l3, level3) {
 
   # Unpack lists --------------------------------------------------------------------------------- #
 
@@ -11,17 +11,19 @@ formatJags <- function(jags.out, hdi, r, monitor, vars, Ns, mm, l3, level3) {
   l3vars <- level3$vars
   l3dat  <- level3$dat
   
+  hm <- l3$hm
   l3name <- l3$l3name
   l3type <- l3$l3type
+  
+  mm <- l1$mm
+  mmwar <- l1$mmwar
+  lwvars <- vars$lwvars
+  offsetvars <- vars$offsetvars
   
   n.ul1 <- Ns$n.ul1
   l1n  <- Ns$l1n
   n.l2 <- Ns$n.l2
   n.GPN <- Ns$n.GPN
-  
-  mmwar <- mm$mmwar
-  lwvars <- vars$lwvars
-  offsetvars <- vars$offsetvars
   
   # Create reg.table from JAGS output ------------------------------------------------------------ #
   
@@ -40,7 +42,7 @@ formatJags <- function(jags.out, hdi, r, monitor, vars, Ns, mm, l3, level3) {
   
   # Mean and 95% CI or Mode and HDI -------------------------------------------------------------- #
   
-  if(hdi != FALSE) {
+  if(!isFALSE(hdi)) {
     
     mcmc.out <- MCMCvis::MCMCchains(mcmcplots::as.mcmc.rjags(jags.out)) 
     
@@ -59,12 +61,13 @@ formatJags <- function(jags.out, hdi, r, monitor, vars, Ns, mm, l3, level3) {
   
   # Remove random effects, weights, and ppp from reg.table and save separately ------------------- #
   
-  if(monitor==T) {
+  if(monitor) {
     
-    # Level-1 RE
-    re.l1 <- reg.table %>% dplyr::filter(startsWith(name, "re.l1")) %>% dplyr::select(-sd, -lb, -ub) %>% dplyr::mutate(estimate = round(as.numeric(estimate), r))
+    # Level-1 RE #
+    
+    re.l1 <- if(mm) reg.table %>% dplyr::filter(startsWith(name, "re.l1")) %>% dplyr::select(-sd, -lb, -ub) %>% dplyr::mutate(estimate = round(as.numeric(estimate), r)) else c()
    
-    if(mmwar==T) { # AR == T
+    if(mm & mmwar) { # AR
       
       re.l1 <- 
         re.l1 %>%
@@ -88,25 +91,33 @@ formatJags <- function(jags.out, hdi, r, monitor, vars, Ns, mm, l3, level3) {
     
     reg.table <- reg.table %>% dplyr::filter(!startsWith(name, "re.l1["))
     
-    # Level-3 RE
-    re.l3 <- reg.table %>% dplyr::filter(startsWith(name, "re.l3")) %>% dplyr::mutate(estimate = round(as.numeric(estimate), r)) %>% .$estimate
+    # Level-3 RE #
+    
+    re.l3 <- if(hm) reg.table %>% dplyr::filter(startsWith(name, "re.l3")) %>% dplyr::mutate(estimate = round(as.numeric(estimate), r)) %>% .$estimate else c()
     reg.table <- reg.table %>% dplyr::filter(!startsWith(name, "re.l3[")) 
     
-    # Weights
-    w <- reg.table %>% dplyr::filter(startsWith(name, "w")) %>% dplyr::mutate(estimate = round(as.numeric(estimate), r)) %>% .$estimate
+    # Weights #
     
-    id1 <- cumsum(l1n)-l1n+1
-    id2 <- cumsum(l1n)
-    
-    wmat <- matrix(NA, nrow = n.l2, ncol = max(l1n))
-    rownames(wmat) <- paste0("L2 unit ", seq(1,n.l2))
-    colnames(wmat) <- paste0("W", seq(1,max(l1n)))
-    for(i in 1:n.l2) {
-      wmat[i,1:l1n[i]] <- w[id1[i]:id2[i]]
+    if(mm) {
+      
+      w <- reg.table %>% dplyr::filter(startsWith(name, "w")) %>% dplyr::mutate(estimate = round(as.numeric(estimate), r)) %>% .$estimate
+      
+      id1 <- cumsum(l1n)-l1n+1
+      id2 <- cumsum(l1n)
+      
+      wmat <- matrix(NA, nrow = n.l2, ncol = max(l1n))
+      rownames(wmat) <- paste0("L2 unit ", seq(1,n.l2))
+      colnames(wmat) <- paste0("W", seq(1,max(l1n)))
+      for(i in 1:n.l2) {
+        wmat[i,1:l1n[i]] <- w[id1[i]:id2[i]]
+      }
+      
+      w <- wmat
+      reg.table <- reg.table %>% dplyr::filter(!startsWith(name, "w")) 
+      
+    } else {
+      w <- c()
     }
-    
-    w <- wmat
-    reg.table <- reg.table %>% dplyr::filter(!startsWith(name, "w")) 
     
   }
   

@@ -2,7 +2,7 @@
 # Function createData
 # ================================================================================================ #
 
-createData <- function(data, ids, vars, l3, transform) {
+createData <- function(data, ids, vars, l1, l3, transform) {
   
   # Unpack lists --------------------------------------------------------------------------------- #
   
@@ -14,6 +14,8 @@ createData <- function(data, ids, vars, l3, transform) {
   l23vars <- vars$l23vars
   lwvars <- vars$lwvars
   offsetvars <- vars$offsetvars
+  
+  mm <- l1$mm
   
   hm <- l3$hm
   l3type <- l3$l3type
@@ -33,10 +35,12 @@ createData <- function(data, ids, vars, l3, transform) {
   
   # Rename and regroup ids and sort -------------------------------------------------------------- #
   
+  if(isFALSE(mm)) data <- data %>% dplyr::mutate(l1id = 1, l2id = 1)
+  if(isFALSE(hm)) data <- data %>% dplyr::mutate(l3id = 1)
+  
   data <-
     data %>% 
     dplyr::rename(l1id = !!l12ids[1], l2id = !!l12ids[2]) %>%
-    dplyr::mutate(one_vec = 1) %>% # must be here
     dplyr::mutate(l3id = !!rlang::sym(l3id)) %>% 
     dplyr::group_by(l1id) %>% dplyr::mutate(l1id = cur_group_id()) %>% dplyr::ungroup() %>%
     dplyr::group_by(l2id) %>% dplyr::mutate(l2id = cur_group_id()) %>% dplyr::ungroup() %>%
@@ -45,11 +49,20 @@ createData <- function(data, ids, vars, l3, transform) {
   
   # Level 1 -------------------------------------------------------------------------------------- #
   
-  level1 <-
-    data %>% 
-    dplyr::arrange(l2id, l1id) %>% # important
-    dplyr::select(l1id, l2id, !!l1vars) %>%
-    dplyr::mutate_at(l1vars, cen_std) # center continuous vars 
+  if(mm) {
+    
+    level1 <-
+      data %>% 
+      dplyr::arrange(l2id, l1id) %>% # important
+      dplyr::select(l1id, l2id, !!l1vars) %>%
+      dplyr::mutate_at(l1vars, cen_std) # center continuous vars 
+    
+  } else { # no l1
+    
+    l1vars <- c()
+    level1 <- NULL
+    
+  }
   
   # Level 3 -------------------------------------------------------------------------------------- #
   
@@ -67,7 +80,7 @@ createData <- function(data, ids, vars, l3, transform) {
     
     l2vars <- l23vars[!l23vars %in% l3vars] # must be at this position to be able to overwrite l3vars
     
-    if(l3type=="FE") { # FE
+    if(l3type=="FE") { 
       
       level3 <-
         data %>% 
@@ -83,6 +96,7 @@ createData <- function(data, ids, vars, l3, transform) {
       l3vars <- paste0("l3id", 2:dim(level3)[1]) # leave out first country
       
     } else { # RE
+      
       level3 <-
         data %>%
         dplyr::select(l3id, all_of(l3vars)) %>%
@@ -91,15 +105,20 @@ createData <- function(data, ids, vars, l3, transform) {
         dplyr::ungroup() %>%
         dplyr::arrange(l3id) %>% 
         dplyr::mutate_at(l3vars, cen_std) 
+      
     }
     
-  } else {
+  } else { # no l3
+    
     l2vars <- l23vars
     l3vars <- c()
     level3 <- NULL
+    
   }
   
   # Level 2 -------------------------------------------------------------------------------------- #
+  
+  if(isFALSE(mm)) data <- data %>% dplyr::mutate(l2id = row_number())
   
   level2 <- 
     data %>% 

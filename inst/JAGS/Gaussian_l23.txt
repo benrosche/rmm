@@ -1,0 +1,44 @@
+model {
+  
+  # Likelihood
+  for(j in 1:n.l2) {
+    
+    # Linear regression
+    Y[j] ~ dnorm(mu[j], tau.l2)
+    
+    # mu = aggregated(l1) + l2 + l3
+    mu[j] <- l2[j] + l3[l3id[j]]
+    
+    # Level 2: systematic component
+    l2[j] <- inprod(X.l2[j,], b.l2)
+  }
+  
+  # Level 3: systematic + random component
+  for (k in 1:n.l3) {
+    l3[k] <- inprod(X.l3[k,], b.l3) + re.l3[k] 
+  }
+  
+  # Distribution of random effects
+  for (k in 1:n.l3) {
+    re.l3[k] ~ dnorm(0, tau.l3)
+  }
+  
+  # Priors regression coefficients, posterior predictive p-values 
+  for(x in 1:n.Xl2) {
+    b.l2[x] ~ dnorm(0,0.0001)
+    ppp.b.l2[x] <- step(b.l2[x])
+  }
+  
+  for(x in 1:n.Xl3) {
+    b.l3[x] ~ dnorm(0,0.0001)
+    ppp.b.l3[x] <- step(b.l3[x])
+  }
+  
+  # Priors variance terms  
+  tau.l2 ~ dscaled.gamma(25, 1)
+  sigma.l2 <- 1/sqrt(tau.l2)
+  
+  tau.l3 ~ dscaled.gamma(25, 1)
+  sigma.l3 <- 1/sqrt(tau.l3)
+  
+}

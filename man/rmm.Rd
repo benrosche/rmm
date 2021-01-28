@@ -28,7 +28,7 @@ rmm(
 
 \item{family}{Character vector. Currently supported are "Gaussian", "Logit", "Condlogit", "Weibull", or "Cox".}
 
-\item{priors}{A list with parameter or variable names as tags and their prior specification as values. More details below.}
+\item{priors}{A list with parameter names as tags and their prior specification as values. More details below.}
 
 \item{inits}{A list with parameter as tags and their initial values as values. This list will be used in all chains. If NULL, JAGS and rmm select appropriate inits.}
 
@@ -134,6 +134,15 @@ An intercept at the main level 2 is added whether or not a \code{1} is specified
         If \code{showFE=TRUE} the fixed effects are reported, otherwise omitted (default).
 }
 
+\bold{More details on changing priors}
+
+Priors of the following parameters may be changed: \code{b.l1, b.l2, b.l3, b.w, tau.l1, tau.l2, tau.l3}. 
+The priors are specified as a list with parameter names as tags and their prior specification as values:
+\code{priors=list("b.l1"="dnorm(0,0.01)")}. In this example, the priors of all level-1 regression coefficients 
+are changed to a more informative prior that has a smaller variance than the default (dnorm(0,0.0001)). 
+I refer to the \href{https://sourceforge.net/projects/mcmc-jags/files/Manuals/4.x/jags_user_manual.pdf}{JAGS manual} 
+for more details on possible prior specifications. 
+
 \bold{More details on the weight function}
 
 Add variables as \code{offset(X)} to not estimate their effect (but assume Beta=1). 
@@ -156,8 +165,14 @@ Carefully designing the weight function so that it is properly bounded may there
 }
 \examples{
 data(coalgov)
-rmm(Surv(govdur, earlyterm) ~ 1 + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/offset(n), constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
-    family="Weibull", monitor=T, data=coalgov)
+m1 <- rmm(Surv(govdur, earlyterm) ~ 1 + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/offset(n), constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
+          family="Weibull", monitor=T, data=coalgov)
+m1$reg.table # the regression output
+m1$w         # the estimated weights
+m1$re.l1     # the level-1 random effects
+m1$re.l3     # the level-3 random effects
+jags.out <- m1$jags.out # the jags output
+monetPlot(m1, "b.l1") # monetPlot to inspect the posterior distribution of the model parameters
 
 }
 \references{

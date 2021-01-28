@@ -19,7 +19,10 @@ Depends:
     HDInterval,
     MCMCvis,
     mcmcplots,
-    zeallot
+    ggmcmc,
+    zeallot,
+    ggplot2,
+    cowplot
 URL: http://benrosche.net/rmm
 BugReports: https://github.com/benrosche/rmm/issues
 RoxygenNote: 7.1.1

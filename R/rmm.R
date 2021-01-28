@@ -78,6 +78,15 @@
 #'         If \code{showFE=TRUE} the fixed effects are reported, otherwise omitted (default).
 #' }
 #' 
+#' \bold{More details on changing priors}
+#' 
+#' Priors of the following parameters may be changed: \code{b.l1, b.l2, b.l3, b.w, tau.l1, tau.l2, tau.l3}. 
+#' The priors are specified as a list with parameter names as tags and their prior specification as values:
+#' \code{priors=list("b.l1"="dnorm(0,0.01)")}. In this example, the priors of all level-1 regression coefficients 
+#' are changed to a more informative prior that has a smaller variance than the default (dnorm(0,0.0001)). 
+#' I refer to the \href{https://sourceforge.net/projects/mcmc-jags/files/Manuals/4.x/jags_user_manual.pdf}{JAGS manual} 
+#' for more details on possible prior specifications. 
+#' 
 #' \bold{More details on the weight function}
 #' 
 #' Add variables as \code{offset(X)} to not estimate their effect (but assume Beta=1). 
@@ -99,7 +108,7 @@
 #' ...
 #' @param formula A symbolic description of the model in form of an R formula. More details below.
 #' @param family Character vector. Currently supported are "Gaussian", "Logit", "Condlogit", "Weibull", or "Cox".
-#' @param priors A list with parameter or variable names as tags and their prior specification as values. More details below.
+#' @param priors A list with parameter names as tags and their prior specification as values. More details below.
 #' @param inits A list with parameter as tags and their initial values as values. This list will be used in all chains. If NULL, JAGS and rmm select appropriate inits.
 #' @param iter Total number of iterations.
 #' @param burnin Number of iterations that will be discarded .
@@ -116,8 +125,14 @@
 #' @return JAGS output. More details on the output ...
 #'
 #' @examples data(coalgov)
-#' rmm(Surv(govdur, earlyterm) ~ 1 + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/offset(n), constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
-#'     family="Weibull", monitor=T, data=coalgov)
+#' m1 <- rmm(Surv(govdur, earlyterm) ~ 1 + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/offset(n), constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
+#'           family="Weibull", monitor=T, data=coalgov)
+#' m1$reg.table # the regression output
+#' m1$w         # the estimated weights
+#' m1$re.l1     # the level-1 random effects
+#' m1$re.l3     # the level-3 random effects
+#' jags.out <- m1$jags.out # the jags output
+#' monetPlot(m1, "b.l1") # monetPlot to inspect the posterior distribution of the model parameters
 #'
 #' @export rmm
 #' @author Benjamin Rosche <benjamin.rosche@@gmail.com>
@@ -126,24 +141,27 @@
 
 rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, burnin=100, chains=3, seed=NULL, run=T, parallel=F, monitor=F, hdi=0.95, r=3, transform="center", modelfile=F, data=NULL) {
 
-  # formula = sim.y ~ 1 + mwc + investiture + hetero + mm(id(pid, gid), mmc(ipd+fdep), mmw(w ~ 1/offset(n), ar=T)) + hm(id=cid, type=FE, showFE=T); family = "Gaussian"; priors=NULL; iter=1000; burnin=100; chains = 3; seed = NULL; run = T; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
+  # formula = sim.y ~ 1 + mwc + investiture + hetero + mm(id(pid, gid), mmc(ipd+fdep), mmw(w ~ 1/offset(n), ar=T)) + hm(id=cid, type=FE, showFE=T); family = "Gaussian"; priors=NULL; inits=NULL; iter=1000; burnin=100; chains = 3; seed = NULL; run = T; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
+  # formula = sim.y ~ 1 + mwc; family = "Gaussian"; priors=list("b.l1"="test", "b.l2"="test2"); inits=NULL; iter=1000; burnin=100; chains = 3; seed = NULL; run = T; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
   # source("./R/dissectFormula.R"); source("./R/createData.R"); source("./R/editModelstring.R"); source("./R/createJagsVars.R"); source("./R/formatJags.R"); 
   
   if(is.null(data)) stop("No data supplied.")
-  if(chains==1 & hdi==T) stop("If hdi==T, chains>1 must to be specified.")
+  if(chains==1 & !isFALSE(hdi)) stop("To give HDI estimates, chains>1 must to be specified.")
+  if(isTRUE(hdi)) hdi <- 0.95 # if TRUE specified by mistake hdi=0.95 is assumed.
+  
   DIR <- system.file(package = "rmm")
   
   # ---------------------------------------------------------------------------------------------- #
   # 1. Dissect formula 
   # ---------------------------------------------------------------------------------------------- #
   
-  c(ids, vars, l3, mm) %<-%  dissectFormula(formula, family, data)
+  c(ids, vars, l1, l3) %<-%  dissectFormula(formula, family, data)
   
   # ---------------------------------------------------------------------------------------------- #
   # 2. Disentangle vars and data into l1-3
   # ---------------------------------------------------------------------------------------------- #
   
-  c(data, level1, level2, level3) %<-% createData(data, ids, vars, l3, transform)
+  c(data, level1, level2, level3) %<-% createData(data, ids, vars, l1, l3, transform)
   
   # Add to varlist
   vars$l2vars <- level2$vars
@@ -153,13 +171,13 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, 
   # 3. Edit modelstring 
   # ---------------------------------------------------------------------------------------------- #
   
-  modelstring <- editModelstring(family, priors, mm, l3, level1, level2, level3, DIR, modelfile)
+  modelstring <- editModelstring(family, priors, l1, l3, level1, level2, level3, DIR, modelfile)
 
   # ---------------------------------------------------------------------------------------------- #
   # 4. Transform data into JAGS format
   # ---------------------------------------------------------------------------------------------- #
   
-  c(ids, Ns, Xs, Ys, jags.params, jags.inits, jags.data) %<-% createJagsVars(family, data, level1, level2, level3, ids, vars, mm, l3, monitor, modelfile, seed, chains, inits)
+  c(ids, Ns, Xs, Ys, jags.params, jags.inits, jags.data) %<-% createJagsVars(family, data, level1, level2, level3, ids, vars, l1, l3, monitor, modelfile, seed, chains, inits)
   
   list2env(c(ids, Ns, Xs, Ys), envir=environment())
   
@@ -171,6 +189,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, 
     
     # Parallel computing?
     if(parallel) {
+      
       readr::write_file(modelstring, paste0(DIR, "/temp/jags-parallel.txt"))
       jags.out <- do.call(jags.parallel, list(data=jags.data, inits = jags.inits[1], n.chains = chains, parameters.to.save = jags.params, n.iter = iter, n.burnin = burnin, model.file = paste0(DIR, "/temp/jags-parallel.txt")))
       file.remove(paste0(DIR, "/temp/jags-parallel.txt"))
@@ -178,13 +197,16 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, 
       # - It cannot read the model from textConnection(modelstring)
       # - It cannot read variables from the global environment - do.call needs to be used 
       # - There seems to be a bug in that it wants just one list element of inits instead of n.chains number of list elements
+      
     } else {
+      
       jags.out <- jags(data=jags.data, inits = jags.inits, n.chains = chains, parameters.to.save = jags.params, n.iter = iter, n.burnin = burnin, model.file = textConnection(modelstring)) 
+      
     }
      
-    c(reg.table, w, re.l1, re.l3) %<-% formatJags(jags.out, hdi, r, monitor, vars, Ns, mm, l3, level3)
+    c(reg.table, w, re.l1, re.l3) %<-% formatJags(jags.out, hdi, r, monitor, vars, Ns, l1, l3, level3) 
     
-    if(monitor==F) jags.out <- c()
+    if(isFALSE(monitor)) jags.out <- c()
     
     return(list("reg.table"=reg.table, "w"=w, "re.l1"=re.l1, "re.l3"=re.l3, "jags.out"=jags.out))
     

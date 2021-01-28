@@ -1,0 +1,27 @@
+model {
+  
+  # Likelihood
+  for(j in 1:n.l2) {
+    
+    # Weibull regression
+    censored[j] ~ dinterval(t[j], t.cen[j])  
+    t[j] ~ dweib(shape, lambda[j]) # shape, scale
+    
+    # log(lambda) = aggregated(l1) + l2
+    log(lambda[j]) <- l2[j] 
+    
+    # Level 2: systematic component
+    l2[j] <- inprod(X.l2[j,], b.l2)
+  }
+  
+  # Priors regression coefficients, posterior predictive p-values
+  for(x in 1:n.Xl2) {
+    b.l2[x] ~ dnorm(0,0.0001)
+    ppp.b.l2[x] <- step(b.l2[x])
+  }
+  
+  # Priors variance terms
+  shape ~ dexp(0.0001) 
+  sigma.l2 <- sqrt(3.142^2/(6*exp(2*log(shape))))
+  
+}

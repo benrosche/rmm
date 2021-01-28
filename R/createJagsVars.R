@@ -2,16 +2,22 @@
 # Function createJagsVars
 # ================================================================================================ #
 
-createJagsVars <- function(family, data, level1, level2, level3, ids, vars, mm, l3, monitor, modelfile, seed, chains, inits) {
+createJagsVars <- function(family, data, level1, level2, level3, ids, vars, l1, l3, monitor, modelfile, seed, chains, inits) {
    
   # Unpack lists --------------------------------------------------------------------------------- #
   
   lhs <- vars$lhs
   
-  mmwconstraint <- mm$mmwconstraint
-  mmwar <- mm$mmwar
+  mm <- l1$mm
+  mmwconstraint <- l1$mmwconstraint
+  mmwar <- l1$mmwar
   lwvars <- vars$lwvars
   offsetvars <- vars$offsetvars
+  
+  hm <- l3$hm
+  l3name <- l3$l3name
+  l3type <- l3$l3type
+  showFE <- l3$showFE
   
   l1vars <- level1$vars
   l1dat  <- level1$dat
@@ -22,24 +28,19 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, mm, 
   l3vars <- level3$vars
   l3dat  <- level3$dat
   
-  hm <- l3$hm
-  l3name <- l3$l3name
-  l3type <- l3$l3type
-  showFE <- l3$showFE
-  
   # IDs ------------------------------------------------------------------------------------------ #
   
-  l1id <- l1dat %>% .$l1id # length = rows @ level1, must be sorted by l2id
+  l1id <- if(mm) l1dat %>% .$l1id else c() # length = rows @ level1, must be sorted by l2id
   l2id <- l2dat %>% .$l2id # length = rows @ level2
   l3id <- if(hm) data %>% dplyr::group_by(l2id) %>% dplyr::filter(row_number()==1) %>% .$l3id else c() # length = rows @ level2
   
-  l1n <- l2dat %>% .$l1n # number of l1-members per l2-unit
+  l1n <- if(mm) l2dat %>% .$l1n else c() # number of l1-members per l2-unit
   
-  l1i1 <- l2dat %>% .$l1i1 # first index of l1-members per l2-unit (@ level2)
-  l1i1.l1 <- rep(l1i1, l1n) # first index of l1-members per l2-unit (@ level1)
+  l1i1 <- if(mm) l2dat %>% .$l1i1 else c() # first index of l1-members per l2-unit (@ level2)
+  l1i1.l1 <- if(mm) rep(l1i1, l1n) else c() # first index of l1-members per l2-unit (@ level1)
   
-  l1i2 <- l2dat %>% .$l1i2 # last index of l1-members per l2-unit (@ level2)
-  l1i2.l1 <- rep(l1i2, l1n) # last index of l1-members per l2-unit (@ level1)
+  l1i2 <- if(mm) l2dat %>% .$l1i2 else c() # last index of l1-members per l2-unit (@ level2)
+  l1i2.l1 <- if(mm) rep(l1i2, l1n) else c() # last index of l1-members per l2-unit (@ level1)
   
   # Xs ------------------------------------------------------------------------------------------- #
   
@@ -59,9 +60,9 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, mm, 
   n.Xl3 <- dim(X.l3)[2]
   n.Xw  <- dim(X.w)[2]
   
-  n.GPN  <- l1dat %>% group_by(l1id) %>% count() %>% .$n %>% as.numeric() %>% max() # max number of gov participations
-  n.GPNi <- l1dat %>% arrange(l1id) %>% group_by(l1id) %>% count() %>% .$n %>% as.numeric() # number of gov partipations per party, sorted l1id=1,2,3,...
-  n.GPn  <- l1dat %>% group_by(l1id) %>% dplyr::mutate(n=row_number()) %>% .$n %>% as.numeric() # participation index, sorted l1id=2,6,2,...
+  n.GPN  <- if(mm) l1dat %>% group_by(l1id) %>% count() %>% .$n %>% as.numeric() %>% max() else c() # max number of gov participations
+  n.GPNi <- if(mm) l1dat %>% arrange(l1id) %>% group_by(l1id) %>% count() %>% .$n %>% as.numeric() else c() # number of gov partipations per party, sorted l1id=1,2,3,...
+  n.GPn  <- if(mm) l1dat %>% group_by(l1id) %>% dplyr::mutate(n=row_number()) %>% .$n %>% as.numeric() else c() # participation index, sorted l1id=2,6,2,...
   
   # ---------------------------------------------------------------------------------------------- #
   # Model-specific outcomes
@@ -115,10 +116,12 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, mm, 
   
   # Level 1 -------------------------------------------------------------------------------------- #
   
-  l1.param <- c("sigma.l1"); if(monitor==T) l1.param <- append(l1.param, c("re.l1")) 
-  l1.data  <- c("l1id", "l1i1", "l1i2", "n.l1", "n.ul1"); if(mmwar==T) l1.data <- append(l1.data, c("n.GPn", "n.GPNi"))
-
-  if(!is.null(n.Xl1)) { l1.data <- append(l1.data, c("X.l1", "n.Xl1")); l1.param <- append(l1.param, c("b.l1", "ppp.b.l1")) }
+  l1.param <- if(mm) c("sigma.l1") else c()
+  l1.data  <- if(mm) c("l1id", "l1i1", "l1i2", "n.l1", "n.ul1") else c()
+  
+  if(mm & monitor) l1.param <- append(l1.param, c("re.l1"))
+  if(mm & mmwar)   l1.data  <- append(l1.data, c("n.GPn", "n.GPNi"))
+  if(mm & !is.null(n.Xl1)) { l1.data <- append(l1.data, c("X.l1", "n.Xl1")); l1.param <- append(l1.param, c("b.l1", "ppp.b.l1")) }
   
   # Level 2 -------------------------------------------------------------------------------------- #
   
@@ -128,7 +131,7 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, mm, 
   
   # Level 3 -------------------------------------------------------------------------------------- #
   
-  l3.param <- if(hm & l3type=="RE" & monitor==T) c("sigma.l3", "re.l3") else if(hm & l3type=="RE" & monitor==F) c("sigma.l3") else c()
+  l3.param <- if(hm & l3type=="RE" & isTRUE(monitor)) c("sigma.l3", "re.l3") else if(hm & l3type=="RE" & isFALSE(monitor)) c("sigma.l3") else c()
   l3.data  <- if(hm) c("l3id", "n.l3") else c()
   if(!is.null(n.Xl3)) l3.data <- append(l3.data, c("X.l3", "n.Xl3"))
   if(!is.null(n.Xl3) & (l3type=="RE" | (l3type=="FE" & showFE==T))) l3.param <- append(l3.param, c("b.l3", "ppp.b.l3")) 
@@ -136,8 +139,10 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, mm, 
   # Weight function ------------------------------------------------------------------------------ #
   
   lw.param <- if(length(lwvars)>length(offsetvars) & monitor == T) c("b.w", "ppp.b.w", "w") else if(length(lwvars)>length(offsetvars) & monitor == F) c("b.w", "ppp.b.w") else if(length(lwvars)>0 & monitor==T) c("w") else c()
-  lw.data  <- c("X.w")
+  lw.data  <- if(mm) c("X.w") else c()
   if(mmwconstraint==1) lw.data <- append(lw.data, c("l1i1.l1", "l1i2.l1"))
+  
+  # Collect terms -------------------------------------------------------------------------------- #
   
   jags.params <- c(l1.param, l2.param, l3.param, lw.param)
   jags.data   <- c(l1.data, l2.data, l3.data, lw.data)
@@ -156,9 +161,10 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, mm, 
     jags.data <- append(jags.data, "Y")
     
     # Initial values
-    if(is.null(inits)) jags.inits <- list(".RNG.seed" = seed, tau.l1=1, tau.l2=1)
+    if(is.null(inits)) jags.inits <- list(".RNG.seed" = seed) # tau.l2=1
     
-    if(hm & l3type=="RE") jags.inits <- lapply(jags.inits, FUN=function(x) { append(x, list(tau.l3=1.0)) }) 
+    #if(mm) jags.inits <- append(jags.inits, list(tau.l1=1.0))
+    #if(hm & l3type=="RE") jags.inits <- append(jags.inits, list(tau.l3=1.0))
 
   } else if(family=="Weibull") {
     
@@ -170,7 +176,8 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, mm, 
     t.init[] <- NA
     t.init[censored==1] <- t.cen[censored==1] + 1 
     
-    if(is.null(inits)) jags.inits <- list(".RNG.seed" = seed, t=t.init, shape=1.3, tau.l1=0.5)
+    if(is.null(inits)) jags.inits <- list(".RNG.seed" = seed, t=t.init, shape=1) 
+    #if(mm) jags.inits <- append(jags.inits, list(tau.l1=1.0))
     
   } else if(family=="Cox") {
     
@@ -178,7 +185,8 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, mm, 
     jags.data   <- append(jags.data, c("Y", "dN", "t.unique", "n.tu", "c", "d"))
     
     # Initial values
-    if(is.null(inits)) jags.inits <- list(".RNG.seed" = seed, dL0 = rep(1.0, n.tu), tau.l1=0.5)
+    if(is.null(inits)) jags.inits <- list(".RNG.seed" = seed, dL0 = rep(1.0, n.tu)) 
+    #if(mm) jags.inits <- append(jags.inits, list(tau.l1=1.0))
 
   }
   
