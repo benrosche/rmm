@@ -76,16 +76,26 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, DIR,
   # Priors
   if(!is.null(priors)) {
     
-    # Change parameter names
-    params <- sapply(names(priors), function(x) { if(x %in% c("b.l1", "b.l2", "b.l3")) paste0(x, "[x] ~ ") else paste0(x, " ~ ")})
+    # Change parameters
+    priors <- append(priors, list("last"=0)) # otherwise sapply won't work if only b.w is specified
+    params <- unlist(sapply(names(priors), function(x) { 
+      if(x %in% c("b.l1", "b.l2", "b.l3")) {
+        paste0(x, "[x] ~ ") 
+      } else if(x %in% "b.w") {
+        paste0(sapply(mmwcoefstring, function(y) stringr::str_extract(y, "b.w\\[.\\]"), USE.NAMES = F), " ~ ")
+      } else { 
+        paste0(x, " ~ ")
+      }
+    }), use.names = T)
+    params <- head(params, -1)
+    # 2do find better solution
     
-    
+    # Change priors 
+    priors <- unlist(mapply(function(x, n) if(n == "b.w") rep(list(x), length(mmwcoefstring)) else list(x), priors, names(priors)), recursive=F)
+  
     # Change priors in modelstring
-    
     for(i in 1:length(params)) {
-      
-      modelstring <- stringr::str_replace(modelstring, fixed(params[i]), paste0(params[i],  priors[i], " # "))
-      
+      modelstring <- stringr::str_replace(modelstring, fixed(as.vector(params[i])), paste0(params[i],  priors[names(params[i])][[1]], " # "))
     }
   }
   

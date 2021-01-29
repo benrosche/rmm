@@ -141,8 +141,7 @@
 
 rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, burnin=100, chains=3, seed=NULL, run=T, parallel=F, monitor=F, hdi=0.95, r=3, transform="center", modelfile=F, data=NULL) {
 
-  # formula = sim.y ~ 1 + mwc + investiture + hetero + mm(id(pid, gid), mmc(ipd+fdep), mmw(w ~ 1/offset(n), ar=T)) + hm(id=cid, type=FE, showFE=T); family = "Gaussian"; priors=NULL; inits=NULL; iter=1000; burnin=100; chains = 3; seed = NULL; run = T; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
-  # formula = sim.y ~ 1 + mwc; family = "Gaussian"; priors=list("b.l1"="test", "b.l2"="test2"); inits=NULL; iter=1000; burnin=100; chains = 3; seed = NULL; run = T; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
+  # formula = sim.y ~ 1 + mwc + investiture + hetero + mm(id(pid, gid), mmc(ipd+fdep), mmw(w ~ 1/offset(n)^exp(-(hetero+pmpower)), ar=T)) + hm(id=cid, type=FE, showFE=T); family = "Gaussian"; priors = list("b.w"="dnorm(0,1)"); inits=NULL; iter=1000; burnin=100; chains = 3; seed = NULL; run = T; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
   # source("./R/dissectFormula.R"); source("./R/createData.R"); source("./R/editModelstring.R"); source("./R/createJagsVars.R"); source("./R/formatJags.R"); 
   
   if(is.null(data)) stop("No data supplied.")
