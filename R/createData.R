@@ -85,7 +85,7 @@ createData <- function(data, ids, vars, l1, l3, transform) {
       level3 <-
         data %>% 
         dplyr::rename(l3name=!!l3name) %>%
-        dplyr::select(l3id, l3name) %>%
+        dplyr::select(l3id, any_of("l3name")) %>%
         dplyr::group_by(l3id) %>%
         dplyr::filter(row_number()==1) %>%
         dplyr::ungroup() %>%

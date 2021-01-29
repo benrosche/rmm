@@ -2,7 +2,7 @@
 # Function editModelstring 
 # ================================================================================================ #
 
-editModelstring <- function(family, priors, l1, l3, level1, level2, level3, DIR, modelfile) {
+editModelstring <- function(family, priors, l1, l3, level1, level2, level3, DIR, monitor, modelfile) {
   
   # Unpack lists --------------------------------------------------------------------------------- #
   
@@ -34,6 +34,13 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, DIR,
   }
   
   modelstring <- win2unix(modelstring)
+  
+  # Add predicted values of the dependent variable?
+  if(monitor) {
+    if(family=="Gaussian") modelstring <- stringr::str_replace(modelstring, "(Y\\[j\\] \\~) (dnorm\\(mu\\[j\\], tau.l2\\))", "\\1 \\2\n    pred[j] ~ \\2")
+    if(family=="Weibull")  modelstring <- stringr::str_replace(modelstring, "(t\\[j\\] \\~) (dweib\\(shape, lambda\\[j\\]\\))", "\\1 \\2\n    pred[j] ~ \\2")
+    # Comment: predictions for the Cox model are not supported 
+  }
   
   # No covariates at level 1?
   if(mm & length(l1vars)==0) { 
@@ -77,7 +84,6 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, DIR,
   if(!is.null(priors)) {
     
     # Change parameters
-    priors <- append(priors, list("last"=0)) # otherwise sapply won't work if only b.w is specified
     params <- unlist(sapply(names(priors), function(x) { 
       if(x %in% c("b.l1", "b.l2", "b.l3")) {
         paste0(x, "[x] ~ ") 
@@ -86,12 +92,10 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, DIR,
       } else { 
         paste0(x, " ~ ")
       }
-    }), use.names = T)
-    params <- head(params, -1)
-    # 2do find better solution
+    }, simplify = F), use.names = T)
     
     # Change priors 
-    priors <- unlist(mapply(function(x, n) if(n == "b.w") rep(list(x), length(mmwcoefstring)) else list(x), priors, names(priors)), recursive=F)
+    priors <- unlist(mapply(function(x, n) if(n == "b.w") rep(list(x), length(mmwcoefstring)) else list(x), priors, names(priors), SIMPLIFY=F), recursive=F)
   
     # Change priors in modelstring
     for(i in 1:length(params)) {

@@ -125,7 +125,9 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, l1, 
   
   # Level 2 -------------------------------------------------------------------------------------- #
   
-  l2.param <- sigma.l2
+  pred <- if(monitor) "pred" else NULL # predicted values of the dependent variable
+  
+  l2.param <- c(pred, sigma.l2)
   l2.data  <- c("n.l2")
   if(!is.null(n.Xl2)) { l2.data <- append(l2.data, c("X.l2", "n.Xl2")); l2.param <- append(l2.param, c("b.l2", "ppp.b.l2")) }
   

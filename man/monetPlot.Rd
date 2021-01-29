@@ -16,7 +16,7 @@ monetPlot(rmm, parameter, lab = F, sav = F)
 \item{sav}{TRUE or FALSE (default). If \code{TRUE}, the graph is saved to the current working directory as .png}
 }
 \value{
-Returns a graph.
+Returns a plot.
 }
 \description{
 The function \strong{rmmmonetPlot} creates a density plot of the posterior 

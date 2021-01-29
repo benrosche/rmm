@@ -8,7 +8,7 @@
 #' @param lab String to describe the parameter on the graph's x-axis. Optional. If not specified, the internal parameter name is used.
 #' @param sav TRUE or FALSE (default). If \code{TRUE}, the graph is saved to the current working directory as .png
 #'
-#' @return Returns a graph.
+#' @return Returns a plot.
 #'
 #' @examples data(coalgov)
 #' m1 <- rmm(Surv(govdur, earlyterm) ~ 1 + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/offset(n), constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),

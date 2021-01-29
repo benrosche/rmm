@@ -53,7 +53,10 @@ rmm(
 \item{data}{Dataframe object. The dataset must have level 1 as unit of analysis. More details below.}
 }
 \value{
-JAGS output. More details on the output ...
+A list with 6 elements: reg.table, w, re.l1, re.l3, pred, jags.out. If monitor=F, only the 
+        regression table is returned. If monitor=T, the predicted weights, level-1 random effects (if specified in the model),
+        level-3 random effects (if specified in the model), and predicted values of the dependent variable are returned. 
+        The last element of the list is the unformatted Jags output.
 }
 \description{
 The \strong{rmm} package provides an interface to fit Bayesian multiple membership 
@@ -171,6 +174,7 @@ m1$reg.table # the regression output
 m1$w         # the estimated weights
 m1$re.l1     # the level-1 random effects
 m1$re.l3     # the level-3 random effects
+m1$pred      # predicted values of the dependent variable (survival time for family="Weibull")
 jags.out <- m1$jags.out # the jags output
 monetPlot(m1, "b.l1") # monetPlot to inspect the posterior distribution of the model parameters
 

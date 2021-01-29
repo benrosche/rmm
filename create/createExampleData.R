@@ -103,12 +103,14 @@ crDat <- function(party=3, gov=c(1,3), country=3, weight=c(0,0,0), Sigma=matrix(
   
   # Create Y ------------------------------------------------------------------------------------- #
   
-  # Create linear predictor
+  # Create linear predictor and variable selection at gov level
   crLP <- 
     dat %>%
     dplyr::inner_join(dat.gov %>% 
-                        dplyr::select(gid, cid, event_wkb, dur_wkb) %>% 
-                        dplyr::rename(earlyterm=event_wkb, govdur=dur_wkb), by=c("gid", "cid")) %>%
+                        dplyr::select(gid, cid, event_wkb, dur_wkb, maxdur_wkb) %>% 
+                        dplyr::rename(earlyterm=event_wkb, govdur=dur_wkb, govmaxdur=maxdur_wkb), by=c("gid", "cid")) %>%
+    dplyr::mutate(govmaxdur = case_when(govdur>govmaxdur ~ govdur,
+                                        TRUE ~ govmaxdur)) %>%
     dplyr::mutate(partyeffect=party*fdep+re.party) %>%
     dplyr::mutate(w=1/n^exp(-(weight[1]*pseatrel+weight[2]*hetero+weight[3]*pmpower)), ng=max(gid), w=w*ng/sum(w)) %>%
     dplyr::group_by(gid) %>%
@@ -174,7 +176,7 @@ crDat <- function(party=3, gov=c(1,3), country=3, weight=c(0,0,0), Sigma=matrix(
     simwl <- c()
   }
   
-  var_label(finalDat) <- c(pidl, "Unique government ID", "Unique country ID", "Country name", "Government start date", "Government end date", "# government parties", "Prime minister party", "Intra-party democracy", fdepl, "Party's relative seat share within coalition", "Majority government", "Minimal winning coalition", "SD(rile) of goverment / SD(rile) of parliament", "Investiture vote", "Prime ministerial powers", "Discretionary early termination ", "Government duration", simwl, "Simulated linear outcome", "Simulated survival time", "Simulated event status")
+  var_label(finalDat) <- c(pidl, "Unique government ID", "Unique country ID", "Country name", "Government start date", "Government end date", "# government parties", "Prime minister party", "Intra-party democracy", fdepl, "Party's relative seat share within coalition", "Majority government", "Minimal winning coalition", "SD(rile) of goverment / SD(rile) of parliament", "Investiture vote", "Prime ministerial powers", "Discretionary early termination ", "Government duration", "Maximum possible government duration", simwl, "Simulated linear outcome", "Simulated survival time", "Simulated event status")
   
   return(finalDat)
   

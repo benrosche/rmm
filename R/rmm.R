@@ -122,8 +122,10 @@
 #' @param modelfile Character vector or TRUE|False. If TRUE, the JAGS model is saved in rmm/temp/modelstring.txt. If a file path is supplied as string, rmm will just create the data structure and use the provided modelfile. 
 #' @param data Dataframe object. The dataset must have level 1 as unit of analysis. More details below.
 #'
-#' @return JAGS output. More details on the output ...
-#'
+#' @return A list with 6 elements: reg.table, w, re.l1, re.l3, pred, jags.out. If monitor=F, only the 
+#'         regression table is returned. If monitor=T, the predicted weights, level-1 random effects (if specified in the model),
+#'         level-3 random effects (if specified in the model), and predicted values of the dependent variable are returned. 
+#'         The last element of the list is the unformatted Jags output. 
 #' @examples data(coalgov)
 #' m1 <- rmm(Surv(govdur, earlyterm) ~ 1 + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/offset(n), constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
 #'           family="Weibull", monitor=T, data=coalgov)
@@ -131,6 +133,7 @@
 #' m1$w         # the estimated weights
 #' m1$re.l1     # the level-1 random effects
 #' m1$re.l3     # the level-3 random effects
+#' m1$pred      # predicted values of the dependent variable (survival time for family="Weibull")
 #' jags.out <- m1$jags.out # the jags output
 #' monetPlot(m1, "b.l1") # monetPlot to inspect the posterior distribution of the model parameters
 #'
@@ -170,7 +173,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, 
   # 3. Edit modelstring 
   # ---------------------------------------------------------------------------------------------- #
   
-  modelstring <- editModelstring(family, priors, l1, l3, level1, level2, level3, DIR, modelfile)
+  modelstring <- editModelstring(family, priors, l1, l3, level1, level2, level3, DIR, monitor, modelfile)
 
   # ---------------------------------------------------------------------------------------------- #
   # 4. Transform data into JAGS format
@@ -203,11 +206,11 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, 
       
     }
      
-    c(reg.table, w, re.l1, re.l3) %<-% formatJags(jags.out, hdi, r, monitor, vars, Ns, l1, l3, level3) 
+    c(reg.table, w, re.l1, re.l3, pred) %<-% formatJags(jags.out, hdi, r, monitor, vars, Ns, l1, l3, level3) 
     
     if(isFALSE(monitor)) jags.out <- c()
     
-    return(list("reg.table"=reg.table, "w"=w, "re.l1"=re.l1, "re.l3"=re.l3, "jags.out"=jags.out))
+    return(list("reg.table"=reg.table, "w"=w, "re.l1"=re.l1, "re.l3"=re.l3, "pred"=pred, "jags.out"=jags.out))
     
   } else {
     

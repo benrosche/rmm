@@ -5,7 +5,7 @@ model {
     
     # Weibull regression
     censored[j] ~ dinterval(t[j], t.cen[j])  
-    t[j] ~ dweib(shape, lambda[j]) # shape, scale
+    t[j] ~ dweib(shape, lambda[j])
     
     # log(lambda) = aggregated(l1) + l2 + l3
     log(lambda[j]) <- inprod(l1[l1i1[j]:l1i2[j]], w[l1i1[j]:l1i2[j]]) + l2[j] + l3[l3id[j]]

@@ -121,6 +121,10 @@ formatJags <- function(jags.out, hdi, r, monitor, vars, Ns, l1, l3, level3) {
     
   }
   
+  # Predicted values
+  pred <- reg.table %>% dplyr::filter(startsWith(name, "pred")) %>% dplyr::select(-sd, -lb, -ub) %>% dplyr::mutate(estimate = round(as.numeric(estimate), r)) %>% .$estimate
+  reg.table <- reg.table %>% dplyr::filter(!startsWith(name, "pred"))
+  
   # PPP values (add as separate column, must be after HDI) 
   reg.table <- 
     reg.table %>% 
@@ -148,6 +152,6 @@ formatJags <- function(jags.out, hdi, r, monitor, vars, Ns, l1, l3, level3) {
   
   # Return --------------------------------------------------------------------------------------- #
   
-  if(monitor==T) return(list("reg.table"=reg.table, "w"=w, "re.l1"=re.l1, "re.l3"=re.l3)) else return(list("reg.table"=reg.table, "w"=c(), "re.l1"=c(), "re.l3"=c()))
+  if(monitor==T) return(list("reg.table"=reg.table, "w"=w, "re.l1"=re.l1, "re.l3"=re.l3, "pred"=pred)) else return(list("reg.table"=reg.table, "w"=c(), "re.l1"=c(), "re.l3"=c(), "pred"=c()))
   
 }
