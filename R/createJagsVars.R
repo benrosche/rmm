@@ -163,15 +163,15 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, l1, 
     jags.data <- append(jags.data, "Y")
     
     # Initial values
-    if(is.null(inits)) jags.inits <- list(".RNG.seed" = seed) # tau.l2=1
-    
-    #if(mm) jags.inits <- append(jags.inits, list(tau.l1=1.0))
-    #if(hm & l3type=="RE") jags.inits <- append(jags.inits, list(tau.l3=1.0))
+    if(is.null(inits)) jags.inits <- list(".RNG.seed" = seed) 
 
   } else if(family=="Weibull") {
     
     # Dependent variable
     jags.data   <- append(jags.data, c("t", "t.cen", "censored"))
+    
+    # Additional parameters
+    jags.params <- append(jags.params, "shape")
     
     # Initial values
     t.init <- t
@@ -179,8 +179,7 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, l1, 
     t.init[censored==1] <- t.cen[censored==1] + 1 
     
     if(is.null(inits)) jags.inits <- list(".RNG.seed" = seed, t=t.init, shape=1) 
-    #if(mm) jags.inits <- append(jags.inits, list(tau.l1=1.0))
-    
+
   } else if(family=="Cox") {
     
     # Dependent variable
@@ -188,7 +187,7 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, l1, 
     
     # Initial values
     if(is.null(inits)) jags.inits <- list(".RNG.seed" = seed, dL0 = rep(1.0, n.tu)) 
-    #if(mm) jags.inits <- append(jags.inits, list(tau.l1=1.0))
+
 
   }
   

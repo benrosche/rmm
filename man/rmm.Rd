@@ -46,7 +46,7 @@ rmm(
 
 \item{r}{Numeric. Rounding value. Default is 3.}
 
-\item{transform}{Character vector or FALSE. Specifying \code{center} or \code{std} to center or standardize continuous predictors before estimation.}
+\item{transform}{Character vector or FALSE. Specifying \code{center} or \code{std} to center or standardize continuous predictors before estimation. Specifying \code{std2} will divide by two times the standard deviation, so that regression coefficients are comparable to those of binary predictors (Gelman 2008).}
 
 \item{modelfile}{Character vector or TRUE|False. If TRUE, the JAGS model is saved in rmm/temp/modelstring.txt. If a file path is supplied as string, rmm will just create the data structure and use the provided modelfile.}
 
@@ -134,7 +134,7 @@ An intercept at the main level 2 is added whether or not a \code{1} is specified
   \item \code{name=l3name} to specify value labels for level 3 units. 
   \item \code{type=RE} (default) or \code{type=FE} to choose between random- or fixed effect estimation. 
         If RE is chosen, level 3 predictors can be added. If FE is chosen, each level 3 unit has its own intercept and level 3 predictors are removed. 
-        If \code{showFE=TRUE} the fixed effects are reported, otherwise omitted (default).
+        If \code{showFE=TRUE} the fixed effects are reported, otherwise omitted (default). The first l3id is the base.
 }
 
 \bold{More details on changing priors}
@@ -142,7 +142,7 @@ An intercept at the main level 2 is added whether or not a \code{1} is specified
 Priors of the following parameters may be changed: \code{b.l1, b.l2, b.l3, b.w, tau.l1, tau.l2, tau.l3}. 
 The priors are specified as a list with parameter names as tags and their prior specification as values:
 \code{priors=list("b.l1"="dnorm(0,0.01)")}. In this example, the priors of all level-1 regression coefficients 
-are changed to a more informative prior that has a smaller variance than the default (dnorm(0,0.0001)). 
+are changed to a more informative prior that has a smaller variance than the default (\code{dnorm(0,0.0001)}). 
 I refer to the \href{https://sourceforge.net/projects/mcmc-jags/files/Manuals/4.x/jags_user_manual.pdf}{JAGS manual} 
 for more details on possible prior specifications. 
 
@@ -151,19 +151,19 @@ for more details on possible prior specifications.
 Add variables as \code{offset(X)} to not estimate their effect (but assume Beta=1). 
 The general weight function as proposed in Rosche (XXXX: XX) is implemented by \code{w ~ 1/offset(N)^exp(-(X.W))}
 
-\bold{More details on adding a third level}
-
-...
-
 \bold{More details on constructing the data}
 
 ...
 
-\bold{Common JAGS errors}
+\bold{Tips}
 
-\code{Error in update.jags(model, n.iter, ...) : Error in node w[1285] Invalid parent values} The weight function must be designed such that the distribution of weights is in 
+\itemize{
+\item \code{Error in update.jags(model, n.iter, ...) : Error in node w[1285] Invalid parent values} The weight function must be designed such that the distribution of weights is in 
 line with the priors for all other parameters. This error could, for instance, be caused if weights can be negative but negative weights cause the distribution of other parameters to be outside of the distribution of their priors.
 Carefully designing the weight function so that it is properly bounded may therefore help. Specifying \code{transform="std"} may help as well. 
+\item Including weight regressors demands a lot from your data It is therefore a good idea to start with slightly more informative priors. 
+I suggest starting with \code{priors = list("b.w"="dnorm(0,0.1)"} and then increasing the variance step by step.
+}
 ...
 }
 \examples{

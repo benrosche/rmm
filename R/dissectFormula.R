@@ -127,8 +127,7 @@ dissectFormula <- function(formula, family, data) {
     if(!l3id %in% names(data)) stop("'l3id' in 'hm()' could not be found in the dataset.")
     
     l3name  <- stringr::str_remove(stringr::str_extract(hmstring, "(?<=name\\=)(.*?)(?=[:punct:]?,|\\))"), "[:punct:]*") # level-3 names
-    if(!is.na(l3name) & !l3name %in% names(data)) stop("'l3name' in 'hm()' is specified but could not be found in the dataset.")
-    if(is.na(l3name)) l3name <- c()
+    if((!is.na(l3name) & !isFALSE(as.logical(l3name))) & !l3name %in% names(data)) stop("'l3name' in 'hm()' is specified but could not be found in the dataset.") else if(is.na(l3name) | isFALSE(as.logical(l3name))) l3name <- c()
     
     l3type  <- stringr::str_remove(stringr::str_extract(hmstring, "(?<=type\\=)(.*?)(?=[:punct:]?,|\\))"), "[:punct:]*") # FE|RE
     if(!is.na(l3type) & !l3type %in% c("RE","FE")) stop("'type' in 'hm()' must be either 'RE', 'FE', or left unspecified")

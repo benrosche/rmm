@@ -75,7 +75,7 @@
 #'   \item \code{name=l3name} to specify value labels for level 3 units. 
 #'   \item \code{type=RE} (default) or \code{type=FE} to choose between random- or fixed effect estimation. 
 #'         If RE is chosen, level 3 predictors can be added. If FE is chosen, each level 3 unit has its own intercept and level 3 predictors are removed. 
-#'         If \code{showFE=TRUE} the fixed effects are reported, otherwise omitted (default).
+#'         If \code{showFE=TRUE} the fixed effects are reported, otherwise omitted (default). The first l3id is the base.
 #' }
 #' 
 #' \bold{More details on changing priors}
@@ -83,7 +83,7 @@
 #' Priors of the following parameters may be changed: \code{b.l1, b.l2, b.l3, b.w, tau.l1, tau.l2, tau.l3}. 
 #' The priors are specified as a list with parameter names as tags and their prior specification as values:
 #' \code{priors=list("b.l1"="dnorm(0,0.01)")}. In this example, the priors of all level-1 regression coefficients 
-#' are changed to a more informative prior that has a smaller variance than the default (dnorm(0,0.0001)). 
+#' are changed to a more informative prior that has a smaller variance than the default (\code{dnorm(0,0.0001)}). 
 #' I refer to the \href{https://sourceforge.net/projects/mcmc-jags/files/Manuals/4.x/jags_user_manual.pdf}{JAGS manual} 
 #' for more details on possible prior specifications. 
 #' 
@@ -91,20 +91,20 @@
 #' 
 #' Add variables as \code{offset(X)} to not estimate their effect (but assume Beta=1). 
 #' The general weight function as proposed in Rosche (XXXX: XX) is implemented by \code{w ~ 1/offset(N)^exp(-(X.W))}
-#' 
-#' \bold{More details on adding a third level}
-#' 
-#' ...
 #'
 #' \bold{More details on constructing the data}
 #' 
 #' ...
 #' 
-#' \bold{Common JAGS errors}
+#' \bold{Tips}
 #' 
-#' \code{Error in update.jags(model, n.iter, ...) : Error in node w[1285] Invalid parent values} The weight function must be designed such that the distribution of weights is in 
+#' \itemize{
+#' \item \code{Error in update.jags(model, n.iter, ...) : Error in node w[1285] Invalid parent values} The weight function must be designed such that the distribution of weights is in 
 #' line with the priors for all other parameters. This error could, for instance, be caused if weights can be negative but negative weights cause the distribution of other parameters to be outside of the distribution of their priors.
 #' Carefully designing the weight function so that it is properly bounded may therefore help. Specifying \code{transform="std"} may help as well. 
+#' \item Including weight regressors demands a lot from your data It is therefore a good idea to start with slightly more informative priors. 
+#' I suggest starting with \code{priors = list("b.w"="dnorm(0,0.1)"} and then increasing the variance step by step.
+#' }
 #' ...
 #' @param formula A symbolic description of the model in form of an R formula. More details below.
 #' @param family Character vector. Currently supported are "Gaussian", "Logit", "Condlogit", "Weibull", or "Cox".
@@ -118,7 +118,7 @@
 #' @param monitor A logical value (True or False). If \code{True}, weights and random effects are monitored and saved in the global environment.
 #' @param hdi Numeric or False. If confidence level \code{x} is specified (default \code{x=0.95}), \code{mode} and \code{(x*100)%} HDI estimates are given. If \code{False} is specified, \code{mean} and \code{95% CI} are given.
 #' @param r Numeric. Rounding value. Default is 3.
-#' @param transform Character vector or FALSE. Specifying \code{center} or \code{std} to center or standardize continuous predictors before estimation.
+#' @param transform Character vector or FALSE. Specifying \code{center} or \code{std} to center or standardize continuous predictors before estimation. Specifying \code{std2} will divide by two times the standard deviation, so that regression coefficients are comparable to those of binary predictors (Gelman 2008). 
 #' @param modelfile Character vector or TRUE|False. If TRUE, the JAGS model is saved in rmm/temp/modelstring.txt. If a file path is supplied as string, rmm will just create the data structure and use the provided modelfile. 
 #' @param data Dataframe object. The dataset must have level 1 as unit of analysis. More details below.
 #'
@@ -144,7 +144,7 @@
 
 rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, burnin=100, chains=3, seed=NULL, run=T, parallel=F, monitor=F, hdi=0.95, r=3, transform="center", modelfile=F, data=NULL) {
 
-  # formula = sim.y ~ 1 + mwc + investiture + hetero + mm(id(pid, gid), mmc(ipd+fdep), mmw(w ~ 1/offset(n)^exp(-(hetero+pmpower)), ar=T)) + hm(id=cid, type=FE, showFE=T); family = "Gaussian"; priors = list("b.w"="dnorm(0,1)"); inits=NULL; iter=1000; burnin=100; chains = 3; seed = NULL; run = T; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
+  # formula = sim.y ~ 1 + mwc + investiture + hetero + mm(id(pid, gid), mmc(ipd+fdep), mmw(w ~ 1/offset(n)^exp(-(hetero+pmpower)), ar=T)) + hm(id=cid, type=FE, l3name=F, showFE=T); family = "Gaussian"; priors = list("b.w"="dnorm(0,1)"); inits=NULL; iter=1000; burnin=100; chains = 3; seed = NULL; run = T; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
   # source("./R/dissectFormula.R"); source("./R/createData.R"); source("./R/editModelstring.R"); source("./R/createJagsVars.R"); source("./R/formatJags.R"); 
   
   if(is.null(data)) stop("No data supplied.")

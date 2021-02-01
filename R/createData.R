@@ -23,12 +23,14 @@ createData <- function(data, ids, vars, l1, l3, transform) {
   
   # Center or Standardize ------------------------------------------------------------------------ #
   
-  cen_std <- function(x) { 
+  cen_std <- function(x, transform) { 
     if(transform=="center") {
       if(is.numeric(x) & dim(table(x))>2) x-mean(x) else x 
     } else if(transform=="std") {
       if(is.numeric(x) & dim(table(x))>2) (x-mean(x))/sqrt(var(x)) else x 
-    } else {
+    } else if(transform=="std2") {
+      if(is.numeric(x) & dim(table(x))>2) (x-mean(x))/(2*sqrt(var(x))) else x 
+      } else {
       x
     }
   }
@@ -55,7 +57,7 @@ createData <- function(data, ids, vars, l1, l3, transform) {
       data %>% 
       dplyr::arrange(l2id, l1id) %>% # important
       dplyr::select(l1id, l2id, !!l1vars) %>%
-      dplyr::mutate_at(l1vars, cen_std) # center continuous vars 
+      dplyr::mutate_at(l1vars, ~cen_std(., transform)) # center continuous vars 
     
   } else { # no l1
     
@@ -104,7 +106,7 @@ createData <- function(data, ids, vars, l1, l3, transform) {
         dplyr::summarise_all(.funs = first) %>%
         dplyr::ungroup() %>%
         dplyr::arrange(l3id) %>% 
-        dplyr::mutate_at(l3vars, cen_std) 
+        dplyr::mutate_at(l3vars, ~cen_std(., transform)) 
       
     }
     
@@ -133,7 +135,7 @@ createData <- function(data, ids, vars, l1, l3, transform) {
     dplyr::mutate(X0 = 1) %>%
     dplyr::select(l2id, l1i1, l1i2, l1n, !!lhs, !!l2vars) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate_at(l2vars, cen_std)
+    dplyr::mutate_at(l2vars, ~cen_std(., transform))
   
   # Collect return ------------------------------------------------------------------------------- #
   

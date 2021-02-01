@@ -27,8 +27,8 @@ monetPlot <- function(rmm, parameter, lab=F, sav=F) {
   
   # Retrieve mcmc list --------------------------------------------------------------------------- #
   
-  if(is.null(rmm[[5]])) stop("JAGS output could not be retrieved. monitor=T must be specified when running rmm.")
-  mcmclist <- mcmcplots::as.mcmc.rjags(rmm[[5]])
+  if(is.null(rmm$jags.out)) stop("JAGS output could not be retrieved. monitor=T must be specified when running rmm.")
+  mcmclist <- mcmcplots::as.mcmc.rjags(rmm$jags.out)
   
   # Mean across chains --------------------------------------------------------------------------- #
   
