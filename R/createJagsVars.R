@@ -2,7 +2,7 @@
 # Function createJagsVars
 # ================================================================================================ #
 
-createJagsVars <- function(family, data, level1, level2, level3, ids, vars, l1, l3, monitor, modelfile, seed, chains, inits) {
+createJagsVars <- function(family, data, level1, level2, level3, ids, vars, l1, l3, monitor, modelfile, chains, inits) {
    
   # Unpack lists --------------------------------------------------------------------------------- #
   
@@ -149,10 +149,6 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, l1, 
   jags.params <- c(l1.param, l2.param, l3.param, lw.param)
   jags.data   <- c(l1.data, l2.data, l3.data, lw.data)
   
-  # Seed ----------------------------------------------------------------------------------------- #
-  
-  if(is.null(seed)) seed <- round(runif(1, 0, 1000))
-  
   # ---------------------------------------------------------------------------------------------- #
   # Other model-specifics 
   # ---------------------------------------------------------------------------------------------- #
@@ -163,7 +159,7 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, l1, 
     jags.data <- append(jags.data, "Y")
     
     # Initial values
-    if(is.null(inits)) jags.inits <- list(".RNG.seed" = seed) 
+    jags.inits <- list() 
 
   } else if(family=="Weibull") {
     
@@ -178,7 +174,7 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, l1, 
     t.init[] <- NA
     t.init[censored==1] <- t.cen[censored==1] + 1 
     
-    if(is.null(inits)) jags.inits <- list(".RNG.seed" = seed, t=t.init, shape=1) 
+    jags.inits <- list(t=t.init, shape=1) 
 
   } else if(family=="Cox") {
     
@@ -186,15 +182,20 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, l1, 
     jags.data   <- append(jags.data, c("Y", "dN", "t.unique", "n.tu", "c", "d"))
     
     # Initial values
-    if(is.null(inits)) jags.inits <- list(".RNG.seed" = seed, dL0 = rep(1.0, n.tu)) 
-
+    jags.inits <- list(dL0 = rep(1.0, n.tu)) 
 
   }
   
-  # Repeat inits n.chains times
-  jags.inits <- lapply(1:chains, function(x) { jags.inits[".RNG.seed"] <- seed+x; jags.inits } )
+  # Initial values ------------------------------------------------------------------------------- #
   
-  # Read model in if provided
+  # Add user-defined inits
+  jags.inits <- append(jags.inits, inits)
+  
+  # Repeat inits n.chains times
+  jags.inits <- lapply(1:chains, function(x) { jags.inits } )
+  
+  # Read model in if provided -------------------------------------------------------------------- #
+  
   if(is.character(modelfile)) modelstring <- readr::read_file(modelfile) 
   
   # Collect return ------------------------------------------------------------------------------- #

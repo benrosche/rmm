@@ -87,7 +87,8 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, DIR,
     params <- unlist(sapply(names(priors), function(x) { 
       if(x %in% c("b.l1", "b.l2", "b.l3")) {
         paste0(x, "[x] ~ ") 
-      } else if(x %in% "b.w") {
+      } else if(x %in% c("b.w")) {
+        if(isFALSE(mm)) stop("Priors cannot be set for b.w if no mm() construct is specified.")
         paste0(sapply(mmwcoefstring, function(y) stringr::str_extract(y, "b.w\\[.\\]"), USE.NAMES = F), " ~ ")
       } else { 
         paste0(x, " ~ ")
@@ -95,11 +96,11 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, DIR,
     }, simplify = F), use.names = T)
     
     # Change priors 
-    priors <- unlist(mapply(function(x, n) if(n == "b.w") rep(list(x), length(mmwcoefstring)) else list(x), priors, names(priors), SIMPLIFY=F), recursive=F)
+    newpriors <- unlist(mapply(function(x, n) if(n == "b.w") rep(list(x), length(mmwcoefstring)) else list(x), priors, names(priors), SIMPLIFY=F), recursive=F)
   
     # Change priors in modelstring
     for(i in 1:length(params)) {
-      modelstring <- stringr::str_replace(modelstring, fixed(as.vector(params[i])), paste0(params[i],  priors[names(params[i])][[1]], " # "))
+      modelstring <- stringr::str_replace(modelstring, fixed(as.vector(params[i])), paste0(params[i],  newpriors[names(params[i])][[1]], " # "))
     }
   }
   

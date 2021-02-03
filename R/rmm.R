@@ -144,18 +144,22 @@
 
 rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, burnin=100, chains=3, seed=NULL, run=T, parallel=F, monitor=F, hdi=0.95, r=3, transform="center", modelfile=F, data=NULL) {
 
-  # formula = sim.y ~ 1 + mwc + investiture + hetero + mm(id(pid, gid), mmc(ipd+fdep), mmw(w ~ 1/offset(n)^exp(-(hetero+pmpower)), ar=T)) + hm(id=cid, type=FE, l3name=F, showFE=T); family = "Gaussian"; priors = list("b.w"="dnorm(0,1)"); inits=NULL; iter=1000; burnin=100; chains = 3; seed = NULL; run = T; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
+  # formula = sim.y ~ 1 + mwc + investiture + hetero + mm(id(pid, gid), mmc(ipd+fdep), mmw(w ~ 1/offset(n)^exp(-(hetero+pmpower)), ar=F)) + hm(id=cid, type=FE, l3name=F, showFE=T); family = "Gaussian"; priors = list("b.l2"="dnorm(0,1)"); inits=NULL; iter=1000; burnin=100; chains = 3; seed = 123; run = T; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
   # source("./R/dissectFormula.R"); source("./R/createData.R"); source("./R/editModelstring.R"); source("./R/createJagsVars.R"); source("./R/formatJags.R"); 
+  
+  # ---------------------------------------------------------------------------------------------- #
+  # 0. Checks
+  # ---------------------------------------------------------------------------------------------- #
   
   if(is.null(data)) stop("No data supplied.")
   if(chains==1 & !isFALSE(hdi)) stop("To give HDI estimates, chains>1 must to be specified.")
   if(isTRUE(hdi)) hdi <- 0.95 # if TRUE specified by mistake hdi=0.95 is assumed.
   
-  DIR <- system.file(package = "rmm")
-  
   # ---------------------------------------------------------------------------------------------- #
   # 1. Dissect formula 
   # ---------------------------------------------------------------------------------------------- #
+  
+  DIR <- system.file(package = "rmm")
   
   c(ids, vars, l1, l3) %<-%  dissectFormula(formula, family, data)
   
@@ -165,7 +169,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, 
   
   c(data, level1, level2, level3) %<-% createData(data, ids, vars, l1, l3, transform)
   
-  # Add to varlist
+  # Update varlist
   vars$l2vars <- level2$vars
   vars$l3vars <- level3$vars
   
@@ -179,7 +183,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, 
   # 4. Transform data into JAGS format
   # ---------------------------------------------------------------------------------------------- #
   
-  c(ids, Ns, Xs, Ys, jags.params, jags.inits, jags.data) %<-% createJagsVars(family, data, level1, level2, level3, ids, vars, l1, l3, monitor, modelfile, seed, chains, inits)
+  c(ids, Ns, Xs, Ys, jags.params, jags.inits, jags.data) %<-% createJagsVars(family, data, level1, level2, level3, ids, vars, l1, l3, monitor, modelfile, chains, inits)
   
   list2env(c(ids, Ns, Xs, Ys), envir=environment())
   
@@ -189,11 +193,14 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, 
   
   if(run==T) {
     
-    # Parallel computing?
+    # Get seed
+    if(is.null(seed)) seed <- round(runif(1, 0, 1000)) 
+    
+    # Run parallel?
     if(parallel) {
       
       readr::write_file(modelstring, paste0(DIR, "/temp/jags-parallel.txt"))
-      jags.out <- do.call(jags.parallel, list(data=jags.data, inits = jags.inits[1], n.chains = chains, parameters.to.save = jags.params, n.iter = iter, n.burnin = burnin, model.file = paste0(DIR, "/temp/jags-parallel.txt")))
+      jags.out <- do.call(jags.parallel, list(data=jags.data, inits = jags.inits[1], n.chains = chains, parameters.to.save = jags.params, n.iter = iter, jags.seed = seed, n.burnin = burnin, model.file = paste0(DIR, "/temp/jags-parallel.txt")))
       file.remove(paste0(DIR, "/temp/jags-parallel.txt"))
       # Three peculiarities about jags.parallel:
       # - It cannot read the model from textConnection(modelstring)
@@ -202,6 +209,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, 
       
     } else {
       
+      set.seed(seed) 
       jags.out <- jags(data=jags.data, inits = jags.inits, n.chains = chains, parameters.to.save = jags.params, n.iter = iter, n.burnin = burnin, model.file = textConnection(modelstring)) 
       
     }
