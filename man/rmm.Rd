@@ -15,9 +15,9 @@ rmm(
   seed = NULL,
   run = T,
   parallel = F,
-  monitor = F,
+  monitor = T,
   hdi = 0.95,
-  r = 3,
+  r = 4,
   transform = "center",
   modelfile = F,
   data = NULL
@@ -42,7 +42,7 @@ rmm(
 
 \item{run}{A logical value (True or False) indicating whether JAGS should estimate the model.}
 
-\item{monitor}{A logical value (True or False). If \code{True}, weights and random effects are monitored and saved in the global environment.}
+\item{monitor}{A logical value (True or False). If \code{True}, weights, random effects, predictions, and JAGS output is saved as well.}
 
 \item{r}{Numeric. Rounding value. Default is 3.}
 

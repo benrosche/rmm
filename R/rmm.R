@@ -115,7 +115,7 @@
 #' @param chains Number of chains.
 #' @param seed A random number.
 #' @param run A logical value (True or False) indicating whether JAGS should estimate the model.
-#' @param monitor A logical value (True or False). If \code{True}, weights and random effects are monitored and saved in the global environment.
+#' @param monitor A logical value (True or False). If \code{True}, weights, random effects, predictions, and JAGS output is saved as well.
 #' @param hdi Numeric or False. If confidence level \code{x} is specified (default \code{x=0.95}), \code{mode} and \code{(x*100)%} HDI estimates are given. If \code{False} is specified, \code{mean} and \code{95% CI} are given.
 #' @param r Numeric. Rounding value. Default is 3.
 #' @param transform Character vector or FALSE. Specifying \code{center} or \code{std} to center or standardize continuous predictors before estimation. Specifying \code{std2} will divide by two times the standard deviation, so that regression coefficients are comparable to those of binary predictors (Gelman 2008). 
@@ -142,7 +142,7 @@
 #' @references 
 #' Rosche (XXXX): The multilevel structure of coalition government outcomes
 
-rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, burnin=100, chains=3, seed=NULL, run=T, parallel=F, monitor=F, hdi=0.95, r=3, transform="center", modelfile=F, data=NULL) {
+rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, burnin=100, chains=3, seed=NULL, run=T, parallel=F, monitor=T, hdi=0.95, r=4, transform="center", modelfile=F, data=NULL) {
 
   # formula = sim.y ~ 1 + mwc + investiture + hetero + mm(id(pid, gid), mmc(ipd+fdep), mmw(w ~ 1/offset(n)^exp(-(hetero+pmpower)), ar=F)) + hm(id=cid, type=FE, l3name=F, showFE=T); family = "Gaussian"; priors = list("b.l2"="dnorm(0,1)"); inits=NULL; iter=1000; burnin=100; chains = 3; seed = 123; run = T; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
   # source("./R/dissectFormula.R"); source("./R/createData.R"); source("./R/editModelstring.R"); source("./R/createJagsVars.R"); source("./R/formatJags.R"); 
