@@ -6,55 +6,55 @@ library(lqmm)
 library(rmm)
 library(Hmisc)
 
-DIR <- "C:/Users/benja/OneDrive - Cornell University/GitHub/govsurvival"
-
 # ================================================================================================ #
 # Function to create Weibull data
 # ================================================================================================ #
 
 crWeib <- function(N, lambda, rho, LP, rateC) {
-    
-    # Bender et al 2005: Generating survival times to simulate Cox proportional hazards models
-    # https://onlinelibrary.wiley.com/doi/abs/10.1002/sim.2059
-    # https://stats.stackexchange.com/questions/135124/how-to-create-a-toy-survival-time-to-event-data-with-right-censoring
-    
-    # Function arguments:
-    # N = sample size    
-    # lambda = scale parameter in h0()
-    # rho = shape parameter in h0()
-    # LP = linear predictor
-    # rateC = rate parameter of the exponential distribution of C
-    
-    # Weibull latent event times
-    v <- runif(N, 0, 1)
-    Tlat <- (- log(v) / (lambda * exp(LP)))^(1 / rho)
-    
-    # censoring times
-    C <- rexp(n=N, rate=rateC)
-    
-    # follow-up times and event indicators
-    time <- pmin(Tlat, C)
-    status <- as.numeric(Tlat <= C)
-    
-    return(cbind(survtime=time, event=status))
+  
+  # Bender et al 2005: Generating survival times to simulate Cox proportional hazards models
+  # https://onlinelibrary.wiley.com/doi/abs/10.1002/sim.2059
+  # https://stats.stackexchange.com/questions/135124/how-to-create-a-toy-survival-time-to-event-data-with-right-censoring
+  
+  # Function arguments:
+  # N = sample size    
+  # lambda = scale parameter in h0()
+  # rho = shape parameter in h0()
+  # LP = linear predictor
+  # rateC = rate parameter of the exponential distribution of C
+  
+  # Weibull latent event times
+  v <- runif(N, 0, 1)
+  Tlat <- (- log(v) / (lambda * exp(LP)))^(1 / rho)
+  
+  # censoring times
+  C <- rexp(n=N, rate=rateC)
+  
+  # follow-up times and event indicators
+  time <- pmin(Tlat, C)
+  status <- as.numeric(Tlat <= C)
+  
+  return(cbind(survtime=time, event=status))
 }
 
 # ================================================================================================ #
 # Function to create data
 # ================================================================================================ #
 
-crDat <- function(party=3, gov=c(1,3), country=3, weight=c(0,0,0), Sigma=matrix(c(1,0,0, 0,1,0, 0,0,1),3,3), level=1, missing=FALSE, transform=FALSE, seed=NULL) {
+crDat <- function(party=3, gov=c(1,3), country=3, weight=c(0,0,0), Sigma=matrix(c(1,0,0, 0,1,0, 0,0,1),3,3), mm=F, level=1, missing=FALSE, transform=FALSE, seed=NULL) {
   
-  # party=3; gov=c(1,3); country=3; weight=c(0,0,0); Sigma=matrix(c(1,0,0, 0,1,0, 0,0,1),3,3); level=1; transform=FALSE; missing=T; seed=NULL
+  # party=3; gov=c(1,3); country=3; weight=c(0,0,0); Sigma=matrix(c(1,0,0, 0,1,0, 0,0,1),3,3); mm=F; level=1; transform=FALSE; missing=T; seed=NULL
   
   if(!level %in% c(1,2)) stop("Level can only be 1 or 2")
   
-  # Function to center / standardize the data
-  cen_std <- function(x) { 
+  # Function to center or standardize data
+  cen_std <- function(x, transform) { 
     if(transform=="center") {
       if(is.numeric(x) & dim(table(x))>2) x-mean(x) else x 
     } else if(transform=="std") {
       if(is.numeric(x) & dim(table(x))>2) (x-mean(x))/sqrt(var(x)) else x 
+    } else if(transform=="std2") {
+      if(is.numeric(x) & dim(table(x))>2) (x-mean(x))/(2*sqrt(var(x))) else x 
     } else {
       x
     }
@@ -67,20 +67,34 @@ crDat <- function(party=3, gov=c(1,3), country=3, weight=c(0,0,0), Sigma=matrix(
   if(!is.null(seed)) set.seed(seed)
   
   # Load data 
-  dat.party   <- read_dta(paste0(DIR, "./data/Rosche2017-party.dta"))
-  dat.gov     <- read_dta(paste0(DIR, "./data/Rosche2017-government.dta"))
-  dat.country <- read_dta(paste0(DIR, "./data/Rosche2017-country.dta"))
+  dat.party   <- read_dta("./data/Rosche2017-party.dta")
+  dat.gov     <- read_dta("./data/Rosche2017-government.dta")
+  dat.country <- read_dta("./data/Rosche2017-country.dta")
   
   # Variable selection
   dat <- 
     dat.party %>% 
-    dplyr::select(pid, gid, cid, prime, pipd, finance1, pseatrel) %>% dplyr::rename(ipd=pipd, fdep=finance1) %>%
+    dplyr::select(pid, partyname, gid, cid, prime, partyfam, rile, pipd, finance1, pseatrel) %>% dplyr::rename(pname=partyname, pfam=partyfam, ipd=pipd, fdep=finance1) %>%
     dplyr::inner_join(dat.gov %>% 
-                        dplyr::select(gid, cid, country, gstart, gend, nPG, majority, mwc, rilegov2) %>% 
+                        dplyr::select(gid, gname, cid, country, gstart, gend, nPG, majority, mwc, rilegov2) %>% 
                         dplyr::rename(n=nPG, cname=country, hetero=rilegov2), by=c("gid", "cid")) %>% # add gov vars
     dplyr::inner_join(dat.country %>% dplyr::select(cid, investiture, pmpower), by=c("cid")) %>% # add country vars
-    dplyr::relocate(c(cname, gstart, gend, n), .after=cid) %>%
-    dplyr::mutate(across(!c(pid, gid, cid, cname, gstart, gend, n), cen_std)) # standardize continuous vars
+    dplyr::relocate(c(gname), .after=gid) %>%
+    dplyr::relocate(c(cname, gstart, gend, n), .after=cid)
+  var_label(dat) <- c("Unique party ID", "Party name",
+                      "Unique government ID", "Government name", 
+                      "Unique country ID", "Country name", 
+                      "Government start date", "Government end date", 
+                      "# government parties", "Prime minister party", "Party family", "Right-left position", "Intra-party democracy", "Financial dependency", "Party's relative seat share within coalition", 
+                      "Majority government", "Minimal winning coalition", "SD(rile) of goverment / SD(rile) of parliament", 
+                      "Investiture vote", "Prime ministerial powers")
+  
+  # Control the degree of multiple memberships?
+  if(!isFALSE(mm)) {
+    n <- dim(dat)[1]
+    pid <- rep(1:n, each=mm)[1:n]
+    dat <- dat %>% mutate(pid=!!pid)
+  }
   
   # Create RE
   
@@ -103,14 +117,12 @@ crDat <- function(party=3, gov=c(1,3), country=3, weight=c(0,0,0), Sigma=matrix(
   
   # Create Y ------------------------------------------------------------------------------------- #
   
-  # Create linear predictor and variable selection at gov level
+  # Create linear predictor
   crLP <- 
     dat %>%
     dplyr::inner_join(dat.gov %>% 
-                        dplyr::select(gid, cid, event_wkb, dur_wkb, maxdur_wkb) %>% 
-                        dplyr::rename(earlyterm=event_wkb, govdur=dur_wkb, govmaxdur=maxdur_wkb), by=c("gid", "cid")) %>%
-    dplyr::mutate(govmaxdur = case_when(govdur>govmaxdur ~ govdur,
-                                        TRUE ~ govmaxdur)) %>%
+                        dplyr::select(gid, cid, event_wkb, dur_wkb) %>% 
+                        dplyr::rename(earlyterm=event_wkb, govdur=dur_wkb), by=c("gid", "cid")) %>%
     dplyr::mutate(partyeffect=party*fdep+re.party) %>%
     dplyr::mutate(w=1/n^exp(-(weight[1]*pseatrel+weight[2]*hetero+weight[3]*pmpower)), ng=max(gid), w=w*ng/sum(w)) %>%
     dplyr::group_by(gid) %>%
@@ -127,12 +139,13 @@ crDat <- function(party=3, gov=c(1,3), country=3, weight=c(0,0,0), Sigma=matrix(
     cbind(crWeib(N=dim(crLP)[1], lambda=0.01, rho=1, LP=crLP %>% .$LP, rateC=0.001)) %>% 
     dplyr::rename(sim.st=survtime, sim.e=event) %>%
     dplyr::select(-LP, -ng)
-
-  # Labels and vars that depend on missing==T and level==2
-  pidl <- "Unique party ID"
-  fdepl <- "Financial dependency"
-  simwl <- "Simulated weights"
-  partyvars <- c("ipd", "fdep", "pseatrel")
+  
+  var_label(finalDat)$earlyterm <- "Discretionary early termination"
+  var_label(finalDat)$govdur <- "Government duration"
+  var_label(finalDat)$sim.w <- "Simulated weights"
+  var_label(finalDat)$sim.y <- "Simulated linear outcome"
+  var_label(finalDat)$sim.st <- "Simulated survival time"
+  var_label(finalDat)$sim.e <- "Simulated event status"
   
   # Induce missingness 
   if(missing==TRUE) {
@@ -151,15 +164,17 @@ crDat <- function(party=3, gov=c(1,3), country=3, weight=c(0,0,0), Sigma=matrix(
     # Impute values again with Hmisc: aregImpute
     imputed <- aregImpute(fdep.mi~ipd, n.impute = 1, type = "pmm", data = crMissing)$imputed$fdep.mi
     crMissing$fdep.imp[which(is.na(crMissing$fdep.im))] <- as.vector(imputed)
-     
+    
     # MICE: Impute fdep.mi and save in fdep.imp
     # imputed_mice <- complete(mice(data=crY %>% dplyr::select(gid, pid, ipd, fdep.mi), m = 1, defaultMethod = "pmm"))
     # crY$fdep.imp <- imputed_mice$fdep.mi
     
     finalDat <- crMissing
-
-    # Add labels and vars
-    fdepl <- append(fdepl, c("fdep with missing values", "fdep, missing values imputed"))
+    
+    # Add labels and add vars to aggregation list
+    var_label(finalDat)$fdep.mi <- "fdep with missing values"
+    var_label(finalDat)$fdep.imp <- "fdep, missing values imputed"
+    
     partyvars <- append(partyvars, c("fdep.mi", "fdep.imp"))
   }
   
@@ -171,12 +186,16 @@ crDat <- function(party=3, gov=c(1,3), country=3, weight=c(0,0,0), Sigma=matrix(
       dplyr::mutate(across(!!partyvars, ~mean(.x, na.rm = TRUE))) %>%
       dplyr::filter(row_number()==1) %>%
       dplyr::ungroup() %>%
-      dplyr::select(-pid, -sim.w) 
-    pidl  <- c()
-    simwl <- c()
+      dplyr::mutate(pseatrel=finalDat %>% dplyr::group_by(gid) %>% summarise(pseatrel=max(pseatrel)) %>% .$pseatrel) %>%
+      dplyr::select(-pid, -pname, -prime, -pfam, -sim.w) 
+    
+    var_label(finalDat)$ipd <- "Mean: Intra-party democracy"
+    var_label(finalDat)$fdep <- "Mean: Financial dependency"
+    var_label(finalDat)$fdep.mi <- "Mean: fdep with missing values"
+    var_label(finalDat)$fdep.imp <- "Mean: fdep, missing values imputed"
+    var_label(finalDat)$pseatrel <- "Max: Party's relative seat share within coalition"
+    
   }
-  
-  var_label(finalDat) <- c(pidl, "Unique government ID", "Unique country ID", "Country name", "Government start date", "Government end date", "# government parties", "Prime minister party", "Intra-party democracy", fdepl, "Party's relative seat share within coalition", "Majority government", "Minimal winning coalition", "SD(rile) of goverment / SD(rile) of parliament", "Investiture vote", "Prime ministerial powers", "Discretionary early termination ", "Government duration", "Maximum possible government duration", simwl, "Simulated linear outcome", "Simulated survival time", "Simulated event status")
   
   return(finalDat)
   
