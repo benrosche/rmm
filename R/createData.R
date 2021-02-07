@@ -30,7 +30,7 @@ createData <- function(data, ids, vars, l1, l3, transform) {
       if(is.numeric(x) & dim(table(x))>2) (x-mean(x))/sqrt(var(x)) else x 
     } else if(transform=="std2") {
       if(is.numeric(x) & dim(table(x))>2) (x-mean(x))/(2*sqrt(var(x))) else x 
-      } else {
+    } else {
       x
     }
   }
@@ -53,16 +53,27 @@ createData <- function(data, ids, vars, l1, l3, transform) {
   
   if(mm) {
     
-    level1 <-
+    l1dat <-
       data %>% 
       dplyr::arrange(l2id, l1id) %>% # important
       dplyr::select(l1id, l2id, !!l1vars) %>%
-      dplyr::mutate_at(l1vars, ~cen_std(., transform)) # center continuous vars 
+      dplyr::mutate(across(l1vars, ~cen_std(., transform))) # center continuous vars 
+    
+    wdat <- 
+      data %>%
+      dplyr::add_count(l2id, name="n") %>% 
+      dplyr::select(l1id, l2id, !!lwvars) %>%
+      dplyr::mutate(across(c(!!lwvars[!lwvars %in% offsetvars]), ~cen_std(., transform))) # do not transform offsetvars 
+
     
   } else { # no l1
     
     l1vars <- c()
-    level1 <- NULL
+    l1dat <- NULL
+    
+    lwvars <- c()
+    offsetvars <- c()
+    wdat <- NULL
     
   }
   
@@ -72,19 +83,18 @@ createData <- function(data, ids, vars, l1, l3, transform) {
     
     l3vars <- 
       data %>% 
-      dplyr::select(l3id, l23vars[-1]) %>%
+      dplyr::select(l3id, !!l23vars[-1]) %>%
       dplyr::group_by(l3id) %>%
-      dplyr::mutate_at(l23vars[-1], ~var(., na.rm = TRUE)) %>% # select variables that do not vary within levels
-      dplyr::select_if(~sum(.)==0) %>%  
+      dplyr::mutate(across(l23vars[-1], ~var(., na.rm = TRUE))) %>% # select variables that do not vary within levels
       dplyr::ungroup() %>% 
-      dplyr::select(-l3id) %>%
+      dplyr::select(where(~sum(.)==0)) %>%  
       colnames() 
     
     l2vars <- l23vars[!l23vars %in% l3vars] # must be at this position to be able to overwrite l3vars
     
     if(l3type=="FE") { 
       
-      level3 <-
+      l3dat <-
         data %>% 
         dplyr::rename(l3name=!!l3name) %>%
         dplyr::select(l3id, any_of("l3name")) %>%
@@ -99,14 +109,14 @@ createData <- function(data, ids, vars, l1, l3, transform) {
       
     } else { # RE
       
-      level3 <-
+      l3dat <-
         data %>%
-        dplyr::select(l3id, all_of(l3vars)) %>%
+        dplyr::select(l3id, !!l3vars) %>%
         dplyr::group_by(l3id) %>%
-        dplyr::summarise_all(.funs = first) %>%
+        dplyr::filter(row_number()==1) %>%
         dplyr::ungroup() %>%
         dplyr::arrange(l3id) %>% 
-        dplyr::mutate_at(l3vars, ~cen_std(., transform)) 
+        dplyr::mutate(across(l3vars, ~cen_std(., transform)))
       
     }
     
@@ -114,7 +124,7 @@ createData <- function(data, ids, vars, l1, l3, transform) {
     
     l2vars <- l23vars
     l3vars <- c()
-    level3 <- NULL
+    l3dat <- NULL
     
   }
   
@@ -122,23 +132,26 @@ createData <- function(data, ids, vars, l1, l3, transform) {
   
   if(isFALSE(mm)) data <- data %>% dplyr::mutate(l2id = row_number())
   
-  level2 <- 
+  l2dat <- 
     data %>% 
     dplyr::arrange(l2id) %>%
     dplyr::group_by(l2id) %>%
-    dplyr::add_count(name="l1n") %>%
+    dplyr::add_count(l2id, name="l1n") %>%
     dplyr::filter(row_number()==1) %>%
     dplyr::ungroup() %>%
     dplyr::arrange(l2id) %>%
     dplyr::mutate(l1i2=cumsum(l1n), l1i1=lag(l1i2)+1) %>%
     dplyr::mutate(l1i1 = ifelse(row_number()==1, 1, l1i1)) %>%
     dplyr::mutate(X0 = 1) %>%
-    dplyr::select(l2id, l1i1, l1i2, l1n, !!lhs, !!l2vars) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate_at(l2vars, ~cen_std(., transform))
+    dplyr::select(l2id, l3id, l1i1, l1i2, l1n, !!lhs, !!l2vars) %>%
+    dplyr::mutate(across(l2vars, ~cen_std(., transform)))
   
   # Collect return ------------------------------------------------------------------------------- #
   
-  return(list("data"=data, "level1"=list("dat"=level1, "vars"=l1vars), "level2"=list("dat"=level2, "vars"=l2vars), "level3"=list("dat"=level3, "vars"=l3vars)))
+  return(list("data"=data, 
+              "level1"=list("dat"=l1dat, "vars"=l1vars), 
+              "level2"=list("dat"=l2dat, "vars"=l2vars, "lhs"=lhs), 
+              "level3"=list("dat"=l3dat, "vars"=l3vars), 
+              "weightf"=list("dat"=wdat, "vars"=lwvars, "offsetvars"=offsetvars)))
   
 }

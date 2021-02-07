@@ -2,17 +2,15 @@
 # Function createJagsVars
 # ================================================================================================ #
 
-createJagsVars <- function(family, data, level1, level2, level3, ids, vars, l1, l3, monitor, modelfile, chains, inits) {
+createJagsVars <- function(data, family, level1, level2, level3, weightf, ids, l1, l3, monitor, modelfile, chains, inits) {
    
   # Unpack lists --------------------------------------------------------------------------------- #
   
-  lhs <- vars$lhs
+  lhs <- level2$lhs
   
   mm <- l1$mm
   mmwconstraint <- l1$mmwconstraint
   mmwar <- l1$mmwar
-  lwvars <- vars$lwvars
-  offsetvars <- vars$offsetvars
   
   hm <- l3$hm
   l3name <- l3$l3name
@@ -28,11 +26,15 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, l1, 
   l3vars <- level3$vars
   l3dat  <- level3$dat
   
+  lwvars <- weightf$vars
+  offsetvars <- weightf$offsetvars
+  lwdat <- weightf$dat
+
   # IDs ------------------------------------------------------------------------------------------ #
   
   l1id <- if(mm) l1dat %>% .$l1id else c() # length = rows @ level1, must be sorted by l2id
   l2id <- l2dat %>% .$l2id # length = rows @ level2
-  l3id <- if(hm) data %>% dplyr::group_by(l2id) %>% dplyr::filter(row_number()==1) %>% .$l3id else c() # length = rows @ level2
+  l3id <- if(hm) l2dat %>% .$l3id else c() # length = rows @ level2
   
   l1n <- if(mm) l2dat %>% .$l1n else c() # number of l1-members per l2-unit
   
@@ -47,7 +49,7 @@ createJagsVars <- function(family, data, level1, level2, level3, ids, vars, l1, 
   X.l1 <- if(length(l1vars)>0) as.matrix(l1dat %>% dplyr::select(!!l1vars)) else c()
   X.l2 <- if(length(l2vars)>0) as.matrix(l2dat %>% dplyr::select(!!l2vars)) else c()
   X.l3 <- if(length(l3vars)>0) as.matrix(l3dat %>% dplyr::select(!!l3vars)) else c()
-  X.w  <- if(length(lwvars)>0) as.matrix(data %>% dplyr::select(!!lwvars)) else c()
+  X.w  <- if(length(lwvars)>0) as.matrix(lwdat %>% dplyr::select(!!lwvars)) else c()
   
   # Ns ------------------------------------------------------------------------------------------- #
   

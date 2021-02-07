@@ -2,13 +2,14 @@
 # Function formatJags
 # ================================================================================================ #
 
-formatJags <- function(jags.out, hdi, r, monitor, vars, Ns, l1, l3, level3) {
+formatJags <- function(jags.out, hdi, r, monitor, Ns, l1, l3, level1, level2, level3, weightf) {
 
   # Unpack lists --------------------------------------------------------------------------------- #
 
-  l1vars <- vars$l1vars
-  l2vars <- vars$l2vars
+  l1vars <- level1$vars
+  l2vars <- level2$vars
   l3vars <- level3$vars
+  
   l3dat  <- level3$dat
   
   hm <- l3$hm
@@ -17,8 +18,8 @@ formatJags <- function(jags.out, hdi, r, monitor, vars, Ns, l1, l3, level3) {
   
   mm <- l1$mm
   mmwar <- l1$mmwar
-  lwvars <- vars$lwvars
-  offsetvars <- vars$offsetvars
+  lwvars <- weightf$vars
+  offsetvars <- weightf$offsetvars
   
   n.ul1 <- Ns$n.ul1
   l1n  <- Ns$l1n

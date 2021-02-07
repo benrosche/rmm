@@ -53,9 +53,9 @@ rmm(
 \item{data}{Dataframe object. The dataset must have level 1 as unit of analysis. More details below.}
 }
 \value{
-A list with 6 elements: reg.table, w, re.l1, re.l3, pred, jags.out. If monitor=F, only the 
+A list with 7 elements: reg.table, w, re.l1, re.l3, pred, input, jags.out. If monitor=F, only the 
         regression table is returned. If monitor=T, the predicted weights, level-1 random effects (if specified in the model),
-        level-3 random effects (if specified in the model), and predicted values of the dependent variable are returned. 
+        level-3 random effects (if specified in the model), predicted values of the dependent variable, and the internally created variables are returned. 
         The last element of the list is the unformatted Jags output.
 }
 \description{
@@ -148,8 +148,7 @@ for more details on possible prior specifications.
 
 \bold{More details on the weight function}
 
-Add variables as \code{offset(X)} to not estimate their effect (but assume Beta=1). 
-The general weight function as proposed in Rosche (XXXX: XX) is implemented by \code{w ~ 1/offset(N)^exp(-(X.W))}
+...
 
 \bold{More details on constructing the data}
 
@@ -175,12 +174,13 @@ m1$w         # the estimated weights
 m1$re.l1     # the level-1 random effects
 m1$re.l3     # the level-3 random effects
 m1$pred      # predicted values of the dependent variable (survival time for family="Weibull")
-jags.out <- m1$jags.out # the jags output
+m1$input     # internal variables
+jags.out <- m1$jags.out # JAGS output
 monetPlot(m1, "b.l1") # monetPlot to inspect the posterior distribution of the model parameters
 
 }
 \references{
-Rosche (XXXX): The multilevel structure of coalition government outcomes
+Rosche, Benjamin (2021): On the multilevel structure of coalition governments
 }
 \author{
 Benjamin Rosche <benjamin.rosche@gmail.com>

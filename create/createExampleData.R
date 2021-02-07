@@ -6,6 +6,8 @@ library(lqmm)
 library(rmm)
 library(Hmisc)
 
+## ATTENTION! THIS IS JUST A COPY. THE MAIN VERSION OF THIS FILE IS AND SHOULD BE KEPT IN GOVSURVIVAL
+
 # ================================================================================================ #
 # Function to create Weibull data
 # ================================================================================================ #
@@ -121,8 +123,10 @@ crDat <- function(party=3, gov=c(1,3), country=3, weight=c(0,0,0), Sigma=matrix(
   crLP <- 
     dat %>%
     dplyr::inner_join(dat.gov %>% 
-                        dplyr::select(gid, cid, event_wkb, dur_wkb) %>% 
-                        dplyr::rename(earlyterm=event_wkb, govdur=dur_wkb), by=c("gid", "cid")) %>%
+                        dplyr::select(gid, cid, event_wkb, dur_wkb, maxdur_wkb) %>% 
+                        dplyr::rename(earlyterm=event_wkb, govdur=dur_wkb, govmaxdur=maxdur_wkb), by=c("gid", "cid")) %>%
+    dplyr::mutate(govmaxdur = case_when(govdur>govmaxdur ~ govdur,
+                                        TRUE ~ govmaxdur)) %>%
     dplyr::mutate(partyeffect=party*fdep+re.party) %>%
     dplyr::mutate(w=1/n^exp(-(weight[1]*pseatrel+weight[2]*hetero+weight[3]*pmpower)), ng=max(gid), w=w*ng/sum(w)) %>%
     dplyr::group_by(gid) %>%
@@ -142,6 +146,7 @@ crDat <- function(party=3, gov=c(1,3), country=3, weight=c(0,0,0), Sigma=matrix(
   
   var_label(finalDat)$earlyterm <- "Discretionary early termination"
   var_label(finalDat)$govdur <- "Government duration"
+  var_label(finalDat)$govmaxdur <- "Maximum possible government duration"
   var_label(finalDat)$sim.w <- "Simulated weights"
   var_label(finalDat)$sim.y <- "Simulated linear outcome"
   var_label(finalDat)$sim.st <- "Simulated survival time"

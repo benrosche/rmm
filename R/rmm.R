@@ -89,8 +89,7 @@
 #' 
 #' \bold{More details on the weight function}
 #' 
-#' Add variables as \code{offset(X)} to not estimate their effect (but assume Beta=1). 
-#' The general weight function as proposed in Rosche (XXXX: XX) is implemented by \code{w ~ 1/offset(N)^exp(-(X.W))}
+#' ...
 #'
 #' \bold{More details on constructing the data}
 #' 
@@ -122,9 +121,9 @@
 #' @param modelfile Character vector or TRUE|False. If TRUE, the JAGS model is saved in rmm/temp/modelstring.txt. If a file path is supplied as string, rmm will just create the data structure and use the provided modelfile. 
 #' @param data Dataframe object. The dataset must have level 1 as unit of analysis. More details below.
 #'
-#' @return A list with 6 elements: reg.table, w, re.l1, re.l3, pred, jags.out. If monitor=F, only the 
+#' @return A list with 7 elements: reg.table, w, re.l1, re.l3, pred, input, jags.out. If monitor=F, only the 
 #'         regression table is returned. If monitor=T, the predicted weights, level-1 random effects (if specified in the model),
-#'         level-3 random effects (if specified in the model), and predicted values of the dependent variable are returned. 
+#'         level-3 random effects (if specified in the model), predicted values of the dependent variable, and the internally created variables are returned. 
 #'         The last element of the list is the unformatted Jags output. 
 #' @examples data(coalgov)
 #' m1 <- rmm(Surv(govdur, earlyterm) ~ 1 + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/offset(n), constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
@@ -134,17 +133,18 @@
 #' m1$re.l1     # the level-1 random effects
 #' m1$re.l3     # the level-3 random effects
 #' m1$pred      # predicted values of the dependent variable (survival time for family="Weibull")
-#' jags.out <- m1$jags.out # the jags output
+#' m1$input     # internal variables
+#' jags.out <- m1$jags.out # JAGS output
 #' monetPlot(m1, "b.l1") # monetPlot to inspect the posterior distribution of the model parameters
 #'
 #' @export rmm
 #' @author Benjamin Rosche <benjamin.rosche@@gmail.com>
 #' @references 
-#' Rosche (XXXX): The multilevel structure of coalition government outcomes
+#' Rosche, Benjamin (2021): On the multilevel structure of coalition governments
 
 rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, burnin=100, chains=3, seed=NULL, run=T, parallel=F, monitor=T, hdi=0.95, r=4, transform="center", modelfile=F, data=NULL) {
 
-  # formula = sim.y ~ 1 + mwc + investiture + hetero + mm(id(pid, gid), mmc(ipd+fdep), mmw(w ~ 1/offset(n)^exp(-(hetero+pmpower)), ar=F)) + hm(id=cid, type=FE, l3name=F, showFE=T); family = "Gaussian"; priors = list("b.l2"="dnorm(0,1)"); inits=NULL; iter=1000; burnin=100; chains = 3; seed = 123; run = T; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
+  # formula = sim.y ~ 1 + mwc + hetero + mm(id(pid, gid), mmc(ipd+fdep), mmw(w ~ 1/offset(n)^exp(-(pseatrel+hetero)), ar=F)) + hm(id=cid, type=RE, l3name=F, showFE=T); family = "Gaussian"; priors = list("b.l2"="dnorm(0,1)"); inits=NULL; iter=1000; burnin=100; chains = 3; seed = 123; run = T; parallel = F; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
   # source("./R/dissectFormula.R"); source("./R/createData.R"); source("./R/editModelstring.R"); source("./R/createJagsVars.R"); source("./R/formatJags.R"); 
   
   # ---------------------------------------------------------------------------------------------- #
@@ -161,18 +161,17 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, 
   
   DIR <- system.file(package = "rmm")
   
-  c(ids, vars, l1, l3) %<-%  dissectFormula(formula, family, data)
+  c(ids, vars, l1, l3) %<-%  dissectFormula(data, family, formula)
   
   # ---------------------------------------------------------------------------------------------- #
   # 2. Disentangle vars and data into l1-3
   # ---------------------------------------------------------------------------------------------- #
   
-  c(data, level1, level2, level3) %<-% createData(data, ids, vars, l1, l3, transform)
+  c(data, level1, level2, level3, weightf) %<-% createData(data, ids, vars, l1, l3, transform)
   
-  # Update varlist
-  vars$l2vars <- level2$vars
-  vars$l3vars <- level3$vars
-  
+  # Remove varlist
+  rm(vars)
+
   # ---------------------------------------------------------------------------------------------- #
   # 3. Edit modelstring 
   # ---------------------------------------------------------------------------------------------- #
@@ -183,7 +182,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, 
   # 4. Transform data into JAGS format
   # ---------------------------------------------------------------------------------------------- #
   
-  c(ids, Ns, Xs, Ys, jags.params, jags.inits, jags.data) %<-% createJagsVars(family, data, level1, level2, level3, ids, vars, l1, l3, monitor, modelfile, chains, inits)
+  c(ids, Ns, Xs, Ys, jags.params, jags.inits, jags.data) %<-% createJagsVars(data, family, level1, level2, level3, weightf, ids, l1, l3, monitor, modelfile, chains, inits)
   
   list2env(c(ids, Ns, Xs, Ys), envir=environment())
   
@@ -196,8 +195,9 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, 
     # Get seed
     if(is.null(seed)) seed <- round(runif(1, 0, 1000)) 
     
-    # Run parallel?
     if(parallel) {
+      
+      # Run parallel ----------------------------------------------------------------------------- #
       
       readr::write_file(modelstring, paste0(DIR, "/temp/jags-parallel.txt"))
       jags.out <- do.call(jags.parallel, list(data=jags.data, inits = jags.inits[1], n.chains = chains, parameters.to.save = jags.params, n.iter = iter, jags.seed = seed, n.burnin = burnin, model.file = paste0(DIR, "/temp/jags-parallel.txt")))
@@ -209,20 +209,45 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, 
       
     } else {
       
+      # Run sequentially ------------------------------------------------------------------------- #
+      
       set.seed(seed) 
       jags.out <- jags(data=jags.data, inits = jags.inits, n.chains = chains, parameters.to.save = jags.params, n.iter = iter, n.burnin = burnin, model.file = textConnection(modelstring)) 
       
     }
      
-    c(reg.table, w, re.l1, re.l3, pred) %<-% formatJags(jags.out, hdi, r, monitor, vars, Ns, l1, l3, level3) 
+    # Format JAGS output ------------------------------------------------------------------------- #
     
-    if(isFALSE(monitor)) jags.out <- c()
+    c(reg.table, w, re.l1, re.l3, pred) %<-% formatJags(jags.out, hdi, r, monitor, Ns, l1, l3, level1, level2, level3, weightf) 
     
-    return(list("reg.table"=reg.table, "w"=w, "re.l1"=re.l1, "re.l3"=re.l3, "pred"=pred, "jags.out"=jags.out))
+    # Prepare return ----------------------------------------------------------------------------- #
+    
+    # Save info on transformed vars
+    isTransformed <- function(df) {
+      tvars <- if(dim(df)[2]>0) sapply(names(df), function(x) mean(df[[x]])<0.0001) else F
+      return(names(tvars)[tvars==T])
+    }
+  
+    transformedVars <- c(isTransformed(level1 %>% .$dat %>% dplyr::select(!!level1[["vars"]])),
+                         isTransformed(level2 %>% .$dat %>% dplyr::select(!!level2[["vars"]])),
+                         isTransformed(level3 %>% .$dat %>% dplyr::select(!!level3[["vars"]])),
+                         isTransformed(weightf %>% .$dat %>% dplyr::select(!!weightf[["vars"]])))
+    
+    # Save info on input
+    input <- if(isTRUE(monitor)) {
+      append(list("family"=family, "priors"=priors, "inits"=inits, 
+           "iter"=iter, "burnin"=burnin, "chains"=chains, "seed"=seed, "run"=run, "parallel"=parallel, 
+           "monitor"=monitor, "hdi"=hdi, "r"=r, "transform"=transform, "modelfile"=modelfile,
+           "lhs" = level2$lhs, "l1vars"=level1$vars, "l2vars"=level2$vars, "l3vars"=level3$vars, "transformedVars"=transformedVars), c(l1, l3))
+    } else c()
+    
+    # Return ------------------------------------------------------------------------------------- #
+    
+    return(list("reg.table"=reg.table, "w"=w, "re.l1"=re.l1, "re.l3"=re.l3, "pred"=pred, "input"=input, "jags.out"=if(isTRUE(monitor)) jags.out else c()))
     
   } else {
     
-    message("Data and model were created without errors")
+    message("Data and model have been created without any errors.")
     
   }
   

@@ -2,7 +2,7 @@
 # Function dissectFormula 
 # ================================================================================================ #
 
-dissectFormula <- function(formula, family, data) {
+dissectFormula <- function(data, family, formula) {
   
   # This function has two arguments:
   # ...
