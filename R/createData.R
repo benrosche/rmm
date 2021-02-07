@@ -105,7 +105,7 @@ createData <- function(data, ids, vars, l1, l3, transform) {
         tidyr::pivot_wider(names_from = l3id, names_prefix="l3id", values_from = val, values_fill = list(val = 0)) %>%
         dplyr::rename(l3id=rn) 
       
-      l3vars <- paste0("l3id", 2:dim(level3)[1]) # leave out first country
+      l3vars <- paste0("l3id", 2:dim(l3dat)[1]) # leave out first country
       
     } else { # RE
       
