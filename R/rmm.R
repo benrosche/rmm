@@ -144,7 +144,7 @@
 
 rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, burnin=100, chains=3, seed=NULL, run=T, parallel=F, monitor=T, hdi=0.95, r=4, transform="center", modelfile=F, data=NULL) {
 
-  # formula = sim.y ~ 1 + mwc + hetero + mm(id(pid, gid), mmc(ipd+fdep), mmw(w ~ 1/offset(n)^exp(-(pseatrel+hetero)), ar=F)) + hm(id=cid, type=FE, l3name=F, showFE=T); family = "Gaussian"; priors = list("b.l2"="dnorm(0,1)"); inits=NULL; iter=1000; burnin=100; chains = 3; seed = 123; run = T; parallel = F; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
+  # formula = sim.y ~ 1 + mwc + hetero + hm(id=cid, type=FE, l3name=F, showFE=T); family = "Gaussian"; priors = list("b.l2"="dnorm(0,1)"); inits=NULL; iter=1000; burnin=100; chains = 3; seed = 123; run = T; parallel = F; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
   # source("./R/dissectFormula.R"); source("./R/createData.R"); source("./R/editModelstring.R"); source("./R/createJagsVars.R"); source("./R/formatJags.R"); 
   
   # ---------------------------------------------------------------------------------------------- #
@@ -228,10 +228,10 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, 
       return(names(tvars)[tvars==T])
     }
   
-    transformedVars <- c(isTransformed(level1 %>% .$dat %>% dplyr::select(!!level1[["vars"]])),
-                         isTransformed(level2 %>% .$dat %>% dplyr::select(!!level2[["vars"]])),
-                         isTransformed(level3 %>% .$dat %>% dplyr::select(!!level3[["vars"]])),
-                         isTransformed(weightf %>% .$dat %>% dplyr::select(!!weightf[["vars"]])))
+    transformedVars <- c(if(!is.null(level1[["dat"]])) isTransformed(level1 %>% .$dat %>% dplyr::select(!!level1[["vars"]])),
+                         if(!is.null(level2[["dat"]])) isTransformed(level2 %>% .$dat %>% dplyr::select(!!level2[["vars"]])),
+                         if(!is.null(level3[["dat"]])) isTransformed(level3 %>% .$dat %>% dplyr::select(!!level3[["vars"]])),
+                         if(!is.null(weightf[["dat"]])) isTransformed(weightf %>% .$dat %>% dplyr::select(!!weightf[["vars"]])))
     
     # Save info on input
     input <- if(isTRUE(monitor)) {
