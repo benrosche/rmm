@@ -144,7 +144,7 @@
 
 rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, burnin=100, chains=3, seed=NULL, run=T, parallel=F, monitor=T, hdi=0.95, r=4, transform="center", modelfile=F, data=NULL) {
 
-  # formula = Surv(govdur, earlyterm) ~ 1 + majority + mwc + fdep + hm(id=cid, name=cname, type=RE); family = "Weibull"; priors = list("b.l2"="dnorm(0,1)"); inits=NULL; iter=1000; burnin=100; chains = 3; seed = 123; run = T; parallel = F; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov.l2
+  # formula = Surv(govdur, earlyterm) ~ 1 + majority + mwc + fdep + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/offset(n), constraint=1)) + hm(id=cid, name=cname, type=RE); family = "Weibull"; priors = list("b.l2"="dnorm(0,1)"); inits=NULL; iter=1000; burnin=100; chains = 3; seed = 123; run = T; parallel = F; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
   # source("./R/dissectFormula.R"); source("./R/createData.R"); source("./R/editModelstring.R"); source("./R/createJagsVars.R"); source("./R/formatJags.R"); 
   
   # ---------------------------------------------------------------------------------------------- #
@@ -238,7 +238,8 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, 
       append(list("family"=family, "priors"=priors, "inits"=inits, 
            "iter"=iter, "burnin"=burnin, "chains"=chains, "seed"=seed, "run"=run, "parallel"=parallel, 
            "monitor"=monitor, "hdi"=hdi, "r"=r, "transform"=transform, "modelfile"=modelfile,
-           "lhs" = level2$lhs, "l1vars"=level1$vars, "l2vars"=level2$vars, "l3vars"=level3$vars, "transformedVars"=transformedVars), c(l1, l3))
+           "lhs" = level2$lhs, "l1vars"=level1$vars, "l2vars"=level2$vars, "l3vars"=level3$vars, "transformedVars"=transformedVars),
+           "n.ul1"=Ns$n.ul1, "n.l1"=Ns$n.l1, "n.l2"=Ns$n.l2, "n.l3"=Ns$n.l3, c(l1, l3))
     } else c()
     
     # Return ------------------------------------------------------------------------------------- #
