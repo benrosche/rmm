@@ -87,7 +87,7 @@ createData <- function(data, ids, vars, l1, l3, transform) {
       dplyr::group_by(l3id) %>%
       dplyr::mutate(across(l23vars[-1], ~var(., na.rm = TRUE))) %>% # select variables that do not vary within levels
       dplyr::ungroup() %>% 
-      dplyr::select(where(~sum(.)==0)) %>%  
+      dplyr::select_if(~sum(.)==0) %>%  
       colnames() 
     
     l2vars <- l23vars[!l23vars %in% l3vars] # must be at this position to be able to overwrite l3vars
