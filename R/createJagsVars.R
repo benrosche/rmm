@@ -86,6 +86,7 @@ createJagsVars <- function(data, family, level1, level2, level3, weightf, ids, l
   # Level 2 -------------------------------------------------------------------------------------- #
   
   pred <- if(monitor) "pred" else NULL # predicted values of the dependent variable
+  sigma.l2 <- if(!family=="Cox") "sigma.l2" else c() # Cox model does not have a variance term at level 2
   
   l2.param <- c(pred, sigma.l2)
   l2.data  <- c("n.l2")
@@ -126,7 +127,6 @@ createJagsVars <- function(data, family, level1, level2, level3, weightf, ids, l
     
     # for return
     Ys <- list("Y"=Y)
-    sigma.l2 <- "sigma.l2"
     
   } else if(family=="Weibull") {
     
@@ -156,7 +156,6 @@ createJagsVars <- function(data, family, level1, level2, level3, weightf, ids, l
     
     # for return
     Ys <- list("t"=t, "ct.lb"=ct.lb, "ct.lbub"=ct.lbub, "event"=event, "censored"=censored, "ones"=ones)
-    sigma.l2 <- "sigma.l2"
     
   } else if(family=="Cox") {
     
@@ -183,7 +182,6 @@ createJagsVars <- function(data, family, level1, level2, level3, weightf, ids, l
     
     # for return
     Ys <- list("Y"=Y, "dN"=dN, "t"=t, "t.unique"=t.unique, "event"=event, "c"=0.001, "d"=0.1, "n.tu"=n.tu)
-    sigma.l2 <- c()
     
   }
   
