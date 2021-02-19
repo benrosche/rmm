@@ -4,7 +4,7 @@ model {
   for(j in 1:n.l2) {
     
     # Weibull regression
-    censored[j] ~ dinterval(t[j], t.cen[j])  
+    censored[j] ~ dinterval(t[j], ct.lb[j])  
     t[j] ~ dweib(shape, lambda[j])
     
     # log(lambda) = aggregated(l1) + l2 + l3

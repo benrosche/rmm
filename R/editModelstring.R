@@ -6,6 +6,8 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, DIR,
   
   # Unpack lists --------------------------------------------------------------------------------- #
   
+  lhs <- level2$lhs
+  
   l1vars <- level1$vars
   l2vars <- level2$vars
   l3vars <- level3$vars
@@ -38,8 +40,9 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, DIR,
   # Add predicted values of the dependent variable?
   if(monitor) {
     if(family=="Gaussian") modelstring <- stringr::str_replace(modelstring, "(Y\\[j\\] \\~) (dnorm\\(mu\\[j\\], tau.l2\\))", "\\1 \\2\n    pred[j] ~ \\2")
-    if(family=="Weibull")  modelstring <- stringr::str_replace(modelstring, "(t\\[j\\] \\~) (dweib\\(shape, lambda\\[j\\]\\))", "\\1 \\2\n    pred[j] ~ \\2")
-    # Comment: predictions for the Cox model are not supported 
+    if(family=="Weibull" & length(lhs)==2) modelstring <- stringr::str_replace(modelstring, "(t\\[j\\] \\~) (dweib\\(shape, lambda\\[j\\]\\))", "\\1 \\2\n\n    pred[j] ~ \\2")
+    if(family=="Weibull" & length(lhs)==3) modelstring <- stringr::str_replace(modelstring, "(t\\[j\\] \\~) (dweib\\(shape, lambda\\[j\\]\\))", "\\1 \\2\n\n    ones[j] ~ dinterval(pred[j], ct.lbub[j,])\n    pred[j] ~ \\2")
+    # 2do: predictions for the Cox model
   }
   
   # No covariates at level 1?
@@ -104,7 +107,8 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, DIR,
     }
   }
   
-  if(modelfile==T) readr::write_file(modelstring, paste0(DIR, "/temp/modelstring.txt"))
+  if(isTRUE(modelfile)) readr::write_file(modelstring, paste0(DIR, "/temp/modelstring.txt")) # save model to file
+  else if (!isFALSE(modelfile) & length(modelfile)>0) modelstring <- readr::read_file(modelfile) # read model from file
   
   return(modelstring)
   

@@ -17,7 +17,7 @@ dissectFormula <- function(data, family, formula) {
   
   lhs <- all.vars(formula[[2]])
   if(family=="Gaussian" & length(lhs)>1) stop("family=\"Gaussian\" takes only one variable on the left-hand side of the formula.")
-  if(family=="Weibull" & length(lhs)!=2) stop("family=\"Weibull\" takes two variables on the left-hand side: 'Surv(survtime, event)'")
+  if(family=="Weibull" & !length(lhs) %in% 2:3) stop("family=\"Weibull\" takes two variables on the left-hand side: 'Surv(survtime, event)'")
   
   # Right-hand side ------------------------------------------------------------------------------ #
   

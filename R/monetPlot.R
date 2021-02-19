@@ -6,9 +6,10 @@
 #' @param rmm A rmm object. rmm has to be run with monitor=T
 #' @param parameter A string with the parameter name. The internal name has to be used, which are the rownames in the rmm reg.table output.
 #' @param lab String to describe the parameter on the graph's x-axis. Optional. If not specified, the internal parameter name is used.
+#' @param r Specify number of decimal places. Default equals 3.
 #' @param sav TRUE or FALSE (default). If \code{TRUE}, the graph is saved to the current working directory as .png
 #'
-#' @return Returns a plot.
+#' @return Returns a plot. The solid vertical is at 0 and the dashed vertical line is the mode of the posterior distributions.
 #'
 #' @examples data(coalgov)
 #' m1 <- rmm(Surv(govdur, earlyterm) ~ 1 + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/offset(n), constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
@@ -18,7 +19,7 @@
 #' @export monetPlot
 #' @author Benjamin Rosche <benjamin.rosche@@gmail.com>
 
-monetPlot <- function(rmm, parameter, lab=F, sav=F) {
+monetPlot <- function(rmm, parameter, lab=F, r=3, sav=F) {
   
   library(ggplot2)
   library(cowplot)
@@ -29,11 +30,6 @@ monetPlot <- function(rmm, parameter, lab=F, sav=F) {
   
   if(is.null(rmm$jags.out)) stop("JAGS output could not be retrieved. monitor=T must be specified when running rmm.")
   mcmclist <- mcmcplots::as.mcmc.rjags(rmm$jags.out)
-  
-  # Mean across chains --------------------------------------------------------------------------- #
-  
-  pmean <- mean(sapply(mcmclist[,parameter], mean))
-  # 2do: include HDI option
   
   # Differentiate between b.l1 and b.l1[1] ------------------------------------------------------- #
   
@@ -46,19 +42,27 @@ monetPlot <- function(rmm, parameter, lab=F, sav=F) {
     pobj <- ggs(mcmclist, family=parameter) %>% filter(Parameter == parameter)
   }
   
+  # Parameter statistics ------------------------------------------------------------------------- #
+  
+  # getmode <- function(v) {
+  #   uniqv <- unique(v)
+  #   uniqv[which.max(tabulate(match(v, uniqv)))]
+  # }
+  
+  pmean <- round(mean(pobj$value), r)
+  p05 <- round(min(pobj$value), r)
+  p95 <- round(max(pobj$value), r)
+  
   # Modify theme --------------------------------------------------------------------------------- #
   
   theme_light2 <- 
     theme_light() +
     theme(legend.position="none",
           plot.title = element_blank(),
-          axis.ticks=element_blank(),
-          axis.title.x = element_blank(),
-          axis.text.x=element_blank(),
-          axis.text.y=element_blank(),
           panel.grid.minor = element_blank(),
           panel.grid.major = element_blank(),
-          strip.text = element_blank()) 
+          strip.text = element_blank()
+          ) 
   theme_set(theme_light2)
   
   lbl <- ifelse(lab==F, parameter, lab)
@@ -70,11 +74,13 @@ monetPlot <- function(rmm, parameter, lab=F, sav=F) {
     labs(y = "Density") +
     geom_vline(xintercept=0) +
     geom_vline(xintercept=pmean, linetype="dashed") +
-    theme_light2
+    theme_light2 +
+    theme(axis.ticks=element_blank(), axis.title.x = element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())
    
   # Traceplot
-  p2 <- ggs_traceplot(pobj) + coord_flip() +
-    labs(x = "Scans", y = lbl) +
+  p2 <- ggs_traceplot(pobj, original_burnin = F) + coord_flip() +
+    labs(x = paste0("Scans (", max(pobj$Chain), " chains)"), y = paste0("Parameter: ", lbl)) +
+    scale_y_continuous(breaks = c(p05, 0, pmean, p95)) +
     geom_hline(yintercept=0) +
     geom_hline(yintercept=pmean, linetype="dashed") +
     theme_light2

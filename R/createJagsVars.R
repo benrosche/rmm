@@ -29,6 +29,10 @@ createJagsVars <- function(data, family, level1, level2, level3, weightf, ids, l
   lwvars <- weightf$vars
   offsetvars <- weightf$offsetvars
   lwdat <- weightf$dat
+  
+  # ---------------------------------------------------------------------------------------------- #
+  # Create IDs, Xs, and Ns
+  # ---------------------------------------------------------------------------------------------- #
 
   # IDs ------------------------------------------------------------------------------------------ #
   
@@ -65,52 +69,6 @@ createJagsVars <- function(data, family, level1, level2, level3, weightf, ids, l
   n.GPN  <- if(mm) l1dat %>% group_by(l1id) %>% count() %>% .$n %>% as.numeric() %>% max() else c() # max number of gov participations
   n.GPNi <- if(mm) l1dat %>% arrange(l1id) %>% group_by(l1id) %>% count() %>% .$n %>% as.numeric() else c() # number of gov partipations per party, sorted l1id=1,2,3,...
   n.GPn  <- if(mm) l1dat %>% group_by(l1id) %>% dplyr::mutate(n=row_number()) %>% .$n %>% as.numeric() else c() # participation index, sorted l1id=2,6,2,...
-  
-  # ---------------------------------------------------------------------------------------------- #
-  # Model-specific outcomes
-  # ---------------------------------------------------------------------------------------------- #
-  
-  if(family=="Gaussian") {
-    
-    Y <- l2dat %>% dplyr::rename(Y = !!lhs) %>% .$Y
-
-    # for return container
-    Ys <- list("Y"=Y)
-    sigma.l2 <- "sigma.l2"
-    
-  } else if(family=="Weibull") {
-    
-    t <- l2dat %>% dplyr::rename(t=lhs[1], ev=lhs[2]) %>% dplyr::mutate(t=case_when(ev==0 ~ NA_real_, TRUE ~ t)) %>% .$t
-    t.cen <- l2dat %>% dplyr::rename(t=lhs[1], ev=lhs[2]) %>% dplyr::mutate(t.cens = t + ev) %>% .$t.cens
-    event <- l2dat %>% dplyr::rename(ev=lhs[2]) %>% .$ev
-    censored <- 1-event
-    
-    # for return container
-    Ys <- list("t"=t, "t.cen"=t.cen, "event"=event, "censored"=censored)
-    sigma.l2 <- "sigma.l2"
-    
-  } else if(family=="Cox") {
-    
-    t <- l2dat %>% dplyr::rename(t=lhs[1], ev=lhs[2]) %>% .$t
-    t.unique <- append(sort(unique(t)), max(t)+1) 
-    n.tu <- length(t.unique)-1
-    event <- l2dat %>% dplyr::rename(ev=lhs[2]) %>% .$ev
-    
-    # Counting process data
-    Y <- matrix(data = NA, nrow = n.l2, ncol = n.tu)
-    dN <- matrix(data = NA, nrow = n.l2, ncol = n.tu)
-    for(i in 1:n.l2) {
-      for(j in 1:n.tu) {
-        Y[i,j] <- as.numeric(t[i] - t.unique[j] + 1e-05 >= 0) # Risk set: Y[i,j] = 1 if t[j] >= t.unique[r] 
-        dN[i,j] <- Y[i,j] * event[i] * as.numeric(t.unique[j+1] - t[i] >= 1e-05)  # Number of failures in each time interval: dN[i,j] = 1 if t in [ t.unique[j], t.unique[j+1] )
-      }
-    }
-    
-    # for return container
-    Ys <- list("Y"=Y, "dN"=dN, "t"=t, "t.unique"=t.unique, "event"=event, "c"=0.001, "d"=0.1, "n.tu"=n.tu)
-    sigma.l2 <- c()
-    
-  }
   
   # ---------------------------------------------------------------------------------------------- #
   # Create jags.params and jags.data
@@ -152,43 +110,86 @@ createJagsVars <- function(data, family, level1, level2, level3, weightf, ids, l
   jags.data   <- c(l1.data, l2.data, l3.data, lw.data)
   
   # ---------------------------------------------------------------------------------------------- #
-  # Other model-specifics 
+  # Add model-specific params and data to jags.params and jags.data
   # ---------------------------------------------------------------------------------------------- #
   
   if(family=="Gaussian") {
     
     # Dependent variable
+    Y <- l2dat %>% dplyr::rename(Y = !!lhs) %>% .$Y
+    
+    # jags.data 
     jags.data <- append(jags.data, "Y")
     
-    # Initial values
+    # jags.inits
     jags.inits <- list() 
-
+    
+    # for return
+    Ys <- list("Y"=Y)
+    sigma.l2 <- "sigma.l2"
+    
   } else if(family=="Weibull") {
     
-    # Dependent variable
-    jags.data   <- append(jags.data, c("t", "t.cen", "censored"))
+    # Survival time and censoring bounds
+    t <- l2dat %>% dplyr::rename(t=!!lhs[1], ev=!!lhs[2]) %>% dplyr::mutate(t=case_when(ev==0 ~ NA_real_, TRUE ~ t)) %>% .$t # NA if no event / censored 
+    ct.lb <- l2dat %>% dplyr::rename(t=!!lhs[1], ev=!!lhs[2]) %>% dplyr::mutate(ct.lb = t + ev) %>% .$ct.lb # ct.lb > t if ev
+    ct.lbub <- if(length(lhs)==3) l2dat %>% dplyr::mutate(ct.lb=0) %>% dplyr::rename(ct.ub=!!lhs[3]) %>% dplyr::select(ct.lb, ct.ub) %>% as.matrix() else c() # lower and upper limit for predictions (if upper limit is provided)
     
-    # Additional parameters
+    # Event and censoring status
+    event <- l2dat %>% dplyr::rename(ev=!!lhs[2]) %>% .$ev
+    censored <- 1-event
+    if(monitor) ones <- rep(1, n.l2) 
+    
+    # jags.data
+    jags.data  <- append(jags.data, c("t", "ct.lb", "censored")) 
+    if(monitor & length(lhs)==3) jags.data <- append(jags.data, c("ct.lbub", "ones")) # predictions with upper bounds
+    
+    # jags.params
     jags.params <- append(jags.params, "shape")
     
-    # Initial values
+    # jags.inits
     t.init <- t
     t.init[] <- NA
-    t.init[censored==1] <- t.cen[censored==1] + 1 
+    t.init[censored==1] <- ct.lb[censored==1] + 1 
     
     jags.inits <- list(t=t.init, shape=1) 
-
+    
+    # for return
+    Ys <- list("t"=t, "ct.lb"=ct.lb, "ct.lbub"=ct.lbub, "event"=event, "censored"=censored, "ones"=ones)
+    sigma.l2 <- "sigma.l2"
+    
   } else if(family=="Cox") {
     
-    # Dependent variable
+    t <- l2dat %>% dplyr::rename(t=!!lhs[1], ev=!!lhs[2]) %>% .$t
+    t.unique <- append(sort(unique(t)), max(t)+1) 
+    n.tu <- length(t.unique)-1
+    event <- l2dat %>% dplyr::rename(ev=!!lhs[2]) %>% .$ev
+    
+    # Counting process data
+    Y <- matrix(data = NA, nrow = n.l2, ncol = n.tu)
+    dN <- matrix(data = NA, nrow = n.l2, ncol = n.tu)
+    for(i in 1:n.l2) {
+      for(j in 1:n.tu) {
+        Y[i,j] <- as.numeric(t[i] - t.unique[j] + 1e-05 >= 0) # Risk set: Y[i,j] = 1 if t[j] >= t.unique[r] 
+        dN[i,j] <- Y[i,j] * event[i] * as.numeric(t.unique[j+1] - t[i] >= 1e-05)  # Number of failures in each time interval: dN[i,j] = 1 if t in [ t.unique[j], t.unique[j+1] )
+      }
+    }
+    
+    # jags.data
     jags.data   <- append(jags.data, c("Y", "dN", "t.unique", "n.tu", "c", "d"))
     
-    # Initial values
+    # jags.inits
     jags.inits <- list(dL0 = rep(1.0, n.tu)) 
-
+    
+    # for return
+    Ys <- list("Y"=Y, "dN"=dN, "t"=t, "t.unique"=t.unique, "event"=event, "c"=0.001, "d"=0.1, "n.tu"=n.tu)
+    sigma.l2 <- c()
+    
   }
   
-  # Initial values ------------------------------------------------------------------------------- #
+  # ---------------------------------------------------------------------------------------------- #
+  # Modify jags.inits 
+  # ---------------------------------------------------------------------------------------------- #
   
   # Add user-defined inits
   jags.inits <- append(jags.inits, inits)
@@ -196,11 +197,15 @@ createJagsVars <- function(data, family, level1, level2, level3, weightf, ids, l
   # Repeat inits n.chains times
   jags.inits <- lapply(1:chains, function(x) { jags.inits } )
   
-  # Read model in if provided -------------------------------------------------------------------- #
+  # ---------------------------------------------------------------------------------------------- #
+  # Read model in if provided
+  # ---------------------------------------------------------------------------------------------- #
   
   if(is.character(modelfile)) modelstring <- readr::read_file(modelfile) 
   
-  # Collect return ------------------------------------------------------------------------------- #
+  # ---------------------------------------------------------------------------------------------- #
+  # Collect return
+  # ---------------------------------------------------------------------------------------------- #
 
   return(list("ids"= list("l1id"=l1id, "l2id"=l2id, "l3id"=l3id, "l1i1"=l1i1, "l1i1.l1"=l1i1.l1, "l1i2"=l1i2, "l1i2.l1"=l1i2.l1),
               "Ns" = list("n.l1"=n.l1, "l1n"=l1n, "n.ul1"=n.ul1, "n.l2"=n.l2, "n.l3"=n.l3, "n.Xl1"=n.Xl1, "n.Xl2"=n.Xl2, "n.Xl3"=n.Xl3, "n.Xw"=n.Xw, "n.GPN"=n.GPN, "n.GPNi"=n.GPNi, "n.GPn"=n.GPn),

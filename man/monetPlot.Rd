@@ -4,7 +4,7 @@
 \alias{monetPlot}
 \title{Create monetPlots for your rmm results.}
 \usage{
-monetPlot(rmm, parameter, lab = F, sav = F)
+monetPlot(rmm, parameter, lab = F, r = 3, sav = F)
 }
 \arguments{
 \item{rmm}{A rmm object. rmm has to be run with monitor=T}
@@ -13,10 +13,12 @@ monetPlot(rmm, parameter, lab = F, sav = F)
 
 \item{lab}{String to describe the parameter on the graph's x-axis. Optional. If not specified, the internal parameter name is used.}
 
+\item{r}{Specify number of decimal places. Default equals 3.}
+
 \item{sav}{TRUE or FALSE (default). If \code{TRUE}, the graph is saved to the current working directory as .png}
 }
 \value{
-Returns a plot.
+Returns a plot. The solid vertical is at 0 and the dashed vertical line is the mode of the posterior distributions.
 }
 \description{
 The function \strong{rmmmonetPlot} creates a density plot of the posterior 

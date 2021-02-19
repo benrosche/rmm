@@ -16,7 +16,7 @@ rmm(
   run = T,
   parallel = F,
   monitor = T,
-  hdi = 0.95,
+  hdi = F,
   r = 4,
   transform = "center",
   modelfile = F,
@@ -43,6 +43,8 @@ rmm(
 \item{run}{A logical value (True or False) indicating whether JAGS should estimate the model.}
 
 \item{monitor}{A logical value (True or False). If \code{True}, weights, random effects, predictions, and JAGS output is saved as well.}
+
+\item{hdi}{Numeric or False. If confidence level \code{x} is specified (e.g. x=0.95), mode, standard deviation, and (x*100)\% HDI are given. If \code{False} is specified, mean, standard deviation, and 95\% CI are given.}
 
 \item{r}{Numeric. Rounding value. Default is 3.}
 
@@ -97,7 +99,7 @@ multiple membership models by Rasbash and Browne (2001, 2008), the paper by Brow
   \item Gaussian continuous variable \code{Y}
   \item Binomial outcome for logistic regression \code{Y}
   \item Conditional logistic outcomes \code{???}
-  \item Weibull survival time: \code{Surv(survivaltime, event)}
+  \item Weibull survival time: \code{Surv(survivaltime, event)} or \code{Surv(survivaltime, event, upperlimit)} (where upperlimit is the upper limit for predictions(!))
   \item Cox survival time: \code{Surv(survivaltime, event)}
 }
 
@@ -167,13 +169,13 @@ I suggest starting with \code{priors = list("b.w"="dnorm(0,0.1)"} and then incre
 }
 \examples{
 data(coalgov)
-m1 <- rmm(Surv(govdur, earlyterm) ~ 1 + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/offset(n), constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
+m1 <- rmm(Surv(govdur, earlyterm, govmaxdur) ~ 1 + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/offset(n), constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
           family="Weibull", monitor=T, data=coalgov)
 m1$reg.table # the regression output
 m1$w         # the estimated weights
 m1$re.l1     # the level-1 random effects
 m1$re.l3     # the level-3 random effects
-m1$pred      # predicted values of the dependent variable (survival time for family="Weibull")
+m1$pred      # posterior predictions of the dependent variable (linear predictor for \code{family="Gaussian"}, survival time for \code{family="Weibull"})
 m1$input     # internal variables
 jags.out <- m1$jags.out # JAGS output
 monetPlot(m1, "b.l1") # monetPlot to inspect the posterior distribution of the model parameters

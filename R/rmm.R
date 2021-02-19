@@ -38,7 +38,7 @@
 #'   \item Gaussian continuous variable \code{Y}
 #'   \item Binomial outcome for logistic regression \code{Y}
 #'   \item Conditional logistic outcomes \code{???}
-#'   \item Weibull survival time: \code{Surv(survivaltime, event)}
+#'   \item Weibull survival time: \code{Surv(survivaltime, event)} or \code{Surv(survivaltime, event, upperlimit)} (where upperlimit is the upper limit for predictions(!))
 #'   \item Cox survival time: \code{Surv(survivaltime, event)}
 #' }
 #' 
@@ -115,7 +115,7 @@
 #' @param seed A random number.
 #' @param run A logical value (True or False) indicating whether JAGS should estimate the model.
 #' @param monitor A logical value (True or False). If \code{True}, weights, random effects, predictions, and JAGS output is saved as well.
-#' @param hdi Numeric or False. If confidence level \code{x} is specified (default \code{x=0.95}), \code{mode} and \code{(x*100)%} HDI estimates are given. If \code{False} is specified, \code{mean} and \code{95% CI} are given.
+#' @param hdi Numeric or False. If confidence level \code{x} is specified (e.g. x=0.95), mode, standard deviation, and (x*100)\% HDI are given. If \code{False} is specified, mean, standard deviation, and 95\% CI are given.
 #' @param r Numeric. Rounding value. Default is 3.
 #' @param transform Character vector or FALSE. Specifying \code{center} or \code{std} to center or standardize continuous predictors before estimation. Specifying \code{std2} will divide by two times the standard deviation, so that regression coefficients are comparable to those of binary predictors (Gelman 2008). 
 #' @param modelfile Character vector or TRUE|False. If TRUE, the JAGS model is saved in rmm/temp/modelstring.txt. If a file path is supplied as string, rmm will just create the data structure and use the provided modelfile. 
@@ -126,13 +126,13 @@
 #'         level-3 random effects (if specified in the model), predicted values of the dependent variable, and the internally created variables are returned. 
 #'         The last element of the list is the unformatted Jags output. 
 #' @examples data(coalgov)
-#' m1 <- rmm(Surv(govdur, earlyterm) ~ 1 + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/offset(n), constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
+#' m1 <- rmm(Surv(govdur, earlyterm, govmaxdur) ~ 1 + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/offset(n), constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
 #'           family="Weibull", monitor=T, data=coalgov)
 #' m1$reg.table # the regression output
 #' m1$w         # the estimated weights
 #' m1$re.l1     # the level-1 random effects
 #' m1$re.l3     # the level-3 random effects
-#' m1$pred      # predicted values of the dependent variable (survival time for family="Weibull")
+#' m1$pred      # posterior predictions of the dependent variable (linear predictor for \code{family="Gaussian"}, survival time for \code{family="Weibull"})
 #' m1$input     # internal variables
 #' jags.out <- m1$jags.out # JAGS output
 #' monetPlot(m1, "b.l1") # monetPlot to inspect the posterior distribution of the model parameters
@@ -142,7 +142,7 @@
 #' @references 
 #' Rosche, Benjamin (2021): On the multilevel structure of coalition governments
 
-rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, burnin=100, chains=3, seed=NULL, run=T, parallel=F, monitor=T, hdi=0.95, r=4, transform="center", modelfile=F, data=NULL) {
+rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, burnin=100, chains=3, seed=NULL, run=T, parallel=F, monitor=T, hdi=F, r=4, transform="center", modelfile=F, data=NULL) {
 
   # formula = Surv(govdur, earlyterm) ~ 1 + majority + mwc + fdep; family = "Weibull"; priors = list("b.l2"="dnorm(0,1)"); inits=NULL; iter=1000; burnin=100; chains = 3; seed = 123; run = T; parallel = F; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
   # source("./R/dissectFormula.R"); source("./R/createData.R"); source("./R/editModelstring.R"); source("./R/createJagsVars.R"); source("./R/formatJags.R"); 
