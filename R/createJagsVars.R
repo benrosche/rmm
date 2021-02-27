@@ -138,7 +138,7 @@ createJagsVars <- function(data, family, level1, level2, level3, weightf, ids, l
     # Event and censoring status
     event <- l2dat %>% dplyr::rename(ev=!!lhs[2]) %>% .$ev
     censored <- 1-event
-    if(monitor) ones <- rep(1, n.l2) 
+    ones <- if(monitor) rep(1, n.l2) else c()
     
     # jags.data
     jags.data  <- append(jags.data, c("t", "ct.lb", "censored")) 

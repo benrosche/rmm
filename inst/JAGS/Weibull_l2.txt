@@ -7,7 +7,7 @@ model {
     censored[j] ~ dinterval(t[j], ct.lb[j])  
     t[j] ~ dweib(shape, lambda[j])
     
-    # log(lambda) = aggregated(l1) + l2
+    # log(lambda) = l2
     log(lambda[j]) <- l2[j] 
     
     # Level 2: systematic component
