@@ -3,3 +3,8 @@
 ^rmm\.Rcheck$
 ^rmm.*\.tar\.gz$
 ^rmm.*\.tgz$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^\.github$
+^README\.Rmd$

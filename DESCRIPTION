@@ -1,11 +1,11 @@
 Package: rmm
 Type: Package
-Title: Micro-macro regression
+Title: Generalized multiple membership multilevel regression
 Version: 0.1.0
 Author: Benjamin Rosche
 Maintainer: Benjamin Rosche <benjamin.rosche@gmail.com>
-Description: The rmm package provides an interface to fit Bayesian regression models using JAGS. 
-    The focus of this package lies on micro-macro regressions.
+Description: The rmm package provides an interface to fit Bayesian multilevel regression models using JAGS. 
+    While the package allows fitting conventional multilevel models, the main purpose of this package is to fit micro-macro models.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
@@ -23,8 +23,12 @@ Depends:
     zeallot,
     ggplot2,
     cowplot
-URL: http://benrosche.net/rmm
+URL: http://benrosche.com/projects/rmm/
 BugReports: https://github.com/benrosche/rmm/issues
 RoxygenNote: 7.1.1
 Authors@R: person("Benjamin", "Rosche", role=c("aut", "cre"), 
     email="benjamin.rosche@gmail.com", comment=c(ORCID="0000-0001-5196-625X"))
+Suggests: 
+    rmarkdown,
+    knitr
+VignetteBuilder: knitr
