@@ -2,10 +2,13 @@ pandoc: 2.11.2
 pkgdown: 1.6.1.9001
 pkgdown_sha: b94fe3407a0b40a968425a64cdf7ae0c6705b1b1
 articles:
-  estimate-model: estimate-model.html
+  examples: examples.html
+  faq: faq.html
+  installation: installation.html
+  model: model.html
   rmm: rmm.html
-last_built: 2021-05-02T01:40Z
+last_built: 2021-05-02T21:11Z
 urls:
-  reference: http://benrosche.com/reference
-  article: http://benrosche.com/articles
+  reference: https://benrosche.github.io/rmm/reference
+  article: https://benrosche.github.io/rmm/articles
 

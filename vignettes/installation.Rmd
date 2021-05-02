@@ -1,0 +1,24 @@
+---
+title: "Installation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Installation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+Installation consists of three steps:
+
+1. Install JAGS: http://mcmc-jags.sourceforge.net/
+2. Install devtools if necessary: ```install.packages("devtools")```
+3. Install rmm: ```devtools::install_github("benrosche/rmm")```
+
+In some cases, dependencies are updated before installing the package. 
+
+If you get ```Error: (converted from warning) ...```, you can set ```Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = "true")```
