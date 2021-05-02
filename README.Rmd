@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 # rmm
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/benrosche/rmm/workflows/R-CMD-check/badge.svg)](https://github.com/benrosche/rmm/actions)
 <!-- badges: end -->
 
 The goal of rmm is to ...

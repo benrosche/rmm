@@ -5,5 +5,4 @@
 rmm.Rcheck/
 rmm*.tar.gz
 rmm*.tgz
-docs
 inst/doc
