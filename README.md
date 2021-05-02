@@ -36,3 +36,7 @@ If you would like to log an issue or submit a feature request, please create a n
 ### Changelog
 See [NEWS.md](https://github.com/benrosche/rmm/news/index.html) for the package changelog.
 
+<<<<<<< HEAD
+=======
+More information can be found [here](http://benrosche.com/projects/rmm/)
+>>>>>>> 8755cf19462215deb9bfe666403ee10b1cc89448
