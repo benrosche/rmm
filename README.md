@@ -62,16 +62,16 @@ are the level-1 units, governments are the level-2 units, and the
 relationship between parties and governments is the multiple membership
 structure.
 
-Multiple membership structures, however, are ubiquitous in the real
-world. Other applications include:
+This is just an example. Multiple membership structures are ubiquitous
+in the real world. Other applications include:
 
--   The MMMM can be used to model spatial structures. Level-1 units, in
+-   MMMM can be used to model **spatial structures**. Level-1 units, in
     this case, would be the neighborhoods in the influence sphere of the
     focal neighborhood, and level-2 units would be the focal
     neighborhoods. The benefit of using MMMM over other spatial
     regression models is that the weight matrix can be endogenized,
     which is not currently possible with other methods
--   The MMMM can be used to model network structures. While this
+-   MMMM can be used to model **network structures**. While this
     possibility has been explored in other work (Tranmer et al. 2014),
     the MMMM allows to endogenize the weight matrix, which is not
     currently possible with other multiple membership multilevel
