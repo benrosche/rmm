@@ -90,6 +90,7 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
+
 <div id="section" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#section" class="anchor" aria-hidden="true"></a><img src="reference/figures/rmm-hexagon.png" align="right">
@@ -99,6 +100,7 @@
 <a href="#bayesian-multiple-membership-multilevel-regression-models-with-endogenized-weights" class="anchor" aria-hidden="true"></a>Bayesian multiple membership multilevel regression models with endogenized weights</h3>
 <!-- badges: start -->
 
+<p><em>I am currently working on getting the package ready for a submission to CRAN.</em></p>
 <p>The rmm package provides an interface to fit Bayesian multiple membership multilevel models with endogenized weights using JAGS from within R for a variety of outcomes (linear, logit, conditional logit, Cox, Weibull).</p>
 <p>Most multilevel analyses examine how lower-level units (e.g. individuals) are affected by their embedding in contextual/aggregate units at a higher level (e.g. neighborhoods) (= macro-micro link). The rmm package uses the multiple membership multilevel model to conceptually reverse this setup. It allows studying how the effect of units at lower levels propagates to a higher level (= micro-macro link).</p>
 <p>Previous studies examining micro-macro links either aggregated or disaggregated the data. Both approaches obstruct the inherent aggregation problem, ignore dependencies among observations, which induces excessive Type-I and Type-II error, and cannot separate micro- from macro-level variance. The generalized multiple membership multilevel model (MMMM) is able to overcome these problems by explicitly modeling the aggregation from micro to macro level by including an aggregation function in the regression model. It is a theoretically and statistically sound solution to the study of micro-macro links with regression analysis.</p>
@@ -113,17 +115,27 @@
 <li><p>control dependencies that arise from a multiple membership (crisscrossing) data structure</p></li>
 <li><p>estimate the (residual) variance at the lower and the higher level</p></li>
 </ul>
-<p>The data strcuture that is being modeled looks like this:</p>
-<p>…</p>
-<p>This is how thr <code><a href="reference/rmm.html">rmm()</a></code> function looks like:</p>
+<p>This is the data structure that is being modeled:</p>
+</div>
+</div>
+<div id="section-1" class="section level1">
+<h1 class="hasAnchor">
+<a href="#section-1" class="anchor" aria-hidden="true"></a><img src="reference/figures/rmm-datastructure.png">
+</h1>
+<p>In this example of coalition governments in Israel, political parties are the level-1 units, governments are the level-2 units, and the relationship between parties and governments is the multiple membership structure.</p>
+<p>Multiple membership structures, however, are ubiquitous in the real world. Other applications include:</p>
+<ul>
+<li>The MMMM can be used to model spatial structures. Level-1 units, in this case, would be the neighborhoods in the influence sphere of the focal neighborhood, and level-2 units would be the focal neighborhoods. The benefit of using MMMM over other spatial regression models is that the weight matrix can be endogenized, which is not currently possible with other methods</li>
+<li>The MMMM can be used to model network structures. While this possibility has been explored in other work (Tranmer et al. 2014), the MMMM allows to endogenize the weight matrix, which is not currently possible with other multiple membership multilevel software, such as brms or MLWiN.</li>
+<li>more multiple membership structures in the wild: multi-party wars, treaties, international organizations</li>
+</ul>
+<p>This is how the <code><a href="reference/rmm.html">rmm()</a></code> function looks like:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">coalgov</span><span class="op">)</span>
 <span class="fu"><a href="reference/rmm.html">rmm</a></span><span class="op">(</span><span class="va">Y</span> <span class="op">~</span> <span class="fl">1</span> <span class="op">+</span> <span class="va">X_l2</span> <span class="op">+</span> 
       <span class="va">X_l3</span> <span class="op">+</span> <span class="fu">hm</span><span class="op">(</span>id<span class="op">=</span><span class="va">id_l3</span>, type<span class="op">=</span><span class="va">RE</span><span class="op">)</span> <span class="op">+</span>
       <span class="fu">mm</span><span class="op">(</span><span class="fu">id</span><span class="op">(</span><span class="va">id_l2</span>, <span class="va">id_l1</span><span class="op">)</span>, <span class="fu">mmc</span><span class="op">(</span><span class="va">X_l1</span><span class="op">)</span>, <span class="fu">mmw</span><span class="op">(</span><span class="va">w</span> <span class="op">~</span> <span class="fl">1</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">^</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="op">(</span><span class="va">X_w</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, 
     family<span class="op">=</span><span class="st">"Gaussian"</span>, data<span class="op">=</span><span class="va">coalgov</span><span class="op">)</span></code></pre></div>
-<p>More information can be found <a href="http://benrosche.com/projects/rmm/" class="external-link">here</a></p>
-</div>
 <div id="developers" class="section level3">
 <h3 class="hasAnchor">
 <a href="#developers" class="anchor" aria-hidden="true"></a>Developers</h3>
@@ -141,6 +153,7 @@
 <p>More information can be found <a href="http://benrosche.com/projects/rmm/" class="external-link">here</a></p>
 </div>
 </div>
+
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
