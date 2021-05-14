@@ -53,9 +53,9 @@ regression analysis.
 
 -   estimate the (residual) variance at the lower and the higher level
 
-The data structure that is being modeled looks like this:
+This is the data structure that is being modeled:
 
-# <img src="man/figures/rmm-datastructure.png" /> <br />
+# <img src="man/figures/rmm-datastructure.png" />
 
 In this example of coalition governments in Israel, political parties
 are the level-1 units, governments are the level-2 units, and the
@@ -63,17 +63,21 @@ relationship between parties and governments is the multiple membership
 structure.
 
 Multiple membership structures, however, are ubiquitous in the real
-world. Other applications: - rmm can be used to model spatial
-structures. Level-1 units, in this case, would be the neighborhoods in
-the influence sphere of the focal neighborhood, and level-2 units would
-be the focal neighborhoods. Using the rmm, the weight matrix could be
-endogenized, which is not currently possible with other spatial
-regression models. - rmm can be used to model network structures. While
-this possibility has been explored by other work (Tranmer et al. 2014),
-the rmm allows to endogenize the weight matrix, which is not currently
-possible with other multiple membership multilevel packages, such as
-MLWiN. - more multiple membership structures in the wild: multi-party
-wars, treaties, international organizations
+world. Other applications include:
+
+-   **rmm** can be used to model spatial structures. Level-1 units, in
+    this case, would be the neighborhoods in the influence sphere of the
+    focal neighborhood, and level-2 units would be the focal
+    neighborhoods. The benefit of using **rmm** over other spatial
+    regression models is that the weight matrix can be endogenized,
+    which is not currently possible with other methods
+-   **rmm** can be used to model network structures. While this
+    possibility has been explored in other work (Tranmer et al. 2014),
+    the **rmm** allows to endogenize the weight matrix, which is not
+    currently possible with other multiple membership multilevel
+    software, such as brms or MLWiN.
+-   more multiple membership structures in the wild: multi-party wars,
+    treaties, international organizations
 
 This is how the `rmm()` function looks like:
 
