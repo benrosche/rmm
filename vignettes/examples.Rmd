@@ -14,6 +14,134 @@ knitr::opts_chunk$set(
 )
 ```
 
+### E1: The effect of air quality on home values (Harrison & Rubenfield 1978)
+
+This **spatial analysis** example is based on [Harrison & Rubenfield 1978](https://www.sciencedirect.com/science/article/abs/pii/0095069678900062),
+who study the effect of air quality on home values. 
+
+The study uses census tract data from the Boston Standard Metropolitan Statistical Area in 1970. With tracts containing no housing units or comprised entirely of institutions excluded, the sample contains 506 census tracts. Air quality is measured by the concentration of nitric oxides in the air, which is obtained from a meteorological model (Transportation and Air Shed Simulation Model).
+
+I first load in the data and plot home values across town.
+
+```{r}
+suppressMessages({
+library(spData)     # spatial datasets
+library(sf)         # read spatial datasets
+library(spdep)      # create spatial weights
+library(spatialreg) # spatial regression models
+library(dplyr)
+library(ggplot2)
+library(rmm)
+})
+
+# Load spatial data from Boston
+boston <- 
+  read_sf(system.file("shapes/boston_tracts.shp", package = "spData")) %>%
+  select(CMEDV, NOX, CRIM, RM, DIS, AGE, geometry) %>% 
+  st_transform(crs = 5070) %>% # use Albers equal-area conic projection 
+  mutate(tid = row_number(), lnCMEDV=log(CMEDV)) %>% # unique tract id
+  relocate(tid, CMEDV, lnCMEDV)
+
+# Plot dependent variable: median home value 
+ggplot(boston, aes(fill = CMEDV)) +
+  geom_sf(color = NA) +
+  labs(fill = "Median home value") +
+  scale_fill_viridis_b() +
+  theme(legend.position = "bottom")
+```
+
+As a baseline, I estimate an OLS model (with a reduced set of covariates). The OLS model assumes independence of residuals across tracts.
+
+```{r}
+# OLS regression, which assumes independence of residuals across tracts
+mod1 <- lm(lnCMEDV ~ NOX + CRIM + RM + DIS + AGE, data = boston)
+
+# NOX  = nitric oxides concentration
+# CRIM = per capita crime
+# RM   = avg. number of rooms per dwelling
+# DIS  = weighted distance to five Boston employment centers
+# AGE  = proportion of units built prior 1940 
+
+summary(mod1)
+```
+
+Spatial regression models can roughly be differentiated into
+- Models with endogenous spatial effects: Y = WY + XB + e. That is, the outcome of other spatial units enter the regression equation.
+- Models with exogenous spatial effects: Y = XB + WXB + e. That is, the covariates of other spatial units enter the regression equation.
+- Models with residual spatial effects: Y = XB + We + e. That is, the residuals of other spatial units enter the regression equation.
+
+The difference between those models is not 
+
+Before we can estimate any of those models, we have to create a weight matrix:
+
+```{r}
+# Create weight matrix
+boston_nb <- poly2nb(as_Spatial(boston), row.names = boston$tid) # from polygon list to neighbor list
+
+boston_wlist <- nb2listw(boston_nb, style = "W") # weight matrix as list
+boston_wmat  <- nb2mat(boston_nb, zero.policy = TRUE) %>% as.matrix # weight matrix
+```
+
+The three spatial models:
+
+```{r}
+# Endogenous spatial effect: 
+mod2 <- lagsarlm(lnCMEDV ~ NOX + CRIM + RM + DIS + AGE,
+                 data = boston,
+                 listw = boston_wlist)
+
+# Exogenous spatial effect:
+mod3 <- lagsarlm(lnCMEDV ~ NOX + CRIM + RM + DIS + AGE,
+                 data = boston,
+                 listw = boston_wlist,
+                 Durbin =  ~ AGE) 
+  
+# Residual spatial effect:
+mod4 <- errorsarlm(lnCMEDV ~ NOX + CRIM + RM + DIS + AGE,
+                   data = boston,
+                   listw = boston_wlist)
+```
+
+We now wonder whether the spatial weight depends on covariates. The MMMM is able to estimate such a model.
+To estimate this model, we have to restructure the data into a dataframe:
+
+```{r}
+# Neighbor list to data.frame
+nb2df <- function(nb) {
+  return(
+    data.frame(tid = unlist( mapply(rep, 1:length(nb), sapply(nb, length), SIMPLIFY = FALSE) ), tid_nb = unlist(nb) )
+  )
+}
+
+boston_df <- 
+  nb2df(boston_nb) %>% 
+  group_by(tid) %>% 
+    mutate(n=n()) %>% 
+  ungroup() %>% 
+  inner_join(boston, by=c("tid")) %>% # own features
+  inner_join(                         # neighbor features
+    as.data.frame(boston) %>% 
+      select(-CMEDV,-lnCMEDV, -geometry) %>% 
+      rename_with(~paste0(.,"_nb")), 
+    by=c("tid_nb"))
+```
+
+Now we can estimate the MMMM:
+
+```{r}
+  
+mod.rmm1 <- 
+  rmm(lnCMEDV ~ 
+        mm(id(tid, tid_nb), mmc(NOX_nb + CRIM_nb + RM_nb + DIS_nb + AGE_nb), mmw(w ~ 1/offset(n), constraint=1)) + 
+        NOX + CRIM + RM + DIS + AGE, 
+      data = boston_df)
+
+names(mod.rmm1)
+
+mod.rmm1$reg.table
+
+```
+
 ### The effect of political parties' financial dependency on the survival coalition governments.
 
 ...

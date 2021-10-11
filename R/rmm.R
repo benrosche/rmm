@@ -140,7 +140,7 @@
 #' @export rmm
 #' @author Benjamin Rosche <benjamin.rosche@@gmail.com>
 #' @references 
-#' Rosche, Benjamin (2021): On the multilevel structure of coalition governments
+#' Rosche, B. (2021). A multilevel model for coalition governments: Uncovering dependencies within and across governments due to parties. https://doi.org/10.31235/osf.io/4bafr
 
 rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, burnin=100, chains=3, seed=NULL, run=T, parallel=F, monitor=T, hdi=F, r=4, transform="center", modelfile=F, data=NULL) {
 

@@ -1,4 +1,4 @@
-pandoc: 2.11.2
+pandoc: 2.14.0.3
 pkgdown: 1.6.1.9001
 pkgdown_sha: b94fe3407a0b40a968425a64cdf7ae0c6705b1b1
 articles:
@@ -7,7 +7,7 @@ articles:
   installation: installation.html
   model: model.html
   rmm: rmm.html
-last_built: 2021-05-14T20:43Z
+last_built: 2021-10-11T19:04Z
 urls:
   reference: https://benrosche.github.io/rmm/reference
   article: https://benrosche.github.io/rmm/articles
