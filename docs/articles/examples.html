@@ -277,7 +277,7 @@
 <p><strong>Results</strong>:</p>
 <ol style="list-style-type: decimal">
 <li><p>The spatial error model estimates that after conditioning on those five covariates, the residual is still spatially correlated, as <span class="math inline">\(\lambda=0.84\)</span>.</p></li>
-<li><p>The spatial lag model estimates an exogenous spatial effect for each of the considered covariates. The spatial effect of air quality, for instance, is estimate to be $_{WX}=0.09. That is, the home values of a given neighborhood (and given air quality) increase in value if the air quality of surrounding neighborhoods decreases.</p></li>
+<li><p>The spatial lag model estimates an exogenous spatial effect for each of the considered covariates. The spatial effect of air quality, for instance, is estimate to be <span class="math inline">\(\beta_{WX}=0.09\)</span>. That is, the home values of a given neighborhood (and given air quality) increase in value if the air quality of surrounding neighborhoods decreases.</p></li>
 <li><p>The spatial autoregessive (SAR) model estimates a endogenous spatial effect of <span class="math inline">\(\rho=0.67\)</span>. That is, the SAR summarizes the spatial dependency in one coefficient.</p></li>
 </ol>
 <div id="the-mmmm-for-spatial-analysis" class="section level4">
@@ -349,15 +349,15 @@
 
 <span class="va">mod.rmm1</span><span class="op">$</span><span class="va">reg.table</span>
 <span class="co">#&gt;          variable coefficients     sd      lb      ub    ppp</span>
-<span class="co">#&gt; b.l2[1]        X0       3.0392 0.3300  2.9868  3.0701 0.0004</span>
-<span class="co">#&gt; b.l2[2]       NOX      -0.1324 0.2498 -0.1774 -0.0826 0.0022</span>
-<span class="co">#&gt; b.l2[3]      CRIM      -0.0764 0.3549 -0.0998 -0.0617 0.0022</span>
-<span class="co">#&gt; b.l2[4]        RM       0.1394 0.2907  0.1066  0.1522 0.0007</span>
-<span class="co">#&gt; b.l2[5]       DIS      -0.0905 0.4350 -0.1458 -0.0293 0.0022</span>
-<span class="co">#&gt; b.l2[6]       AGE      -0.0954 0.1988 -0.1341 -0.0622 0.0015</span>
-<span class="co">#&gt; sigma.l1 sigma.l1       0.4697 0.9396  0.3868  0.4887     NA</span>
-<span class="co">#&gt; sigma.l2 sigma.l2       0.2257 1.9091  0.1350  0.1645     NA</span>
-<span class="co">#&gt; DIC           DIC   36792.8731     NA      NA      NA     NA</span>
+<span class="co">#&gt; b.l2[1]        X0       3.0321 0.2015  2.9881  3.0726 0.0004</span>
+<span class="co">#&gt; b.l2[2]       NOX      -0.1399 0.3038 -0.1797 -0.0829 0.0011</span>
+<span class="co">#&gt; b.l2[3]      CRIM      -0.0789 0.3826 -0.0996 -0.0616 0.0019</span>
+<span class="co">#&gt; b.l2[4]        RM       0.1331 0.3464  0.1065  0.1514 0.0007</span>
+<span class="co">#&gt; b.l2[5]       DIS      -0.1105 0.8414 -0.1513 -0.0299 0.0033</span>
+<span class="co">#&gt; b.l2[6]       AGE      -0.1064 0.3776 -0.1357 -0.0615 0.0015</span>
+<span class="co">#&gt; sigma.l1 sigma.l1       0.4453 0.2864  0.3865  0.4888     NA</span>
+<span class="co">#&gt; sigma.l2 sigma.l2       0.2193 1.8668  0.1345  0.1647     NA</span>
+<span class="co">#&gt; DIC           DIC   32177.7906     NA      NA      NA     NA</span>
 
 <span class="co"># Spatial fixed effects + spatial random effect:</span>
 <span class="va">mod.rmm2</span> <span class="op">&lt;-</span>
@@ -381,20 +381,20 @@
 <span class="co">#&gt; Initializing model</span>
 <span class="va">mod.rmm2</span><span class="op">$</span><span class="va">reg.table</span>
 <span class="co">#&gt;          variable coefficients     sd      lb      ub    ppp</span>
-<span class="co">#&gt; b.l1[1]    NOX_nb      -0.0399 1.0378 -0.0794  0.0234 0.1400</span>
-<span class="co">#&gt; b.l1[2]   CRIM_nb      -0.0277 0.2616 -0.0541 -0.0068 0.0067</span>
-<span class="co">#&gt; b.l1[3]     RM_nb       0.0145 0.2704 -0.0121  0.0337 0.1756</span>
-<span class="co">#&gt; b.l1[4]    DIS_nb      -0.0078 0.8549 -0.0933  0.0807 0.4467</span>
-<span class="co">#&gt; b.l1[5]    AGE_nb       0.0031 0.2954 -0.0350  0.0399 0.4485</span>
-<span class="co">#&gt; b.l2[1]        X0       3.0347 0.3127  2.9883  3.0706 0.0004</span>
-<span class="co">#&gt; b.l2[2]       NOX      -0.1233 0.6925 -0.1682 -0.0692 0.0030</span>
-<span class="co">#&gt; b.l2[3]      CRIM      -0.0734 0.2094 -0.0973 -0.0594 0.0026</span>
-<span class="co">#&gt; b.l2[4]        RM       0.1345 0.2985  0.1049  0.1515 0.0022</span>
-<span class="co">#&gt; b.l2[5]       DIS      -0.1023 0.2574 -0.1938 -0.0074 0.0156</span>
-<span class="co">#&gt; b.l2[6]       AGE      -0.0809 0.5005 -0.1313 -0.0568 0.0030</span>
-<span class="co">#&gt; sigma.l1 sigma.l1       0.4462 0.7618  0.3708  0.4727     NA</span>
-<span class="co">#&gt; sigma.l2 sigma.l2       0.2304 1.9173  0.1373  0.1683     NA</span>
-<span class="co">#&gt; DIC           DIC   38317.7495     NA      NA      NA     NA</span>
+<span class="co">#&gt; b.l1[1]    NOX_nb      -0.0446 0.5878 -0.0787  0.0214 0.1356</span>
+<span class="co">#&gt; b.l1[2]   CRIM_nb      -0.0273 0.2136 -0.0520 -0.0048 0.0115</span>
+<span class="co">#&gt; b.l1[3]     RM_nb       0.0157 0.2733 -0.0134  0.0325 0.1915</span>
+<span class="co">#&gt; b.l1[4]    DIS_nb      -0.0220 0.8619 -0.0936  0.0867 0.4541</span>
+<span class="co">#&gt; b.l1[5]    AGE_nb       0.0116 0.2533 -0.0330  0.0413 0.4326</span>
+<span class="co">#&gt; b.l2[1]        X0       3.0219 0.5132  2.9882  3.0697 0.0007</span>
+<span class="co">#&gt; b.l2[2]       NOX      -0.1113 1.0844 -0.1684 -0.0660 0.0011</span>
+<span class="co">#&gt; b.l2[3]      CRIM      -0.0784 0.1892 -0.0975 -0.0595 0.0015</span>
+<span class="co">#&gt; b.l2[4]        RM       0.1200 0.4808  0.1060  0.1507 0.0015</span>
+<span class="co">#&gt; b.l2[5]       DIS      -0.0931 0.5252 -0.1972 -0.0033 0.0222</span>
+<span class="co">#&gt; b.l2[6]       AGE      -0.1126 0.6765 -0.1329 -0.0582 0.0011</span>
+<span class="co">#&gt; sigma.l1 sigma.l1       0.4454 0.7051  0.3726  0.4724     NA</span>
+<span class="co">#&gt; sigma.l2 sigma.l2       0.2338 2.0130  0.1368  0.1674     NA</span>
+<span class="co">#&gt; DIC           DIC   38215.1477     NA      NA      NA     NA</span>
 
 <span class="co"># Calculate spatial correlation in the residual</span>
 <span class="va">getLambda</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span>
@@ -404,19 +404,16 @@
 <span class="op">}</span>
 
 <span class="op">(</span><span class="va">lambda1</span> <span class="op">&lt;-</span> <span class="fu">getLambda</span><span class="op">(</span><span class="va">mod.rmm1</span><span class="op">)</span><span class="op">)</span>
-<span class="co">#&gt; [1] 0.8124144</span>
+<span class="co">#&gt; [1] 0.8048072</span>
 <span class="op">(</span><span class="va">lambda2</span> <span class="op">&lt;-</span> <span class="fu">getLambda</span><span class="op">(</span><span class="va">mod.rmm2</span><span class="op">)</span><span class="op">)</span>
-<span class="co">#&gt; [1] 0.7894978</span></code></pre></div>
-<p>Lets look at the <code><a href="../reference/rmm.html">rmm()</a></code> function in more detail.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="op">?</span><span class="va">rmm</span></code></pre></div>
-<div class="figure">
-<img src="examples_files/rmm-help.jpg" style="width:75.0%" alt=""><p class="caption">rmm helpfile</p>
-</div>
+<span class="co">#&gt; [1] 0.7839802</span></code></pre></div>
+<p>Lets look at the <code><a href="../reference/rmm.html">rmm()</a></code> function in more detail by typing <code><a href="../reference/rmm.html">?rmm</a></code>:</p>
+<p><img src="examples_files/rmm-help.jpg" style="width:75.0%"></p>
+<p><strong>The formula object</strong></p>
 <p>The most important part is the <code>formula</code> object, which is our case looks like this: <code>lnCMEDV ~ NOX + CRIM + RM + DIS + AGE + mm(id(tid, tid_nb), mmc(NOX_nb + CRIM_nb + RM_nb + DIS_nb + AGE_nb), mmw(w ~ 1/offset(n), constraint=1))</code></p>
 <p>The only change compared to a <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> formula is the <code>mm()</code> container. Within this container, we specify 3 containers, <code>ids()</code> for the ids, <code>mmc()</code> for the considered covariates, and <code>mmw()</code> to endogenize the weight function. Here <code>w ~ 1/offset(n)</code> is specified, which implements the row-standardized weight.</p>
 <p>The combination of spatial lag and spatial error model can also be estimated in the spatial regression framework. Let us do that and compare the estimates:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R">
 <span class="co"># Exogenous + residual spatial effect (combination of spatial lag model and spatial error model):  </span>
 <span class="va">mod2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spdep/man/spdep-deprecated.html" class="external-link">errorsarlm</a></span><span class="op">(</span><span class="va">lnCMEDV</span> <span class="op">~</span> <span class="va">NOX</span> <span class="op">+</span> <span class="va">CRIM</span> <span class="op">+</span> <span class="va">RM</span> <span class="op">+</span> <span class="va">DIS</span> <span class="op">+</span> <span class="va">AGE</span>,
@@ -480,14 +477,14 @@
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>position<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/position_dodge.html" class="external-link">position_dodge</a></span><span class="op">(</span>width<span class="op">=</span><span class="fl">0.3</span><span class="op">)</span><span class="op">)</span><span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_linerange.html" class="external-link">geom_pointrange</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>ymin <span class="op">=</span> <span class="va">lb</span>, ymax <span class="op">=</span> <span class="va">ub</span><span class="op">)</span>, position<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/position_dodge.html" class="external-link">position_dodge</a></span><span class="op">(</span>width<span class="op">=</span><span class="fl">0.3</span><span class="op">)</span><span class="op">)</span><span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Coefficients"</span>, x <span class="op">=</span> <span class="st">"Variables"</span>, y<span class="op">=</span><span class="st">""</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_flip.html" class="external-link">coord_flip</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
-<p><img src="examples_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
+<p><img src="examples_files/figure-html/unnamed-chunk-7-1.png" width="700"></p>
 <p>The estimates are similar but not identical. This is due to the different estimation algorithm (maximum likelihood vs Bayesian MCMC) and because the models are not 100% identical.</p>
 <p>The advantage of <code>errorsarlm</code> is that estimation is faster and the errors are endogenous. So if this model is what you want, it’s probably best to estimate it with the <code>spatialreg</code> package.</p>
 <p><strong>Weight function regression</strong></p>
 <p>The MMMM, however, allows to make the weights a function of covariates. That is, instead of assuming a specific weighting regime, we can estimate whether the influence of a neighbor on a location depends on some covariates.</p>
 <p>For this example, I hypothesize that the weight of a neighbor in the total neighborhood effect depends on the similarity between neighbor and focal location, which is an idea I borrow from social network theory.</p>
 <p>I calculate <em>similarity</em> as the average absolute difference between a neighbor and the focal location on the six considered covariates.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Homogeneity of focal location to its neighbors </span>
 <span class="va">boston_df2</span> <span class="op">&lt;-</span> <span class="va">boston_df</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>DIFF<span class="op">=</span><span class="fl">1</span><span class="op">/</span><span class="fl">6</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">NOX</span><span class="op">-</span><span class="va">NOX_nb</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">CRIM</span><span class="op">-</span><span class="va">CRIM_nb</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">RM</span><span class="op">-</span><span class="va">RM_nb</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">DIS</span><span class="op">-</span><span class="va">DIS_nb</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">AGE</span><span class="op">-</span><span class="va">AGE_nb</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">LSTAT</span><span class="op">-</span><span class="va">LSTAT_nb</span><span class="op">)</span><span class="op">)</span> </code></pre></div>
 <p>The weight function is specified in the <code>mmw()</code> container. Any function that produces weights that are bounded can be specified here. Functions, such as <em>min, max, sum</em> etc., can also be included in the weight function. Here I consider the following functional form: <span class="math inline">\(w=\frac{1}{n^{exp(X\beta)}}\)</span>, where <span class="math inline">\(n\)</span> is the number of neighbors of location <span class="math inline">\(i\)</span>, and <span class="math inline">\(X\beta\)</span> are the covariates on which to base the weights on. The benefit of this function is that it is bounded between 0 and 1 and if <span class="math inline">\(X\beta=\boldsymbol{0}\)</span>, the weights reduce to <span class="math inline">\(w=\frac{1}{n}\)</span>, which are the default row-standardized weights.</p>
@@ -501,7 +498,7 @@
 </ul>
 <p>Both constrains identify the model but have different substantive interpretations.</p>
 <p>Here I allow the weights to differ within and across location:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Spatial fixed effects + spatial random effect with "endogenized" weights:</span>
 <span class="va">mod.rmm3</span> <span class="op">&lt;-</span>
   <span class="fu"><a href="../reference/rmm.html">rmm</a></span><span class="op">(</span><span class="va">lnCMEDV</span> <span class="op">~</span>
@@ -525,45 +522,48 @@
 
 <span class="va">mod.rmm3</span><span class="op">$</span><span class="va">reg.table</span>
 <span class="co">#&gt;          variable coefficients      sd        lb      ub    ppp</span>
-<span class="co">#&gt; b.l1[1]    NOX_nb      -0.0026  0.0248   -0.0500  0.0466 0.4526</span>
-<span class="co">#&gt; b.l1[2]   CRIM_nb      -0.0907  0.0639   -0.1880  0.0031 0.0437</span>
-<span class="co">#&gt; b.l1[3]     RM_nb       0.0294  0.0195   -0.0049  0.0656 0.0581</span>
-<span class="co">#&gt; b.l1[4]    DIS_nb       0.0141  0.0424   -0.0723  0.0878 0.3522</span>
-<span class="co">#&gt; b.l1[5]    AGE_nb      -0.0038  0.0207   -0.0444  0.0349 0.4389</span>
-<span class="co">#&gt; b.l2[1]        X0       3.0130  0.0164    2.9782  3.0443 0.0000</span>
-<span class="co">#&gt; b.l2[2]       NOX      -0.0922  0.0282   -0.1458 -0.0373 0.0004</span>
-<span class="co">#&gt; b.l2[3]      CRIM      -0.1012  0.0190   -0.1314 -0.0627 0.0000</span>
-<span class="co">#&gt; b.l2[4]        RM       0.1542  0.0129    0.1294  0.1793 0.0000</span>
-<span class="co">#&gt; b.l2[5]       DIS      -0.0930  0.0443   -0.1705  0.0005 0.0263</span>
-<span class="co">#&gt; b.l2[6]       AGE      -0.0789  0.0231   -0.1214 -0.0323 0.0000</span>
-<span class="co">#&gt; b.w[2]       DIFF     -45.3288 54.9796 -192.7200  0.2555 0.3333</span>
-<span class="co">#&gt; sigma.l1 sigma.l1       0.1930  0.1405    0.0136  0.4183     NA</span>
-<span class="co">#&gt; sigma.l2 sigma.l2       0.2149  0.0537    0.1301  0.2682     NA</span>
-<span class="co">#&gt; DIC           DIC     160.7729      NA        NA      NA     NA</span></code></pre></div>
+<span class="co">#&gt; b.l1[1]    NOX_nb      -0.0098  0.0245   -0.0583  0.0406 0.3363</span>
+<span class="co">#&gt; b.l1[2]   CRIM_nb      -0.0506  0.0622   -0.1795  0.0054 0.0956</span>
+<span class="co">#&gt; b.l1[3]     RM_nb       0.0201  0.0182   -0.0061  0.0623 0.0974</span>
+<span class="co">#&gt; b.l1[4]    DIS_nb      -0.0040  0.0437   -0.0873  0.0829 0.4463</span>
+<span class="co">#&gt; b.l1[5]    AGE_nb      -0.0014  0.0191   -0.0398  0.0341 0.4789</span>
+<span class="co">#&gt; b.l2[1]        X0       3.0094  0.0167    2.9758  3.0413 0.0000</span>
+<span class="co">#&gt; b.l2[2]       NOX      -0.1000  0.0269   -0.1506 -0.0462 0.0000</span>
+<span class="co">#&gt; b.l2[3]      CRIM      -0.0906  0.0196   -0.1290 -0.0580 0.0000</span>
+<span class="co">#&gt; b.l2[4]        RM       0.1524  0.0123    0.1289  0.1768 0.0000</span>
+<span class="co">#&gt; b.l2[5]       DIS      -0.0731  0.0466   -0.1631  0.0153 0.0530</span>
+<span class="co">#&gt; b.l2[6]       AGE      -0.0867  0.0219   -0.1264 -0.0395 0.0004</span>
+<span class="co">#&gt; b.w[2]       DIFF     -23.0008 43.0749 -148.8816  0.2729 0.6548</span>
+<span class="co">#&gt; sigma.l1 sigma.l1       0.2856  0.1405    0.0259  0.4282     NA</span>
+<span class="co">#&gt; sigma.l2 sigma.l2       0.1786  0.0541    0.1281  0.2662     NA</span>
+<span class="co">#&gt; DIC           DIC    2117.5613      NA        NA      NA     NA</span></code></pre></div>
 <p>We find that the difference between location and neighbors significantly impacts the weights. However, opposite to the homophily idea. Those neighbors that are very different to the focal location in terms of air quality, level of crime, etc. have a stronger influence on the home values in the focal neighborhood.</p>
 <p>Such a insight is impossible to generate with the conventional spatial regression package. Let us have a look at the weight estimates:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R">
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="va">mod.rmm3</span><span class="op">$</span><span class="va">w</span>, sum<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/Matrix/man/colSums.html" class="external-link">rowSums</a></span><span class="op">(</span><span class="va">mod.rmm3</span><span class="op">$</span><span class="va">w</span>, na.rm <span class="op">=</span> <span class="cn">T</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
 <span class="co">#&gt;               W1     W2     W3     W4     W5     W6     W7     W8     W9 W10</span>
-<span class="co">#&gt; L2 unit 1 0.2216 0.2084 0.2165 0.2219 0.0574 0.1133 0.1313 0.1828     NA  NA</span>
-<span class="co">#&gt; L2 unit 2 0.2595 0.2454 0.2399 0.2318     NA     NA     NA     NA     NA  NA</span>
-<span class="co">#&gt; L2 unit 3 0.2084 0.2131 0.2057 0.2140 0.0438 0.0456 0.1057 0.1154     NA  NA</span>
-<span class="co">#&gt; L2 unit 4 0.2399 0.2324 0.2495 0.2405     NA     NA     NA     NA     NA  NA</span>
-<span class="co">#&gt; L2 unit 5 0.2108 0.2122 0.2126 0.0374 0.0820 0.0914 0.0382 0.0687 0.0754  NA</span>
-<span class="co">#&gt; L2 unit 6 0.2275 0.2132 0.2195 0.2269 0.2327 0.2209     NA     NA     NA  NA</span>
+<span class="co">#&gt; L2 unit 1 0.1620 0.1637 0.1500 0.1640 0.1130 0.2226 0.2580 0.1527     NA  NA</span>
+<span class="co">#&gt; L2 unit 2 0.2359 0.2066 0.1957 0.1798     NA     NA     NA     NA     NA  NA</span>
+<span class="co">#&gt; L2 unit 3 0.1637 0.1431 0.1283 0.1449 0.0861 0.0898 0.2077 0.2267     NA  NA</span>
+<span class="co">#&gt; L2 unit 4 0.1957 0.1810 0.2148 0.1968     NA     NA     NA     NA     NA  NA</span>
+<span class="co">#&gt; L2 unit 5 0.1385 0.1414 0.1423 0.0734 0.1612 0.1796 0.0751 0.1350 0.1483  NA</span>
+<span class="co">#&gt; L2 unit 6 0.1715 0.1432 0.1555 0.1704 0.1924 0.1583     NA     NA     NA  NA</span>
 <span class="co">#&gt;           W11 W12 W13 W14 W15    sum</span>
-<span class="co">#&gt; L2 unit 1  NA  NA  NA  NA  NA 1.3532</span>
-<span class="co">#&gt; L2 unit 2  NA  NA  NA  NA  NA 0.9766</span>
-<span class="co">#&gt; L2 unit 3  NA  NA  NA  NA  NA 1.1517</span>
-<span class="co">#&gt; L2 unit 4  NA  NA  NA  NA  NA 0.9623</span>
-<span class="co">#&gt; L2 unit 5  NA  NA  NA  NA  NA 1.0287</span>
-<span class="co">#&gt; L2 unit 6  NA  NA  NA  NA  NA 1.3407</span>
+<span class="co">#&gt; L2 unit 1  NA  NA  NA  NA  NA 1.3860</span>
+<span class="co">#&gt; L2 unit 2  NA  NA  NA  NA  NA 0.8180</span>
+<span class="co">#&gt; L2 unit 3  NA  NA  NA  NA  NA 1.1903</span>
+<span class="co">#&gt; L2 unit 4  NA  NA  NA  NA  NA 0.7883</span>
+<span class="co">#&gt; L2 unit 5  NA  NA  NA  NA  NA 1.1948</span>
+<span class="co">#&gt; L2 unit 6  NA  NA  NA  NA  NA 0.9913</span>
 
 <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/Matrix/man/colSums.html" class="external-link">rowSums</a></span><span class="op">(</span><span class="va">mod.rmm3</span><span class="op">$</span><span class="va">w</span>, na.rm <span class="op">=</span> <span class="cn">T</span><span class="op">)</span><span class="op">)</span>
-<span class="co">#&gt; [1] 505.9987</span></code></pre></div>
-<p>end.</p>
-<p>To do: - Introduce predict() function - Compare predicitve performance</p>
+<span class="co">#&gt; [1] 505.9991</span></code></pre></div>
+<p>To do:</p>
+<ul>
+<li>Introduce predict() function</li>
+<li>Compare predicitve performance</li>
+</ul>
 </div>
 </div>
   </div>
