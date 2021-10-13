@@ -100,14 +100,23 @@
 
     
     
-<div id="e1-the-effect-of-air-quality-on-home-values-harrison-rubenfield-1978" class="section level3">
+<p>I provide three examples on how the MMMM can be employed to study spatial, network, and aggregation problems</p>
+<ul>
+<li>
+<a href="#e1">Example 1: The effect of air quality on home values</a> (spatial regression)</li>
+<li>
+<a href="#e2">Example 2: Network regression example</a> (network regression)</li>
+<li>
+<a href="#e3">Example 3: The effect of political parties’ financial dependency on the survival coalition governments</a> (aggregation regression)</li>
+</ul>
+<div id="e1" class="section level3">
 <h3 class="hasAnchor">
-<a href="#e1-the-effect-of-air-quality-on-home-values-harrison-rubenfield-1978" class="anchor" aria-hidden="true"></a>E1: The effect of air quality on home values (Harrison &amp; Rubenfield 1978)</h3>
+<a href="#e1" class="anchor" aria-hidden="true"></a>The effect of air quality on home values</h3>
 <p>This <strong>spatial analysis</strong> example is based on <a href="https://www.sciencedirect.com/science/article/abs/pii/0095069678900062" class="external-link">Harrison &amp; Rubenfield 1978</a>, who study the effect of air quality on home values.</p>
-<p>The study uses census tract data from the Boston Standard Metropolitan Statistical Area in 1970. With tracts containing no housing units or comprised entirely of institutions excluded, the sample contains 506 census tracts. Air quality is measured by the concentration of nitric oxides in the air, which is obtained from a meteorological model (Transportation and Air Shed Simulation Model).</p>
-<p>I first load in the data and plot home values across town.</p>
+<p>The study employs census tract data from the Boston Standard Metropolitan Statistical Area in 1970. With tracts containing no housing units or comprised entirely of institutions excluded, the sample contains 506 census tracts. Air quality is measured by the concentration of nitric oxides in the air, which is obtained from a meteorological model (Transportation and Air Shed Simulation Model). I refer to their paper for more information on data and operationalization.</p>
+<p>Let us load in the data and plot the home values across town:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span><span class="op">{</span>
+<code class="sourceCode R">
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://nowosad.github.io/spData/" class="external-link">spData</a></span><span class="op">)</span>     <span class="co"># spatial datasets</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span>         <span class="co"># read spatial datasets</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/r-spatial/spdep/" class="external-link">spdep</a></span><span class="op">)</span>      <span class="co"># create spatial weights</span>
@@ -115,93 +124,171 @@
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://benrosche.net/rmm" class="external-link">rmm</a></span><span class="op">)</span>
-<span class="op">}</span><span class="op">)</span>
-<span class="co">#&gt; Warning: package 'spdep' was built under R version 4.0.5</span>
-<span class="co">#&gt; Warning: package 'spatialreg' was built under R version 4.0.5</span>
-<span class="co">#&gt; Warning: package 'dplyr' was built under R version 4.0.5</span>
-<span class="co">#&gt; Warning: package 'ggplot2' was built under R version 4.0.5</span>
-<span class="co">#&gt; Warning: package 'tibble' was built under R version 4.0.5</span>
-<span class="co">#&gt; Warning: package 'MCMCvis' was built under R version 4.0.5</span>
 
 <span class="co"># Load spatial data from Boston</span>
 <span class="va">boston</span> <span class="op">&lt;-</span> 
   <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_read.html" class="external-link">read_sf</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"shapes/boston_tracts.shp"</span>, package <span class="op">=</span> <span class="st">"spData"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
-  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">CMEDV</span>, <span class="va">NOX</span>, <span class="va">CRIM</span>, <span class="va">RM</span>, <span class="va">DIS</span>, <span class="va">AGE</span>, <span class="va">geometry</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">CMEDV</span>, <span class="va">NOX</span>, <span class="va">CRIM</span>, <span class="va">RM</span>, <span class="va">DIS</span>, <span class="va">AGE</span>, <span class="va">LSTAT</span>, <span class="va">geometry</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
   <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_transform.html" class="external-link">st_transform</a></span><span class="op">(</span>crs <span class="op">=</span> <span class="fl">5070</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="co"># use Albers equal-area conic projection </span>
-  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>tid <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/ranking.html" class="external-link">row_number</a></span><span class="op">(</span><span class="op">)</span>, lnCMEDV<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">CMEDV</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="co"># unique tract id</span>
-  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/relocate.html" class="external-link">relocate</a></span><span class="op">(</span><span class="va">tid</span>, <span class="va">CMEDV</span>, <span class="va">lnCMEDV</span><span class="op">)</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>tid <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/ranking.html" class="external-link">row_number</a></span><span class="op">(</span><span class="op">)</span>, lnCMEDV<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">CMEDV</span><span class="op">)</span>, <span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">NOX</span>, <span class="va">CRIM</span>, <span class="va">RM</span>, <span class="va">DIS</span>, <span class="va">AGE</span>, <span class="va">LSTAT</span><span class="op">)</span>, <span class="va">scale</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/relocate.html" class="external-link">relocate</a></span><span class="op">(</span><span class="va">tid</span>, <span class="va">CMEDV</span>, <span class="va">lnCMEDV</span><span class="op">)</span> 
 
-<span class="co"># Plot dependent variable: median home value </span>
+<span class="co"># Dependent variable:</span>
+<span class="co"># lnCMEDV = ln(median home value in $1000)</span>
+
+<span class="co"># Plot median home values across Boston</span>
 <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">boston</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">CMEDV</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>color <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="st">"Median home value"</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_viridis.html" class="external-link">scale_fill_viridis_b</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span></code></pre></div>
 <p><img src="examples_files/figure-html/unnamed-chunk-2-1.png" width="700"></p>
-<p>As a baseline, I estimate an OLS model (with a reduced set of covariates). The OLS model assumes independence of residuals across tracts.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># OLS regression, which assumes independence of residuals across tracts</span>
-<span class="va">mod1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">lnCMEDV</span> <span class="op">~</span> <span class="va">NOX</span> <span class="op">+</span> <span class="va">CRIM</span> <span class="op">+</span> <span class="va">RM</span> <span class="op">+</span> <span class="va">DIS</span> <span class="op">+</span> <span class="va">AGE</span>, data <span class="op">=</span> <span class="va">boston</span><span class="op">)</span>
+<code class="sourceCode R"><span class="co"># Explanatory variables (all have been standardized):</span>
+<span class="co"># NOX     = nitric oxides concentration </span>
+<span class="co"># CRIM    = per capita crime</span>
+<span class="co"># RM      = avg. number of rooms per dwelling</span>
+<span class="co"># DIS     = weighted distance to five Boston employment centers</span>
+<span class="co"># AGE     = proportion of units built prior 1940 </span>
+<span class="co"># LSTAT   = percentage working-class population</span></code></pre></div>
+<p>Let us first consider three canonical spatial regression models:</p>
+<ol style="list-style-type: decimal">
+<li>Residual spatial effect: <span class="math inline">\(Y = XB + W\epsilon + \epsilon\)</span>. This model is labeled <em>spatial error model</em> because the residuals of other spatial units enter the regression equation.</li>
+<li>Exogenous spatial effects: <span class="math inline">\(Y = XB + WXB + \epsilon\)</span>. This model is labeled the <em>spatial lag model</em> because the covariates of other spatial units enter the regression equation.</li>
+<li>Endogenous spatial effect: <span class="math inline">\(Y = WY + XB + \epsilon\)</span>. This model is labeled the <em>spatial autoregressive model</em> because the outcomes of other spatial units enter the regression equation.</li>
+</ol>
+<p>More information on those models and combinations of them can be found in <a href="https://www.sciencedirect.com/science/article/pii/B9780444595171000039" class="external-link">Gibbons, Overman &amp; Patacchini 2015</a>.</p>
+<p>To specify any of those models, we have to create a <em>spatial weight matrix</em> <span class="math inline">\(W\)</span>, which imposes a structure in terms of what are the neighbors for each location. <span class="math inline">\(W\)</span> is a NxN table, where N equals the number of neighborhoods. Each weight <span class="math inline">\(w_{ij}\)</span> represents the relationship between location <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span> and, by convention, <span class="math inline">\(w_{ij}=0\)</span> for diagonal elements. The relationship can either be based on direct contiguity and therefore binary (1=neighbor, 0=otherwise), or based on distance and therefore continuous. Continuous weights are often row-standardized so that the weights of all neighbors j of location i sum to 1.</p>
+<p>The R package <code>spatialreg</code> takes the weight matrix as list:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># Create row-standardized weight matrix</span>
+<span class="va">boston_nb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spdep/man/poly2nb.html" class="external-link">poly2nb</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/coerce-methods.html" class="external-link">as_Spatial</a></span><span class="op">(</span><span class="va">boston</span><span class="op">)</span>, row.names <span class="op">=</span> <span class="va">boston</span><span class="op">$</span><span class="va">tid</span><span class="op">)</span> <span class="co"># from polygon list to neighbor list</span>
 
-<span class="co"># NOX  = nitric oxides concentration</span>
-<span class="co"># CRIM = per capita crime</span>
-<span class="co"># RM   = avg. number of rooms per dwelling</span>
-<span class="co"># DIS  = weighted distance to five Boston employment centers</span>
-<span class="co"># AGE  = proportion of units built prior 1940 </span>
-
+<span class="va">boston_wmat</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spdep/man/nb2mat.html" class="external-link">nb2mat</a></span><span class="op">(</span><span class="va">boston_nb</span>, zero.policy <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># weight matrix</span>
+<span class="va">boston_wlist</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spdep/man/nb2listw.html" class="external-link">nb2listw</a></span><span class="op">(</span><span class="va">boston_nb</span>, style <span class="op">=</span> <span class="st">"W"</span><span class="op">)</span> <span class="co"># weight matrix as list</span></code></pre></div>
+<p>Now let us estimate the three models:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R">
+<span class="co"># Residual spatial effect (spatial error model):</span>
+<span class="va">mod1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spdep/man/spdep-deprecated.html" class="external-link">errorsarlm</a></span><span class="op">(</span><span class="va">lnCMEDV</span> <span class="op">~</span> <span class="va">NOX</span> <span class="op">+</span> <span class="va">CRIM</span> <span class="op">+</span> <span class="va">RM</span> <span class="op">+</span> <span class="va">DIS</span> <span class="op">+</span> <span class="va">AGE</span>,
+                   data <span class="op">=</span> <span class="va">boston</span>,
+                   listw <span class="op">=</span> <span class="va">boston_wlist</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">mod1</span><span class="op">)</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Call:</span>
-<span class="co">#&gt; lm(formula = lnCMEDV ~ NOX + CRIM + RM + DIS + AGE, data = boston)</span>
+<span class="co">#&gt; errorsarlm(formula = lnCMEDV ~ NOX + CRIM + RM + DIS + AGE, data = boston, </span>
+<span class="co">#&gt;     listw = boston_wlist)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Residuals:</span>
+<span class="co">#&gt;        Min         1Q     Median         3Q        Max </span>
+<span class="co">#&gt; -0.8619402 -0.0727632  0.0019691  0.0727349  0.8610672 </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Type: error </span>
+<span class="co">#&gt; Coefficients: (asymptotic standard errors) </span>
+<span class="co">#&gt;               Estimate Std. Error z value  Pr(&gt;|z|)</span>
+<span class="co">#&gt; (Intercept)  3.0114297  0.0424386 70.9596 &lt; 2.2e-16</span>
+<span class="co">#&gt; NOX         -0.1245513  0.0238428 -5.2238 1.752e-07</span>
+<span class="co">#&gt; CRIM        -0.0555032  0.0098813 -5.6170 1.943e-08</span>
+<span class="co">#&gt; RM           0.1644857  0.0093976 17.5029 &lt; 2.2e-16</span>
+<span class="co">#&gt; DIS         -0.0805092  0.0328909 -2.4478   0.01437</span>
+<span class="co">#&gt; AGE         -0.0851376  0.0153088 -5.5613 2.677e-08</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Lambda: 0.83765, LR test value: 385.28, p-value: &lt; 2.22e-16</span>
+<span class="co">#&gt; Asymptotic standard error: 0.026879</span>
+<span class="co">#&gt;     z-value: 31.164, p-value: &lt; 2.22e-16</span>
+<span class="co">#&gt; Wald statistic: 971.18, p-value: &lt; 2.22e-16</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Log likelihood: 177.6898 for error model</span>
+<span class="co">#&gt; ML residual variance (sigma squared): 0.023977, (sigma: 0.15484)</span>
+<span class="co">#&gt; Number of observations: 506 </span>
+<span class="co">#&gt; Number of parameters estimated: 8 </span>
+<span class="co">#&gt; AIC: -339.38, (AIC for lm: 43.904)</span>
+
+<span class="co"># Exogenous spatial effect (spatial lag model):  </span>
+<span class="va">mod2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spdep/man/spdep-deprecated.html" class="external-link">lmSLX</a></span><span class="op">(</span><span class="va">lnCMEDV</span> <span class="op">~</span> <span class="va">NOX</span> <span class="op">+</span> <span class="va">CRIM</span> <span class="op">+</span> <span class="va">RM</span> <span class="op">+</span> <span class="va">DIS</span> <span class="op">+</span> <span class="va">AGE</span>,
+              data <span class="op">=</span> <span class="va">boston</span>,
+              listw <span class="op">=</span> <span class="va">boston_wlist</span>,
+              Durbin <span class="op">=</span>  <span class="op">~</span> <span class="va">NOX</span> <span class="op">+</span> <span class="va">CRIM</span> <span class="op">+</span> <span class="va">RM</span> <span class="op">+</span> <span class="va">DIS</span> <span class="op">+</span> <span class="va">AGE</span><span class="op">)</span> 
+<span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">mod2</span><span class="op">)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Call:</span>
+<span class="co">#&gt; lm(formula = formula(paste("y ~ ", paste(colnames(x)[-1], collapse = "+"))), </span>
+<span class="co">#&gt;     data = as.data.frame(x), weights = weights)</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Residuals:</span>
 <span class="co">#&gt;      Min       1Q   Median       3Q      Max </span>
-<span class="co">#&gt; -0.95502 -0.10869 -0.00920  0.09772  1.31666 </span>
+<span class="co">#&gt; -0.81643 -0.11781 -0.01231  0.08904  1.30970 </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Coefficients:</span>
-<span class="co">#&gt;               Estimate Std. Error t value Pr(&gt;|t|)    </span>
-<span class="co">#&gt; (Intercept)  2.2272770  0.1705686  13.058  &lt; 2e-16 ***</span>
-<span class="co">#&gt; NOX         -0.9006876  0.1676968  -5.371 1.20e-07 ***</span>
-<span class="co">#&gt; CRIM        -0.0157740  0.0014462 -10.907  &lt; 2e-16 ***</span>
-<span class="co">#&gt; RM           0.2789218  0.0167999  16.603  &lt; 2e-16 ***</span>
-<span class="co">#&gt; DIS         -0.0463521  0.0092087  -5.034 6.73e-07 ***</span>
-<span class="co">#&gt; AGE         -0.0031079  0.0006434  -4.831 1.81e-06 ***</span>
+<span class="co">#&gt;              Estimate Std. Error t value Pr(&gt;|t|)    </span>
+<span class="co">#&gt; (Intercept)  3.030800   0.010428 290.654  &lt; 2e-16 ***</span>
+<span class="co">#&gt; NOX         -0.145492   0.040170  -3.622 0.000323 ***</span>
+<span class="co">#&gt; CRIM        -0.058508   0.015028  -3.893 0.000112 ***</span>
+<span class="co">#&gt; RM           0.153828   0.014344  10.725  &lt; 2e-16 ***</span>
+<span class="co">#&gt; DIS         -0.065969   0.074525  -0.885 0.376480    </span>
+<span class="co">#&gt; AGE         -0.091897   0.023691  -3.879 0.000119 ***</span>
+<span class="co">#&gt; lag.NOX      0.089066   0.048430   1.839 0.066503 .  </span>
+<span class="co">#&gt; lag.CRIM    -0.174185   0.022791  -7.643 1.11e-13 ***</span>
+<span class="co">#&gt; lag.RM       0.080744   0.022112   3.652 0.000288 ***</span>
+<span class="co">#&gt; lag.DIS     -0.036091   0.079873  -0.452 0.651567    </span>
+<span class="co">#&gt; lag.AGE      0.009673   0.034647   0.279 0.780225    </span>
 <span class="co">#&gt; ---</span>
 <span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt; Residual standard error: 0.2507 on 500 degrees of freedom</span>
-<span class="co">#&gt; Multiple R-squared:  0.6266, Adjusted R-squared:  0.6229 </span>
-<span class="co">#&gt; F-statistic: 167.8 on 5 and 500 DF,  p-value: &lt; 2.2e-16</span></code></pre></div>
-<p>Spatial regression models can roughly be differentiated into - Models with endogenous spatial effects: Y = WY + XB + e. That is, the outcome of other spatial units enter the regression equation. - Models with exogenous spatial effects: Y = XB + WXB + e. That is, the covariates of other spatial units enter the regression equation. - Models with residual spatial effects: Y = XB + We + e. That is, the residuals of other spatial units enter the regression equation.</p>
-<p>The difference between those models is not</p>
-<p>Before we can estimate any of those models, we have to create a weight matrix:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># Create weight matrix</span>
-<span class="va">boston_nb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spdep/man/poly2nb.html" class="external-link">poly2nb</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/coerce-methods.html" class="external-link">as_Spatial</a></span><span class="op">(</span><span class="va">boston</span><span class="op">)</span>, row.names <span class="op">=</span> <span class="va">boston</span><span class="op">$</span><span class="va">tid</span><span class="op">)</span> <span class="co"># from polygon list to neighbor list</span>
+<span class="co">#&gt; Residual standard error: 0.2339 on 495 degrees of freedom</span>
+<span class="co">#&gt; Multiple R-squared:  0.6783, Adjusted R-squared:  0.6718 </span>
+<span class="co">#&gt; F-statistic: 104.4 on 10 and 495 DF,  p-value: &lt; 2.2e-16</span>
 
-<span class="va">boston_wlist</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spdep/man/nb2listw.html" class="external-link">nb2listw</a></span><span class="op">(</span><span class="va">boston_nb</span>, style <span class="op">=</span> <span class="st">"W"</span><span class="op">)</span> <span class="co"># weight matrix as list</span>
-<span class="va">boston_wmat</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spdep/man/nb2mat.html" class="external-link">nb2mat</a></span><span class="op">(</span><span class="va">boston_nb</span>, zero.policy <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">as.matrix</span> <span class="co"># weight matrix</span></code></pre></div>
-<p>The three spatial models:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># Endogenous spatial effect: </span>
-<span class="va">mod2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spdep/man/spdep-deprecated.html" class="external-link">lagsarlm</a></span><span class="op">(</span><span class="va">lnCMEDV</span> <span class="op">~</span> <span class="va">NOX</span> <span class="op">+</span> <span class="va">CRIM</span> <span class="op">+</span> <span class="va">RM</span> <span class="op">+</span> <span class="va">DIS</span> <span class="op">+</span> <span class="va">AGE</span>,
-                 data <span class="op">=</span> <span class="va">boston</span>,
-                 listw <span class="op">=</span> <span class="va">boston_wlist</span><span class="op">)</span>
-
-<span class="co"># Exogenous spatial effect:</span>
+<span class="co"># Endogenous spatial effect (spatial autoregressive model):</span>
 <span class="va">mod3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spdep/man/spdep-deprecated.html" class="external-link">lagsarlm</a></span><span class="op">(</span><span class="va">lnCMEDV</span> <span class="op">~</span> <span class="va">NOX</span> <span class="op">+</span> <span class="va">CRIM</span> <span class="op">+</span> <span class="va">RM</span> <span class="op">+</span> <span class="va">DIS</span> <span class="op">+</span> <span class="va">AGE</span>,
                  data <span class="op">=</span> <span class="va">boston</span>,
-                 listw <span class="op">=</span> <span class="va">boston_wlist</span>,
-                 Durbin <span class="op">=</span>  <span class="op">~</span> <span class="va">AGE</span><span class="op">)</span> 
-  
-<span class="co"># Residual spatial effect:</span>
-<span class="va">mod4</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spdep/man/spdep-deprecated.html" class="external-link">errorsarlm</a></span><span class="op">(</span><span class="va">lnCMEDV</span> <span class="op">~</span> <span class="va">NOX</span> <span class="op">+</span> <span class="va">CRIM</span> <span class="op">+</span> <span class="va">RM</span> <span class="op">+</span> <span class="va">DIS</span> <span class="op">+</span> <span class="va">AGE</span>,
-                   data <span class="op">=</span> <span class="va">boston</span>,
-                   listw <span class="op">=</span> <span class="va">boston_wlist</span><span class="op">)</span></code></pre></div>
-<p>We now wonder whether the spatial weight depends on …</p>
+                 listw <span class="op">=</span> <span class="va">boston_wlist</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">mod3</span><span class="op">)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Call:lagsarlm(formula = lnCMEDV ~ NOX + CRIM + RM + DIS + AGE, data = boston, </span>
+<span class="co">#&gt;     listw = boston_wlist)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Residuals:</span>
+<span class="co">#&gt;        Min         1Q     Median         3Q        Max </span>
+<span class="co">#&gt; -0.5905925 -0.0937669 -0.0081804  0.0784800  0.9956998 </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Type: lag </span>
+<span class="co">#&gt; Coefficients: (asymptotic standard errors) </span>
+<span class="co">#&gt;               Estimate Std. Error z value  Pr(&gt;|z|)</span>
+<span class="co">#&gt; (Intercept)  0.9939659  0.0860809 11.5469 &lt; 2.2e-16</span>
+<span class="co">#&gt; NOX         -0.0286955  0.0134985 -2.1258 0.0335176</span>
+<span class="co">#&gt; CRIM        -0.0606110  0.0087944 -6.8920 5.501e-12</span>
+<span class="co">#&gt; RM           0.1343823  0.0088565 15.1732 &lt; 2.2e-16</span>
+<span class="co">#&gt; DIS         -0.0627520  0.0132732 -4.7277 2.271e-06</span>
+<span class="co">#&gt; AGE         -0.0458586  0.0124080 -3.6959 0.0002191</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Rho: 0.67045, LR test value: 347.92, p-value: &lt; 2.22e-16</span>
+<span class="co">#&gt; Asymptotic standard error: 0.028312</span>
+<span class="co">#&gt;     z-value: 23.681, p-value: &lt; 2.22e-16</span>
+<span class="co">#&gt; Wald statistic: 560.8, p-value: &lt; 2.22e-16</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Log likelihood: 159.0057 for lag model</span>
+<span class="co">#&gt; ML residual variance (sigma squared): 0.028135, (sigma: 0.16774)</span>
+<span class="co">#&gt; Number of observations: 506 </span>
+<span class="co">#&gt; Number of parameters estimated: 8 </span>
+<span class="co">#&gt; AIC: -302.01, (AIC for lm: 43.904)</span>
+<span class="co">#&gt; LM test for residual autocorrelation</span>
+<span class="co">#&gt; test value: 15.915, p-value: 6.6236e-05</span></code></pre></div>
+<p><strong>Results</strong>:</p>
+<ol style="list-style-type: decimal">
+<li><p>The spatial error model estimates that after conditioning on those five covariates, the residual is still spatially correlated, as <span class="math inline">\(\lambda=0.84\)</span>.</p></li>
+<li><p>The spatial lag model estimates an exogenous spatial effect for each of the considered covariates. The spatial effect of air quality, for instance, is estimate to be $_{WX}=0.09. That is, the home values of a given neighborhood (and given air quality) increase in value if the air quality of surrounding neighborhoods decreases.</p></li>
+<li><p>The spatial autoregessive (SAR) model estimates a endogenous spatial effect of <span class="math inline">\(\rho=0.67\)</span>. That is, the SAR summarizes the spatial dependency in one coefficient.</p></li>
+</ol>
+<div id="the-mmmm-for-spatial-analysis" class="section level4">
+<h4 class="hasAnchor">
+<a href="#the-mmmm-for-spatial-analysis" class="anchor" aria-hidden="true"></a>The MMMM for spatial analysis</h4>
+<p>Let <span class="math inline">\(y_{i}\)</span> be the outcome of location <span class="math inline">\(i\)</span>. Using the MMMM, we can model this outcome in terms of (i) effects of the location’s own features <span class="math inline">\(x_{i}^{\intercal}\beta+\epsilon_{i}\)</span> and (ii) effects its neighbor’s features <span class="math inline">\(\sum_{j \in n(i)}w_{j}(z_{j}^{\intercal}\gamma+u_{j})\)</span>, where <span class="math inline">\(j\)</span> indexes the neighbors, <span class="math inline">\(n(i)\)</span> is the set neighbors of location <span class="math inline">\(i\)</span>, <span class="math inline">\(z_{j}\)</span> represents the observed features of neighbor <span class="math inline">\(j\)</span>, and <span class="math inline">\(u_{j}\)</span> represents the combined influence of unobserved features.</p>
+<p>This model is almost identical to the combination of a spatial lag and a spatial error model. The only difference is that the error of each location is split into a random effect for its role as focal location and a random effect for its role as neighbor.</p>
+<p>To me, the combination of exogenous spatial effects and spatial error makes the most sense as the entire right-hand side of a neighbor affects a location. The endogenous spatial effect model is more difficult to interpret and runs into identification problems when both endogenous and exogenous effects are included (spatial Durbin model).</p>
+<p>To estimate a spatial MMMM, the neighbors of each location must be included in the dataframe as individual rows:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R">
-<span class="co"># Neighbor list to data.frame</span>
+<code class="sourceCode R"><span class="co"># Neighbor list to data.frame</span>
 <span class="va">nb2df</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">nb</span><span class="op">)</span> <span class="op">{</span>
   <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span>
     <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>tid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/mapply.html" class="external-link">mapply</a></span><span class="op">(</span><span class="va">rep</span>, <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">nb</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">nb</span>, <span class="va">length</span><span class="op">)</span>, SIMPLIFY <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">)</span>, tid_nb <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">nb</span><span class="op">)</span> <span class="op">)</span>
@@ -219,11 +306,31 @@
       <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">CMEDV</span>,<span class="op">-</span><span class="va">lnCMEDV</span>, <span class="op">-</span><span class="va">geometry</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
       <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename_with</a></span><span class="op">(</span><span class="op">~</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">.</span>,<span class="st">"_nb"</span><span class="op">)</span><span class="op">)</span>, 
     by<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"tid_nb"</span><span class="op">)</span><span class="op">)</span>
-  
-<span class="va">mod.rmm1</span> <span class="op">&lt;-</span> 
-  <span class="fu"><a href="../reference/rmm.html">rmm</a></span><span class="op">(</span><span class="va">lnCMEDV</span> <span class="op">~</span> 
-        <span class="fu">mm</span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/defunct.html" class="external-link">id</a></span><span class="op">(</span><span class="va">tid</span>, <span class="va">tid_nb</span><span class="op">)</span>, <span class="fu">mmc</span><span class="op">(</span><span class="va">NOX_nb</span> <span class="op">+</span> <span class="va">CRIM_nb</span> <span class="op">+</span> <span class="va">RM_nb</span> <span class="op">+</span> <span class="va">DIS_nb</span> <span class="op">+</span> <span class="va">AGE_nb</span><span class="op">)</span>, <span class="fu">mmw</span><span class="op">(</span><span class="va">w</span> <span class="op">~</span> <span class="fl">1</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>, constraint<span class="op">=</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
-        <span class="va">NOX</span> <span class="op">+</span> <span class="va">CRIM</span> <span class="op">+</span> <span class="va">RM</span> <span class="op">+</span> <span class="va">DIS</span> <span class="op">+</span> <span class="va">AGE</span>, 
+
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">boston_df</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">tid</span>, <span class="va">tid_nb</span>, <span class="va">NOX</span>, <span class="va">CRIM</span>, <span class="va">NOX_nb</span>, <span class="va">CRIM_nb</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 6 x 6</span>
+<span class="co">#&gt;     tid tid_nb NOX[,1] CRIM[,1] NOX_nb[,1] CRIM_nb[,1]</span>
+<span class="co">#&gt;   &lt;int&gt;  &lt;int&gt;   &lt;dbl&gt;    &lt;dbl&gt;      &lt;dbl&gt;       &lt;dbl&gt;</span>
+<span class="co">#&gt; 1     1      2    1.86    0.624      1.86       0.0275</span>
+<span class="co">#&gt; 2     1      3    1.86    0.624      1.86       0.185 </span>
+<span class="co">#&gt; 3     1      6    1.86    0.624      1.86       0.0260</span>
+<span class="co">#&gt; 4     1      8    1.86    0.624      1.86       0.0708</span>
+<span class="co">#&gt; 5     1    311    1.86    0.624      0.434     -0.272 </span>
+<span class="co">#&gt; 6     1    313    1.86    0.624      0.434     -0.207</span></code></pre></div>
+<p>We can see that, for each tract <code>tid</code>, we have one row for each of its neighbors <code>tid_nb</code>. These rows include the covariates of <code>tid</code>, which don’t change across its neighbors, and covariates of the neighbors themselves <code>NOX_nb, CRIM_nb, ...</code>.</p>
+<p>Now we are ready to estimate the MMMM:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R">
+<span class="co"># Spatial random effect:</span>
+<span class="va">mod.rmm1</span> <span class="op">&lt;-</span>
+  <span class="fu"><a href="../reference/rmm.html">rmm</a></span><span class="op">(</span><span class="va">lnCMEDV</span> <span class="op">~</span>
+        <span class="va">NOX</span> <span class="op">+</span> <span class="va">CRIM</span> <span class="op">+</span> <span class="va">RM</span> <span class="op">+</span> <span class="va">DIS</span> <span class="op">+</span> <span class="va">AGE</span> <span class="op">+</span>
+        <span class="fu">mm</span><span class="op">(</span>
+          <span class="fu"><a href="https://dplyr.tidyverse.org/reference/defunct.html" class="external-link">id</a></span><span class="op">(</span><span class="va">tid</span>, <span class="va">tid_nb</span><span class="op">)</span>,
+          <span class="fu">mmc</span><span class="op">(</span><span class="op">)</span>,
+          <span class="fu">mmw</span><span class="op">(</span><span class="va">w</span> <span class="op">~</span> <span class="fl">1</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>, constraint<span class="op">=</span><span class="fl">1</span><span class="op">)</span>
+        <span class="op">)</span>,
+      iter <span class="op">=</span> <span class="fl">1000</span>, burnin <span class="op">=</span> <span class="fl">100</span>, monitor <span class="op">=</span> <span class="cn">T</span>,
       data <span class="op">=</span> <span class="va">boston_df</span><span class="op">)</span>
 <span class="co">#&gt; module glm loaded</span>
 <span class="co">#&gt; Compiling model graph</span>
@@ -231,8 +338,8 @@
 <span class="co">#&gt;    Allocating nodes</span>
 <span class="co">#&gt; Graph information:</span>
 <span class="co">#&gt;    Observed stochastic nodes: 506</span>
-<span class="co">#&gt;    Unobserved stochastic nodes: 1025</span>
-<span class="co">#&gt;    Total graph size: 41453</span>
+<span class="co">#&gt;    Unobserved stochastic nodes: 1020</span>
+<span class="co">#&gt;    Total graph size: 20565</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Initializing model</span>
 
@@ -242,25 +349,222 @@
 
 <span class="va">mod.rmm1</span><span class="op">$</span><span class="va">reg.table</span>
 <span class="co">#&gt;          variable coefficients     sd      lb      ub    ppp</span>
-<span class="co">#&gt; b.l1[1]    NOX_nb      -0.1238 2.7571 -0.6656  0.2150 0.1493</span>
-<span class="co">#&gt; b.l1[2]   CRIM_nb      -0.0032 0.0199 -0.0063 -0.0008 0.0081</span>
-<span class="co">#&gt; b.l1[3]     RM_nb       0.0151 0.4370 -0.0156  0.0472 0.1585</span>
-<span class="co">#&gt; b.l1[4]    DIS_nb       0.0007 0.3884 -0.0456  0.0415 0.5341</span>
-<span class="co">#&gt; b.l1[5]    AGE_nb       0.0001 0.0043 -0.0013  0.0014 0.4363</span>
-<span class="co">#&gt; b.l2[1]        X0       3.0284 0.3267  2.9900  3.0688 0.0007</span>
-<span class="co">#&gt; b.l2[2]       NOX      -0.9761 4.4137 -1.4692 -0.5782 0.0015</span>
-<span class="co">#&gt; b.l2[3]      CRIM      -0.0094 0.0237 -0.0113 -0.0069 0.0022</span>
-<span class="co">#&gt; b.l2[4]        RM       0.1819 0.1861  0.1504  0.2150 0.0019</span>
-<span class="co">#&gt; b.l2[5]       DIS      -0.0482 0.4252 -0.0958 -0.0043 0.0178</span>
-<span class="co">#&gt; b.l2[6]       AGE      -0.0037 0.0109 -0.0048 -0.0021 0.0015</span>
-<span class="co">#&gt; sigma.l1 sigma.l1       0.4444 0.5862  0.3717  0.4753     NA</span>
-<span class="co">#&gt; sigma.l2 sigma.l2       0.2275 1.8869  0.1368  0.1675     NA</span>
-<span class="co">#&gt; DIC           DIC   37062.7983     NA      NA      NA     NA</span></code></pre></div>
+<span class="co">#&gt; b.l2[1]        X0       3.0392 0.3300  2.9868  3.0701 0.0004</span>
+<span class="co">#&gt; b.l2[2]       NOX      -0.1324 0.2498 -0.1774 -0.0826 0.0022</span>
+<span class="co">#&gt; b.l2[3]      CRIM      -0.0764 0.3549 -0.0998 -0.0617 0.0022</span>
+<span class="co">#&gt; b.l2[4]        RM       0.1394 0.2907  0.1066  0.1522 0.0007</span>
+<span class="co">#&gt; b.l2[5]       DIS      -0.0905 0.4350 -0.1458 -0.0293 0.0022</span>
+<span class="co">#&gt; b.l2[6]       AGE      -0.0954 0.1988 -0.1341 -0.0622 0.0015</span>
+<span class="co">#&gt; sigma.l1 sigma.l1       0.4697 0.9396  0.3868  0.4887     NA</span>
+<span class="co">#&gt; sigma.l2 sigma.l2       0.2257 1.9091  0.1350  0.1645     NA</span>
+<span class="co">#&gt; DIC           DIC   36792.8731     NA      NA      NA     NA</span>
+
+<span class="co"># Spatial fixed effects + spatial random effect:</span>
+<span class="va">mod.rmm2</span> <span class="op">&lt;-</span>
+  <span class="fu"><a href="../reference/rmm.html">rmm</a></span><span class="op">(</span><span class="va">lnCMEDV</span> <span class="op">~</span>
+        <span class="va">NOX</span> <span class="op">+</span> <span class="va">CRIM</span> <span class="op">+</span> <span class="va">RM</span> <span class="op">+</span> <span class="va">DIS</span> <span class="op">+</span> <span class="va">AGE</span> <span class="op">+</span>
+        <span class="fu">mm</span><span class="op">(</span>
+          <span class="fu"><a href="https://dplyr.tidyverse.org/reference/defunct.html" class="external-link">id</a></span><span class="op">(</span><span class="va">tid</span>, <span class="va">tid_nb</span><span class="op">)</span>,
+          <span class="fu">mmc</span><span class="op">(</span><span class="va">NOX_nb</span> <span class="op">+</span> <span class="va">CRIM_nb</span> <span class="op">+</span> <span class="va">RM_nb</span> <span class="op">+</span> <span class="va">DIS_nb</span> <span class="op">+</span> <span class="va">AGE_nb</span><span class="op">)</span>,
+          <span class="fu">mmw</span><span class="op">(</span><span class="va">w</span> <span class="op">~</span> <span class="fl">1</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>, constraint<span class="op">=</span><span class="fl">1</span><span class="op">)</span>
+        <span class="op">)</span>,
+      iter <span class="op">=</span> <span class="fl">1000</span>, burnin <span class="op">=</span> <span class="fl">100</span>, monitor <span class="op">=</span> <span class="cn">T</span>,
+      data <span class="op">=</span> <span class="va">boston_df</span><span class="op">)</span>
+<span class="co">#&gt; Compiling model graph</span>
+<span class="co">#&gt;    Resolving undeclared variables</span>
+<span class="co">#&gt;    Allocating nodes</span>
+<span class="co">#&gt; Graph information:</span>
+<span class="co">#&gt;    Observed stochastic nodes: 506</span>
+<span class="co">#&gt;    Unobserved stochastic nodes: 1025</span>
+<span class="co">#&gt;    Total graph size: 41453</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Initializing model</span>
+<span class="va">mod.rmm2</span><span class="op">$</span><span class="va">reg.table</span>
+<span class="co">#&gt;          variable coefficients     sd      lb      ub    ppp</span>
+<span class="co">#&gt; b.l1[1]    NOX_nb      -0.0399 1.0378 -0.0794  0.0234 0.1400</span>
+<span class="co">#&gt; b.l1[2]   CRIM_nb      -0.0277 0.2616 -0.0541 -0.0068 0.0067</span>
+<span class="co">#&gt; b.l1[3]     RM_nb       0.0145 0.2704 -0.0121  0.0337 0.1756</span>
+<span class="co">#&gt; b.l1[4]    DIS_nb      -0.0078 0.8549 -0.0933  0.0807 0.4467</span>
+<span class="co">#&gt; b.l1[5]    AGE_nb       0.0031 0.2954 -0.0350  0.0399 0.4485</span>
+<span class="co">#&gt; b.l2[1]        X0       3.0347 0.3127  2.9883  3.0706 0.0004</span>
+<span class="co">#&gt; b.l2[2]       NOX      -0.1233 0.6925 -0.1682 -0.0692 0.0030</span>
+<span class="co">#&gt; b.l2[3]      CRIM      -0.0734 0.2094 -0.0973 -0.0594 0.0026</span>
+<span class="co">#&gt; b.l2[4]        RM       0.1345 0.2985  0.1049  0.1515 0.0022</span>
+<span class="co">#&gt; b.l2[5]       DIS      -0.1023 0.2574 -0.1938 -0.0074 0.0156</span>
+<span class="co">#&gt; b.l2[6]       AGE      -0.0809 0.5005 -0.1313 -0.0568 0.0030</span>
+<span class="co">#&gt; sigma.l1 sigma.l1       0.4462 0.7618  0.3708  0.4727     NA</span>
+<span class="co">#&gt; sigma.l2 sigma.l2       0.2304 1.9173  0.1373  0.1683     NA</span>
+<span class="co">#&gt; DIC           DIC   38317.7495     NA      NA      NA     NA</span>
+
+<span class="co"># Calculate spatial correlation in the residual</span>
+<span class="va">getLambda</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span>
+  <span class="va">s.l1</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">$</span><span class="va">reg.table</span><span class="op">[</span><span class="st">"sigma.l1"</span>, <span class="st">"coefficients"</span><span class="op">]</span>
+  <span class="va">s.l2</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">$</span><span class="va">reg.table</span><span class="op">[</span><span class="st">"sigma.l2"</span>, <span class="st">"coefficients"</span><span class="op">]</span>
+  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">s.l1</span><span class="op">^</span><span class="fl">2</span><span class="op">/</span><span class="op">(</span><span class="va">s.l1</span><span class="op">^</span><span class="fl">2</span><span class="op">+</span><span class="va">s.l2</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span>
+<span class="op">}</span>
+
+<span class="op">(</span><span class="va">lambda1</span> <span class="op">&lt;-</span> <span class="fu">getLambda</span><span class="op">(</span><span class="va">mod.rmm1</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; [1] 0.8124144</span>
+<span class="op">(</span><span class="va">lambda2</span> <span class="op">&lt;-</span> <span class="fu">getLambda</span><span class="op">(</span><span class="va">mod.rmm2</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; [1] 0.7894978</span></code></pre></div>
+<p>Lets look at the <code><a href="../reference/rmm.html">rmm()</a></code> function in more detail.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="op">?</span><span class="va">rmm</span></code></pre></div>
+<div class="figure">
+<img src="examples_files/rmm-help.jpg" style="width:75.0%" alt=""><p class="caption">rmm helpfile</p>
 </div>
-<div id="the-effect-of-political-parties-financial-dependency-on-the-survival-coalition-governments-" class="section level3">
-<h3 class="hasAnchor">
-<a href="#the-effect-of-political-parties-financial-dependency-on-the-survival-coalition-governments-" class="anchor" aria-hidden="true"></a>The effect of political parties’ financial dependency on the survival coalition governments.</h3>
-<p>…</p>
+<p>The most important part is the <code>formula</code> object, which is our case looks like this: <code>lnCMEDV ~ NOX + CRIM + RM + DIS + AGE + mm(id(tid, tid_nb), mmc(NOX_nb + CRIM_nb + RM_nb + DIS_nb + AGE_nb), mmw(w ~ 1/offset(n), constraint=1))</code></p>
+<p>The only change compared to a <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> formula is the <code>mm()</code> container. Within this container, we specify 3 containers, <code>ids()</code> for the ids, <code>mmc()</code> for the considered covariates, and <code>mmw()</code> to endogenize the weight function. Here <code>w ~ 1/offset(n)</code> is specified, which implements the row-standardized weight.</p>
+<p>The combination of spatial lag and spatial error model can also be estimated in the spatial regression framework. Let us do that and compare the estimates:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R">
+<span class="co"># Exogenous + residual spatial effect (combination of spatial lag model and spatial error model):  </span>
+<span class="va">mod2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spdep/man/spdep-deprecated.html" class="external-link">errorsarlm</a></span><span class="op">(</span><span class="va">lnCMEDV</span> <span class="op">~</span> <span class="va">NOX</span> <span class="op">+</span> <span class="va">CRIM</span> <span class="op">+</span> <span class="va">RM</span> <span class="op">+</span> <span class="va">DIS</span> <span class="op">+</span> <span class="va">AGE</span>,
+              data <span class="op">=</span> <span class="va">boston</span>,
+              listw <span class="op">=</span> <span class="va">boston_wlist</span>,
+              Durbin <span class="op">=</span>  <span class="op">~</span> <span class="va">NOX</span> <span class="op">+</span> <span class="va">CRIM</span> <span class="op">+</span> <span class="va">RM</span> <span class="op">+</span> <span class="va">DIS</span> <span class="op">+</span> <span class="va">AGE</span><span class="op">)</span> 
+<span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">mod2</span><span class="op">)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Call:</span>
+<span class="co">#&gt; errorsarlm(formula = lnCMEDV ~ NOX + CRIM + RM + DIS + AGE, data = boston, </span>
+<span class="co">#&gt;     listw = boston_wlist, Durbin = ~NOX + CRIM + RM + DIS + AGE)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Residuals:</span>
+<span class="co">#&gt;        Min         1Q     Median         3Q        Max </span>
+<span class="co">#&gt; -0.8517313 -0.0713016 -0.0070739  0.0658620  0.8967407 </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Type: error </span>
+<span class="co">#&gt; Coefficients: (asymptotic standard errors) </span>
+<span class="co">#&gt;               Estimate Std. Error z value  Pr(&gt;|z|)</span>
+<span class="co">#&gt; (Intercept)  3.0149075  0.0331295 91.0037 &lt; 2.2e-16</span>
+<span class="co">#&gt; NOX         -0.1120990  0.0244750 -4.5801 4.647e-06</span>
+<span class="co">#&gt; CRIM        -0.0667568  0.0100662 -6.6317 3.317e-11</span>
+<span class="co">#&gt; RM           0.1687197  0.0094507 17.8526 &lt; 2.2e-16</span>
+<span class="co">#&gt; DIS         -0.0863850  0.0423890 -2.0379 0.0415587</span>
+<span class="co">#&gt; AGE         -0.0876803  0.0154299 -5.6825 1.328e-08</span>
+<span class="co">#&gt; lag.NOX      0.0123545  0.0449974  0.2746 0.7836542</span>
+<span class="co">#&gt; lag.CRIM    -0.1031677  0.0269163 -3.8329 0.0001266</span>
+<span class="co">#&gt; lag.RM       0.0396613  0.0232693  1.7044 0.0882981</span>
+<span class="co">#&gt; lag.DIS     -0.0381250  0.0561561 -0.6789 0.4971937</span>
+<span class="co">#&gt; lag.AGE     -0.0196289  0.0380985 -0.5152 0.6064036</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Lambda: 0.79294, LR test value: 328.64, p-value: &lt; 2.22e-16</span>
+<span class="co">#&gt; Asymptotic standard error: 0.031295</span>
+<span class="co">#&gt;     z-value: 25.337, p-value: &lt; 2.22e-16</span>
+<span class="co">#&gt; Wald statistic: 641.98, p-value: &lt; 2.22e-16</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Log likelihood: 187.0501 for error model</span>
+<span class="co">#&gt; ML residual variance (sigma squared): 0.023764, (sigma: 0.15416)</span>
+<span class="co">#&gt; Number of observations: 506 </span>
+<span class="co">#&gt; Number of parameters estimated: 13 </span>
+<span class="co">#&gt; AIC: -348.1, (AIC for lm: -21.461)</span>
+
+<span class="co"># Plot coefficients next to each other</span>
+<span class="va">coefs</span> <span class="op">&lt;-</span> 
+  <span class="va">mod.rmm2</span><span class="op">$</span><span class="va">reg.table</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">4</span>,<span class="fl">5</span><span class="op">)</span><span class="op">]</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>model<span class="op">=</span><span class="st">"MMMM"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu"><a href="https://tibble.tidyverse.org/reference/add_row.html" class="external-link">add_row</a></span><span class="op">(</span>
+    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>model<span class="op">=</span><span class="st">"SLM"</span>, coefficients<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">mod2</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">mod2</span>, level<span class="op">=</span><span class="fl">0.95</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span>,<span class="op">]</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+      <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span>lb<span class="op">=</span><span class="va">X2.5..</span>, ub<span class="op">=</span><span class="va">X97.5..</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+      <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span><span class="st">"variable"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+      <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>
+        variable<span class="op">=</span>
+          <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case_when.html" class="external-link">case_when</a></span><span class="op">(</span>
+            <span class="fu"><a href="https://rdrr.io/r/base/startsWith.html" class="external-link">startsWith</a></span><span class="op">(</span><span class="va">variable</span>, <span class="st">"lag."</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"lag."</span>, <span class="st">""</span>, <span class="va">variable</span><span class="op">)</span>, <span class="st">"_nb"</span><span class="op">)</span>, 
+            <span class="va">variable</span><span class="op">==</span><span class="st">"(Intercept)"</span> <span class="op">~</span> <span class="st">"X0"</span>,
+            <span class="cn">TRUE</span> <span class="op">~</span> <span class="va">variable</span><span class="op">)</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="va">variable</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"X0"</span>, <span class="st">"sigma.l1"</span>, <span class="st">"sigma.l2"</span>, <span class="st">"DIC"</span><span class="op">)</span><span class="op">)</span> 
+
+<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">coefs</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">variable</span>, y<span class="op">=</span><span class="va">coefficients</span>, color<span class="op">=</span><span class="va">model</span><span class="op">)</span><span class="op">)</span><span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>position<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/position_dodge.html" class="external-link">position_dodge</a></span><span class="op">(</span>width<span class="op">=</span><span class="fl">0.3</span><span class="op">)</span><span class="op">)</span><span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_linerange.html" class="external-link">geom_pointrange</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>ymin <span class="op">=</span> <span class="va">lb</span>, ymax <span class="op">=</span> <span class="va">ub</span><span class="op">)</span>, position<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/position_dodge.html" class="external-link">position_dodge</a></span><span class="op">(</span>width<span class="op">=</span><span class="fl">0.3</span><span class="op">)</span><span class="op">)</span><span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Coefficients"</span>, x <span class="op">=</span> <span class="st">"Variables"</span>, y<span class="op">=</span><span class="st">""</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_flip.html" class="external-link">coord_flip</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<p><img src="examples_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
+<p>The estimates are similar but not identical. This is due to the different estimation algorithm (maximum likelihood vs Bayesian MCMC) and because the models are not 100% identical.</p>
+<p>The advantage of <code>errorsarlm</code> is that estimation is faster and the errors are endogenous. So if this model is what you want, it’s probably best to estimate it with the <code>spatialreg</code> package.</p>
+<p><strong>Weight function regression</strong></p>
+<p>The MMMM, however, allows to make the weights a function of covariates. That is, instead of assuming a specific weighting regime, we can estimate whether the influence of a neighbor on a location depends on some covariates.</p>
+<p>For this example, I hypothesize that the weight of a neighbor in the total neighborhood effect depends on the similarity between neighbor and focal location, which is an idea I borrow from social network theory.</p>
+<p>I calculate <em>similarity</em> as the average absolute difference between a neighbor and the focal location on the six considered covariates.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># Homogeneity of focal location to its neighbors </span>
+<span class="va">boston_df2</span> <span class="op">&lt;-</span> <span class="va">boston_df</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>DIFF<span class="op">=</span><span class="fl">1</span><span class="op">/</span><span class="fl">6</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">NOX</span><span class="op">-</span><span class="va">NOX_nb</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">CRIM</span><span class="op">-</span><span class="va">CRIM_nb</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">RM</span><span class="op">-</span><span class="va">RM_nb</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">DIS</span><span class="op">-</span><span class="va">DIS_nb</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">AGE</span><span class="op">-</span><span class="va">AGE_nb</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">LSTAT</span><span class="op">-</span><span class="va">LSTAT_nb</span><span class="op">)</span><span class="op">)</span> </code></pre></div>
+<p>The weight function is specified in the <code>mmw()</code> container. Any function that produces weights that are bounded can be specified here. Functions, such as <em>min, max, sum</em> etc., can also be included in the weight function. Here I consider the following functional form: <span class="math inline">\(w=\frac{1}{n^{exp(X\beta)}}\)</span>, where <span class="math inline">\(n\)</span> is the number of neighbors of location <span class="math inline">\(i\)</span>, and <span class="math inline">\(X\beta\)</span> are the covariates on which to base the weights on. The benefit of this function is that it is bounded between 0 and 1 and if <span class="math inline">\(X\beta=\boldsymbol{0}\)</span>, the weights reduce to <span class="math inline">\(w=\frac{1}{n}\)</span>, which are the default row-standardized weights.</p>
+<p><strong>The issue of scaling</strong>:</p>
+<p>The sum of all weights with row-standardized weights is <span class="math inline">\(\sum_{i=1}^{506}\sum_{j}w_{ij}=\sum_{i=1}^{506}1=506\)</span>. We need to make sure that this overall sum does not change. Remember that aggregation of neighbor effects is <span class="math inline">\(\sum_{j \in n(i)}w_{j}(z_{j}^{\intercal}\gamma+u_{j})\)</span>. Changes of the sum of weights will rescale the regression coefficients <span class="math inline">\(\gamma\)</span>. To avoid that, two constraints can be specified:</p>
+<ul>
+<li>
+<code>constraint=1</code>: contrains the weights of neighbors to sum 1 for each focal location (but allows them to differ within each location)</li>
+<li>
+<code>constraint=2</code>: constraints the all weights to sum up to the number of neighborhoods (allows them to differ within and across location)</li>
+</ul>
+<p>Both constrains identify the model but have different substantive interpretations.</p>
+<p>Here I allow the weights to differ within and across location:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># Spatial fixed effects + spatial random effect with "endogenized" weights:</span>
+<span class="va">mod.rmm3</span> <span class="op">&lt;-</span>
+  <span class="fu"><a href="../reference/rmm.html">rmm</a></span><span class="op">(</span><span class="va">lnCMEDV</span> <span class="op">~</span>
+        <span class="va">NOX</span> <span class="op">+</span> <span class="va">CRIM</span> <span class="op">+</span> <span class="va">RM</span> <span class="op">+</span> <span class="va">DIS</span> <span class="op">+</span> <span class="va">AGE</span> <span class="op">+</span>
+        <span class="fu">mm</span><span class="op">(</span>
+          <span class="fu"><a href="https://dplyr.tidyverse.org/reference/defunct.html" class="external-link">id</a></span><span class="op">(</span><span class="va">tid</span>, <span class="va">tid_nb</span><span class="op">)</span>,
+          <span class="fu">mmc</span><span class="op">(</span><span class="va">NOX_nb</span> <span class="op">+</span> <span class="va">CRIM_nb</span> <span class="op">+</span> <span class="va">RM_nb</span> <span class="op">+</span> <span class="va">DIS_nb</span> <span class="op">+</span> <span class="va">AGE_nb</span><span class="op">)</span>,
+          <span class="fu">mmw</span><span class="op">(</span><span class="va">w</span> <span class="op">~</span> <span class="fl">1</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">^</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="va">DIFF</span><span class="op">)</span>, constraint<span class="op">=</span><span class="fl">2</span><span class="op">)</span>
+        <span class="op">)</span>,
+      iter <span class="op">=</span> <span class="fl">1000</span>, burnin <span class="op">=</span> <span class="fl">100</span>, monitor <span class="op">=</span> <span class="cn">T</span>,
+      data <span class="op">=</span> <span class="va">boston_df2</span><span class="op">)</span>
+<span class="co">#&gt; Compiling model graph</span>
+<span class="co">#&gt;    Resolving undeclared variables</span>
+<span class="co">#&gt;    Allocating nodes</span>
+<span class="co">#&gt; Graph information:</span>
+<span class="co">#&gt;    Observed stochastic nodes: 506</span>
+<span class="co">#&gt;    Unobserved stochastic nodes: 1026</span>
+<span class="co">#&gt;    Total graph size: 53159</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Initializing model</span>
+
+<span class="va">mod.rmm3</span><span class="op">$</span><span class="va">reg.table</span>
+<span class="co">#&gt;          variable coefficients      sd        lb      ub    ppp</span>
+<span class="co">#&gt; b.l1[1]    NOX_nb      -0.0026  0.0248   -0.0500  0.0466 0.4526</span>
+<span class="co">#&gt; b.l1[2]   CRIM_nb      -0.0907  0.0639   -0.1880  0.0031 0.0437</span>
+<span class="co">#&gt; b.l1[3]     RM_nb       0.0294  0.0195   -0.0049  0.0656 0.0581</span>
+<span class="co">#&gt; b.l1[4]    DIS_nb       0.0141  0.0424   -0.0723  0.0878 0.3522</span>
+<span class="co">#&gt; b.l1[5]    AGE_nb      -0.0038  0.0207   -0.0444  0.0349 0.4389</span>
+<span class="co">#&gt; b.l2[1]        X0       3.0130  0.0164    2.9782  3.0443 0.0000</span>
+<span class="co">#&gt; b.l2[2]       NOX      -0.0922  0.0282   -0.1458 -0.0373 0.0004</span>
+<span class="co">#&gt; b.l2[3]      CRIM      -0.1012  0.0190   -0.1314 -0.0627 0.0000</span>
+<span class="co">#&gt; b.l2[4]        RM       0.1542  0.0129    0.1294  0.1793 0.0000</span>
+<span class="co">#&gt; b.l2[5]       DIS      -0.0930  0.0443   -0.1705  0.0005 0.0263</span>
+<span class="co">#&gt; b.l2[6]       AGE      -0.0789  0.0231   -0.1214 -0.0323 0.0000</span>
+<span class="co">#&gt; b.w[2]       DIFF     -45.3288 54.9796 -192.7200  0.2555 0.3333</span>
+<span class="co">#&gt; sigma.l1 sigma.l1       0.1930  0.1405    0.0136  0.4183     NA</span>
+<span class="co">#&gt; sigma.l2 sigma.l2       0.2149  0.0537    0.1301  0.2682     NA</span>
+<span class="co">#&gt; DIC           DIC     160.7729      NA        NA      NA     NA</span></code></pre></div>
+<p>We find that the difference between location and neighbors significantly impacts the weights. However, opposite to the homophily idea. Those neighbors that are very different to the focal location in terms of air quality, level of crime, etc. have a stronger influence on the home values in the focal neighborhood.</p>
+<p>Such a insight is impossible to generate with the conventional spatial regression package. Let us have a look at the weight estimates:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R">
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="va">mod.rmm3</span><span class="op">$</span><span class="va">w</span>, sum<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/Matrix/man/colSums.html" class="external-link">rowSums</a></span><span class="op">(</span><span class="va">mod.rmm3</span><span class="op">$</span><span class="va">w</span>, na.rm <span class="op">=</span> <span class="cn">T</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt;               W1     W2     W3     W4     W5     W6     W7     W8     W9 W10</span>
+<span class="co">#&gt; L2 unit 1 0.2216 0.2084 0.2165 0.2219 0.0574 0.1133 0.1313 0.1828     NA  NA</span>
+<span class="co">#&gt; L2 unit 2 0.2595 0.2454 0.2399 0.2318     NA     NA     NA     NA     NA  NA</span>
+<span class="co">#&gt; L2 unit 3 0.2084 0.2131 0.2057 0.2140 0.0438 0.0456 0.1057 0.1154     NA  NA</span>
+<span class="co">#&gt; L2 unit 4 0.2399 0.2324 0.2495 0.2405     NA     NA     NA     NA     NA  NA</span>
+<span class="co">#&gt; L2 unit 5 0.2108 0.2122 0.2126 0.0374 0.0820 0.0914 0.0382 0.0687 0.0754  NA</span>
+<span class="co">#&gt; L2 unit 6 0.2275 0.2132 0.2195 0.2269 0.2327 0.2209     NA     NA     NA  NA</span>
+<span class="co">#&gt;           W11 W12 W13 W14 W15    sum</span>
+<span class="co">#&gt; L2 unit 1  NA  NA  NA  NA  NA 1.3532</span>
+<span class="co">#&gt; L2 unit 2  NA  NA  NA  NA  NA 0.9766</span>
+<span class="co">#&gt; L2 unit 3  NA  NA  NA  NA  NA 1.1517</span>
+<span class="co">#&gt; L2 unit 4  NA  NA  NA  NA  NA 0.9623</span>
+<span class="co">#&gt; L2 unit 5  NA  NA  NA  NA  NA 1.0287</span>
+<span class="co">#&gt; L2 unit 6  NA  NA  NA  NA  NA 1.3407</span>
+
+<span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/Matrix/man/colSums.html" class="external-link">rowSums</a></span><span class="op">(</span><span class="va">mod.rmm3</span><span class="op">$</span><span class="va">w</span>, na.rm <span class="op">=</span> <span class="cn">T</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; [1] 505.9987</span></code></pre></div>
+<p>end.</p>
+<p>To do: - Introduce predict() function - Compare predicitve performance</p>
+</div>
 </div>
   </div>
 
