@@ -112,6 +112,7 @@
 <div id="e1" class="section level3">
 <h3 class="hasAnchor">
 <a href="#e1" class="anchor" aria-hidden="true"></a>The effect of air quality on home values</h3>
+<p>The R file of this example can be found <a href="https://benrosche.github.io/rmm/articles/examples_files/mmmm_spatial.Rmd">here</a>.</p>
 <p>This <strong>spatial analysis</strong> example is based on <a href="https://www.sciencedirect.com/science/article/abs/pii/0095069678900062" class="external-link">Harrison &amp; Rubenfield 1978</a>, who study the effect of air quality on home values.</p>
 <p>The study employs census tract data from the Boston Standard Metropolitan Statistical Area in 1970. With tracts containing no housing units or comprised entirely of institutions excluded, the sample contains 506 census tracts. Air quality is measured by the concentration of nitric oxides in the air, which is obtained from a meteorological model (Transportation and Air Shed Simulation Model). I refer to their paper for more information on data and operationalization.</p>
 <p>Let us load in the data and plot the home values across town:</p>
@@ -153,9 +154,12 @@
 <span class="co"># LSTAT   = percentage working-class population</span></code></pre></div>
 <p>Let us first consider three canonical spatial regression models:</p>
 <ol style="list-style-type: decimal">
-<li>Residual spatial effect: <span class="math inline">\(Y = XB + W\epsilon + \epsilon\)</span>. This model is labeled <em>spatial error model</em> because the residuals of other spatial units enter the regression equation.</li>
-<li>Exogenous spatial effects: <span class="math inline">\(Y = XB + WXB + \epsilon\)</span>. This model is labeled the <em>spatial lag model</em> because the covariates of other spatial units enter the regression equation.</li>
-<li>Endogenous spatial effect: <span class="math inline">\(Y = WY + XB + \epsilon\)</span>. This model is labeled the <em>spatial autoregressive model</em> because the outcomes of other spatial units enter the regression equation.</li>
+<li>
+<strong>Residual spatial effect</strong>: <span class="math inline">\(Y = XB + \lambda Wu + \epsilon\)</span>. This model is labeled <em>spatial error model</em> because the residuals of other spatial units enter the regression equation.</li>
+<li>
+<strong>Exogenous spatial effects</strong>: <span class="math inline">\(Y = XB + WXB + \epsilon\)</span>. This model is labeled the <em>spatial lag model</em> because the covariates of other spatial units enter the regression equation.</li>
+<li>
+<strong>Endogenous spatial effect</strong>: <span class="math inline">\(Y = \rho WY + XB + \epsilon\)</span>. This model is labeled the <em>spatial autoregressive model</em> because the outcomes of other spatial units enter the regression equation.</li>
 </ol>
 <p>More information on those models and combinations of them can be found in <a href="https://www.sciencedirect.com/science/article/pii/B9780444595171000039" class="external-link">Gibbons, Overman &amp; Patacchini 2015</a>.</p>
 <p>To specify any of those models, we have to create a <em>spatial weight matrix</em> <span class="math inline">\(W\)</span>, which imposes a structure in terms of what are the neighbors for each location. <span class="math inline">\(W\)</span> is a NxN table, where N equals the number of neighborhoods. Each weight <span class="math inline">\(w_{ij}\)</span> represents the relationship between location <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span> and, by convention, <span class="math inline">\(w_{ij}=0\)</span> for diagonal elements. The relationship can either be based on direct contiguity and therefore binary (1=neighbor, 0=otherwise), or based on distance and therefore continuous. Continuous weights are often row-standardized so that the weights of all neighbors j of location i sum to 1.</p>
@@ -277,7 +281,7 @@
 <p><strong>Results</strong>:</p>
 <ol style="list-style-type: decimal">
 <li><p>The spatial error model estimates that after conditioning on those five covariates, the residual is still spatially correlated, as <span class="math inline">\(\lambda=0.84\)</span>.</p></li>
-<li><p>The spatial lag model estimates an exogenous spatial effect for each of the considered covariates. The spatial effect of air quality, for instance, is estimate to be <span class="math inline">\(\beta_{WX}=0.09\)</span>. That is, the home values of a given neighborhood (and given air quality) increase in value if the air quality of surrounding neighborhoods decreases.</p></li>
+<li><p>The spatial lag model estimates an exogenous spatial effect for each of the considered covariates. The effect of air quality of neighboring locations, for instance, is estimated to be <span class="math inline">\(\beta=0.09\)</span>. That is, the home values of a given neighborhood increases if the air quality of surrounding neighborhoods decreases.</p></li>
 <li><p>The spatial autoregessive (SAR) model estimates a endogenous spatial effect of <span class="math inline">\(\rho=0.67\)</span>. That is, the SAR summarizes the spatial dependency in one coefficient.</p></li>
 </ol>
 <div id="the-mmmm-for-spatial-analysis" class="section level4">
