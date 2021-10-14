@@ -114,7 +114,7 @@ summary(mod3)
 
 1. The spatial error model estimates that after conditioning on those five covariates, the residual is still spatially correlated, as $\lambda=`r round(mod1$lambda,2)`$.
 
-2. The spatial lag model estimates an exogenous spatial effect for each of the considered covariates. The spatial effect of air quality, for instance, is estimate to be $\beta_{WX}=`r round(mod2$coefficients["lag.NOX"],2)`$. That is, the home values of a given neighborhood (and given air quality) increase in value if the air quality of surrounding neighborhoods decreases.
+2. The spatial lag model estimates an exogenous spatial effect for each of the considered covariates. The spatial effect of air quality, for instance, is estimate to be $\beta_{WX}=`r round(mod2$coefficients['lag.NOX'],2)`$. That is, the home values of a given neighborhood (and given air quality) increase in value if the air quality of surrounding neighborhoods decreases.
 
 3. The spatial autoregessive (SAR) model estimates a endogenous spatial effect of $\rho=`r round(mod3$rho,2)`$. That is, the SAR summarizes the spatial dependency in one coefficient.
 
@@ -171,7 +171,7 @@ mod.rmm1 <-
           mmc(),
           mmw(w ~ 1/offset(n), constraint=1)
         ),
-      iter = 1000, burnin = 100, monitor = T,
+      iter = 1000, burnin = 100, seed=1, monitor = T,
       data = boston_df)
 
 names(mod.rmm1)
@@ -187,7 +187,7 @@ mod.rmm2 <-
           mmc(NOX_nb + CRIM_nb + RM_nb + DIS_nb + AGE_nb),
           mmw(w ~ 1/offset(n), constraint=1)
         ),
-      iter = 1000, burnin = 100, monitor = T,
+      iter = 1000, burnin = 100, seed=1, monitor = T,
       data = boston_df)
 mod.rmm2$reg.table
 
@@ -267,7 +267,7 @@ I calculate *similarity* as the average absolute difference between a neighbor a
 
 ```{r}
 # Homogeneity of focal location to its neighbors 
-boston_df2 <- boston_df %>% mutate(DIFF=1/6*abs(NOX-NOX_nb)+abs(CRIM-CRIM_nb)+abs(RM-RM_nb)+abs(DIS-DIS_nb)+abs(AGE-AGE_nb)+abs(LSTAT-LSTAT_nb)) 
+boston_df2 <- boston_df %>% mutate(DIFF=1/6*(abs(NOX-NOX_nb)+abs(CRIM-CRIM_nb)+abs(RM-RM_nb)+abs(DIS-DIS_nb)+abs(AGE-AGE_nb)+abs(LSTAT-LSTAT_nb)))
 ```
 
 The weight function is specified in the `mmw()` container. Any function that produces weights that are bounded can be specified here. 
@@ -283,12 +283,12 @@ Remember that aggregation of neighbor effects is $\sum_{j \in n(i)}w_{j}(z_{j}^{
 Changes of the sum of weights will rescale the regression coefficients $\gamma$. To avoid that, two
 constraints can be specified:
 
-- `constraint=1`: contrains the weights of neighbors to sum 1 for each focal location (but allows them to differ within each location)
-- `constraint=2`: constraints the all weights to sum up to the number of neighborhoods (allows them to differ within and across location)
+- `constraint=1`: constrains the weights of neighbors to sum 1 for each focal location (but allows them to differ within each location)
+- `constraint=2`: constrains the all weights to sum up to the number of neighborhoods (allows them to differ within and across location)
 
 Both constrains identify the model but have different substantive interpretations. 
 
-Here I allow the weights to differ within and across location:
+Here, I allow the weights to differ within locations:
 
 ```{r}
 # Spatial fixed effects + spatial random effect with "endogenized" weights:
@@ -298,12 +298,15 @@ mod.rmm3 <-
         mm(
           id(tid, tid_nb),
           mmc(NOX_nb + CRIM_nb + RM_nb + DIS_nb + AGE_nb),
-          mmw(w ~ 1/offset(n)^exp(-DIFF), constraint=2)
+          mmw(w ~ 1/offset(n)^exp(-DIFF), constraint=1)
         ),
-      iter = 1000, burnin = 100, monitor = T,
+      iter = 10000, burnin = 2000, seed=1, monitor = T,
       data = boston_df2)
 
 mod.rmm3$reg.table
+
+monetPlot(mod.rmm3, "b.w[2]", "Difference")
+
 ```
 
 We find that the difference between location and neighbors significantly impacts the weights. However,
@@ -323,4 +326,4 @@ sum(rowSums(mod.rmm3$w, na.rm = T))
 To do:
 
 - Introduce predict() function
-- Compare predicitve performance
+- Compare predictive performance
