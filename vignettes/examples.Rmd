@@ -22,10 +22,10 @@ I provide three examples on how the MMMM can be employed to study spatial, netwo
 
 ### The effect of air quality on home values {#e1}
 
-The R file of this example can be found [here](https://benrosche.github.io/rmm/articles/examples_files/mmmm_spatial.Rmd).
+The R file of this example can be found [here](C:/Users/benja/OneDrive - Cornell University/GitHub/rmm/docs/articles/examples_files/mmmm_spatial.Rmd).
 
 This **spatial analysis** example is based on [Harrison & Rubenfield 1978](https://www.sciencedirect.com/science/article/abs/pii/0095069678900062),
-who study the effect of air quality on home values. 
+who study the effect of air quality on home values, and a re-analysis by [Bivand 2017](https://openjournals.wu.ac.at/region/paper_107/107.html).
 
 The study employs census tract data from the Boston Standard Metropolitan Statistical Area in 1970. With tracts containing no housing units or comprised entirely of institutions excluded, the sample contains 506 census tracts. Air quality is measured by the concentration of nitric oxides in the air, which is obtained from a meteorological model (Transportation and Air Shed Simulation Model). I refer to their paper for more information on data and operationalization. 
 
@@ -70,7 +70,7 @@ ggplot(boston, aes(fill = CMEDV)) +
 Let us first consider three canonical spatial regression models:
 
 1. **Residual spatial effect**: $Y = XB + \lambda Wu + \epsilon$. This model is labeled *spatial error model* because the residuals of other spatial units enter the regression equation.
-2. **Exogenous spatial effects**: $Y = XB + WXB + \epsilon$. This model is labeled the *spatial lag model* because the covariates of other spatial units enter the regression equation.
+2. **Exogenous spatial effects**: $Y = XB + WXB + \epsilon$. This model is labeled the *spatial lag-x model* because the covariates of other spatial units enter the regression equation.
 3. **Endogenous spatial effect**: $Y = \rho WY + XB + \epsilon$. This model is labeled the *spatial autoregressive model* because the outcomes of other spatial units enter the regression equation.
 
 More information on those models and combinations of them can be found in [Gibbons, Overman & Patacchini 2015](https://www.sciencedirect.com/science/article/pii/B9780444595171000039). 
@@ -97,7 +97,7 @@ mod1 <- errorsarlm(lnCMEDV ~ NOX + CRIM + RM + DIS + AGE,
                    listw = boston_wlist)
 summary(mod1)
 
-# Exogenous spatial effect (spatial lag model):  
+# Exogenous spatial effect (spatial lag-x model):  
 mod2 <- lmSLX(lnCMEDV ~ NOX + CRIM + RM + DIS + AGE,
               data = boston,
               listw = boston_wlist,
@@ -116,7 +116,7 @@ summary(mod3)
 
 1. The spatial error model estimates that after conditioning on those five covariates, the residual is still spatially correlated, as $\lambda=`r round(mod1$lambda,2)`$.
 
-2. The spatial lag model estimates an exogenous spatial effect for each of the considered covariates. The effect of air quality of neighboring locations, for instance, is estimated to be $\beta=`r round(mod2$coefficients['lag.NOX'],2)`$. That is, the home values of a given neighborhood increases if the air quality of surrounding neighborhoods decreases.
+2. The spatial lag-x model estimates an exogenous spatial effect for each of the considered covariates. The effect of air quality of neighboring locations, for instance, is estimated to be $\beta=`r round(mod2$coefficients['lag.NOX'],2)`$. That is, the home values of a given neighborhood increases if the air quality of surrounding neighborhoods decreases.
 
 3. The spatial autoregessive (SAR) model estimates a endogenous spatial effect of $\rho=`r round(mod3$rho,2)`$. That is, the SAR summarizes the spatial dependency in one coefficient.
 
@@ -207,7 +207,7 @@ getLambda <- function(x) {
 
 Lets look at the `rmm()` function in more detail by typing `?rmm`:
 
-![](C:/Users/benja/OneDrive - Cornell University/GitHub/rmm/docs/articles/examples_files/rmm-help.jpg){height=75%; width=75%}
+![](C:/Users/benja/OneDrive - Cornell University/GitHub/rmm/docs/articles/examples_files/rmm-help.jpg){height=70%; width=70%}
 
 **The formula object**
 
@@ -265,7 +265,7 @@ we can estimate whether the influence of a neighbor on a location depends on som
 For this example, I hypothesize that the weight of a neighbor in the total neighborhood effect depends on the similarity between neighbor and focal location,
 which is an idea I borrow from social network theory.
 
-I calculate *similarity* as the average absolute difference between a neighbor and the focal location on the six considered covariates.
+I calculate the *similarity* as the average absolute difference between a neighbor and the focal location on the six considered covariates (i.e., the opposite of similarity). I call the variable $DIFF$: 
 
 ```{r}
 # Homogeneity of focal location to its neighbors 
@@ -302,7 +302,7 @@ mod.rmm3 <-
           mmc(NOX_nb + CRIM_nb + RM_nb + DIS_nb + AGE_nb),
           mmw(w ~ 1/offset(n)^exp(-DIFF), constraint=1)
         ),
-      iter = 10000, burnin = 2000, seed=1, monitor = T,
+      iter = 10000, burnin = 2500, seed=1, monitor = T,
       data = boston_df2)
 
 mod.rmm3$reg.table
@@ -311,11 +311,14 @@ monetPlot(mod.rmm3, "b.w[2]", "Difference")
 
 ```
 
-We find that the difference between location and neighbors significantly impacts the weights. However,
-opposite to the homophily idea. Those neighbors that are very different to the focal location in terms of
-air quality, level of crime, etc. have a stronger influence on the home values in the focal neighborhood.
+We find that the dissimilarity of location and neighbors significantly impacts the weights. However,
+rather than more similar neighbors having a stronger effect, we find that less similar neighbors are more impactful. 
+That is, the covariates of those neighbors that are very different to the focal location in terms of air quality, level of crime, etc. 
+have a stronger influence on the home values in the focal neighborhood. 
 
-Such a insight is impossible to generate with the conventional spatial regression package. Let us have a look at the weight estimates:
+Such a insight is impossible to generate with the conventional spatial regression package!
+
+Finally, the `rmm()` function allows us to have a look at the weight estimates:
 
 ```{r}
 
@@ -324,6 +327,8 @@ head(data.frame(mod.rmm3$w, sum=rowSums(mod.rmm3$w, na.rm = T)))
 sum(rowSums(mod.rmm3$w, na.rm = T))
 
 ```
+The weights differ across the neighbors of each location but they sum up to 1 (and thus the total of all weights equals 506).
+
 To do:
 
 - Introduce predict() function
