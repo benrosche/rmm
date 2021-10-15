@@ -105,14 +105,14 @@
 <li>
 <a href="#e1">Example 1: The effect of air quality on home values</a> (spatial regression)</li>
 <li>
-<a href="#e2">Example 2: Network regression example</a> (network regression)</li>
+<a href="#e2">Example 2: All friends or just your best friend?</a> (network regression)</li>
 <li>
 <a href="#e3">Example 3: The effect of political parties’ financial dependency on the survival coalition governments</a> (aggregation regression)</li>
 </ul>
 <div id="e1" class="section level3">
 <h3 class="hasAnchor">
 <a href="#e1" class="anchor" aria-hidden="true"></a>The effect of air quality on home values</h3>
-<p>The R file of this example can be found <a href="C:/Users/benja/OneDrive%20-%20Cornell%20University/GitHub/rmm/docs/articles/examples_files/mmmm_spatial.Rmd">here</a>.</p>
+<p>The R file of this example can be found <a href="https://benrosche.github.io/rmm/articles/examples_files/mmmm_spatial.Rmd">here</a>.</p>
 <p>This <strong>spatial analysis</strong> example is based on <a href="https://www.sciencedirect.com/science/article/abs/pii/0095069678900062" class="external-link">Harrison &amp; Rubenfield 1978</a>, who study the effect of air quality on home values, and a re-analysis by <a href="https://openjournals.wu.ac.at/region/paper_107/107.html" class="external-link">Bivand 2017</a>.</p>
 <p>The study employs census tract data from the Boston Standard Metropolitan Statistical Area in 1970. With tracts containing no housing units or comprised entirely of institutions excluded, the sample contains 506 census tracts. Air quality is measured by the concentration of nitric oxides in the air, which is obtained from a meteorological model (Transportation and Air Shed Simulation Model). I refer to their paper for more information on data and operationalization.</p>
 <p>Let us load in the data and plot the home values across town:</p>
@@ -574,6 +574,18 @@
 <li>Compare predictive performance</li>
 </ul>
 </div>
+</div>
+<div id="e2" class="section level3">
+<h3 class="hasAnchor">
+<a href="#e2" class="anchor" aria-hidden="true"></a>All your friends or just your best friend?</h3>
+<p>A popular peer effect model in economics is the linear-in-means model, which assumes that all peers in a peer group have the same effect on an individual. In sociology, by contrast, the best-friend model is considered more often, which assumes that mainly a person’s best friend will influence that individual. In this example, I use the MMMM to empirically test which of those models fits the data better.</p>
+<p>Tbd.</p>
+</div>
+<div id="e3" class="section level3">
+<h3 class="hasAnchor">
+<a href="#e3" class="anchor" aria-hidden="true"></a>The effect of political parties’ financial dependency on the survival coalition governments</h3>
+<p>Here, I go through the example considered in the paper and analyze whether the survival of coalition governments is influences by parties’ financial dependencies, and whether this influence is homogenous across coalition parties.</p>
+<p>Tbd.</p>
 </div>
   </div>
 

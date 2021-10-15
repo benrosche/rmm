@@ -17,12 +17,12 @@ knitr::opts_chunk$set(
 I provide three examples on how the MMMM can be employed to study spatial, network, and aggregation problems
 
 - [Example 1: The effect of air quality on home values](#e1) (spatial regression)
-- [Example 2: Network regression example](#e2) (network regression)
+- [Example 2: All friends or just your best friend?](#e2) (network regression)
 - [Example 3: The effect of political parties' financial dependency on the survival coalition governments](#e3) (aggregation regression)
 
 ### The effect of air quality on home values {#e1}
 
-The R file of this example can be found [here](C:/Users/benja/OneDrive - Cornell University/GitHub/rmm/docs/articles/examples_files/mmmm_spatial.Rmd).
+The R file of this example can be found [here](https://benrosche.github.io/rmm/articles/examples_files/mmmm_spatial.Rmd).
 
 This **spatial analysis** example is based on [Harrison & Rubenfield 1978](https://www.sciencedirect.com/science/article/abs/pii/0095069678900062),
 who study the effect of air quality on home values, and a re-analysis by [Bivand 2017](https://openjournals.wu.ac.at/region/paper_107/107.html).
@@ -333,3 +333,15 @@ To do:
 
 - Introduce predict() function
 - Compare predictive performance
+
+### All your friends or just your best friend? {#e2}
+
+A popular peer effect model in economics is the linear-in-means model, which assumes that all peers in a peer group have the same effect on an individual. In sociology, by contrast, the best-friend model is considered more often, which assumes that mainly a person's best friend will influence that individual. In this example, I use the MMMM to empirically test which of those models fits the data better.
+
+Tbd.
+
+### The effect of political parties' financial dependency on the survival coalition governments {#e3}
+
+Here, I go through the example considered in the paper and analyze whether the survival of coalition governments is influences by parties’ financial dependencies, and whether this influence is homogenous across coalition parties.
+
+Tbd.
