@@ -182,7 +182,7 @@ monetPlot(m1, "b.l1") # monetPlot to inspect the posterior distribution of the m
 
 }
 \references{
-Rosche, Benjamin (2021): On the multilevel structure of coalition governments
+Rosche, B. (2021). A multilevel model for coalition governments: Uncovering dependencies within and across governments due to parties. https://doi.org/10.31235/osf.io/4bafr
 }
 \author{
 Benjamin Rosche <benjamin.rosche@gmail.com>

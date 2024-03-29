@@ -39,20 +39,17 @@ model {
   # Priors regression coefficients, posterior predictive p-values
   for(x in 1:n.Xl1) {
     b.l1[x] ~ dnorm(0,0.0001)
-    ppp.b.l1[x] <- step(b.l1[x])
   }
   
   for(x in 1:n.Xl2) {
     b.l2[x] ~ dnorm(0,0.0001)
-    ppp.b.l2[x] <- step(b.l2[x])
   }
   
   for(x in 1:n.Xl3) {
     b.l3[x] ~ dnorm(0,0.0001)
-    ppp.b.l3[x] <- step(b.l3[x])
   }
   
-  b.w
+  b.w # placeholder
   
   # Priors variance terms
   tau.l1 ~ dscaled.gamma(25, 1)

@@ -66,8 +66,8 @@ createJagsVars <- function(data, family, level1, level2, level3, weightf, ids, l
   n.Xl3 <- dim(X.l3)[2]
   n.Xw  <- dim(X.w)[2]
   
-  n.GPN  <- if(mm) l1dat %>% group_by(l1id) %>% count() %>% .$n %>% as.numeric() %>% max() else c() # max number of gov participations
-  n.GPNi <- if(mm) l1dat %>% arrange(l1id) %>% group_by(l1id) %>% count() %>% .$n %>% as.numeric() else c() # number of gov partipations per party, sorted l1id=1,2,3,...
+  n.GPN  <- if(mm) l1dat %>% group_by(l1id) %>% dplyr::count() %>% .$n %>% as.numeric() %>% max() else c() # max number of gov participations
+  n.GPNi <- if(mm) l1dat %>% arrange(l1id) %>% group_by(l1id) %>% dplyr::count() %>% .$n %>% as.numeric() else c() # number of gov partipations per party, sorted l1id=1,2,3,...
   n.GPn  <- if(mm) l1dat %>% group_by(l1id) %>% dplyr::mutate(n=row_number()) %>% .$n %>% as.numeric() else c() # participation index, sorted l1id=2,6,2,...
   
   # ---------------------------------------------------------------------------------------------- #
@@ -81,7 +81,7 @@ createJagsVars <- function(data, family, level1, level2, level3, weightf, ids, l
   
   if(mm & monitor) l1.param <- append(l1.param, c("re.l1"))
   if(mm & mmwar)   l1.data  <- append(l1.data, c("n.GPn", "n.GPNi"))
-  if(mm & !is.null(n.Xl1)) { l1.data <- append(l1.data, c("X.l1", "n.Xl1")); l1.param <- append(l1.param, c("b.l1", "ppp.b.l1")) }
+  if(mm & !is.null(n.Xl1)) { l1.data <- append(l1.data, c("X.l1", "n.Xl1")); l1.param <- append(l1.param, c("b.l1")) }
   
   # Level 2 -------------------------------------------------------------------------------------- #
   
@@ -90,18 +90,18 @@ createJagsVars <- function(data, family, level1, level2, level3, weightf, ids, l
   
   l2.param <- c(pred, sigma.l2)
   l2.data  <- c("n.l2")
-  if(!is.null(n.Xl2)) { l2.data <- append(l2.data, c("X.l2", "n.Xl2")); l2.param <- append(l2.param, c("b.l2", "ppp.b.l2")) }
+  if(!is.null(n.Xl2)) { l2.data <- append(l2.data, c("X.l2", "n.Xl2")); l2.param <- append(l2.param, c("b.l2")) }
   
   # Level 3 -------------------------------------------------------------------------------------- #
   
   l3.param <- if(hm & l3type=="RE" & isTRUE(monitor)) c("sigma.l3", "re.l3") else if(hm & l3type=="RE" & isFALSE(monitor)) c("sigma.l3") else c()
   l3.data  <- if(hm) c("l3id", "n.l3") else c()
   if(!is.null(n.Xl3)) l3.data <- append(l3.data, c("X.l3", "n.Xl3"))
-  if(!is.null(n.Xl3) & (l3type=="RE" | (l3type=="FE" & showFE==T))) l3.param <- append(l3.param, c("b.l3", "ppp.b.l3")) 
+  if(!is.null(n.Xl3) & (l3type=="RE" | (l3type=="FE" & showFE==T))) l3.param <- append(l3.param, c("b.l3")) 
   
   # Weight function ------------------------------------------------------------------------------ #
   
-  lw.param <- if(length(lwvars)>length(offsetvars) & monitor == T) c("b.w", "ppp.b.w", "w") else if(length(lwvars)>length(offsetvars) & monitor == F) c("b.w", "ppp.b.w") else if(length(lwvars)>0 & monitor==T) c("w") else c()
+  lw.param <- if(length(lwvars)>length(offsetvars) & monitor == T) c("b.w", "w") else if(length(lwvars)>length(offsetvars) & monitor == F) c("b.w") else if(length(lwvars)>0 & monitor==T) c("w") else c()
   lw.data  <- if(mm) c("X.w") else c()
   if(mmwconstraint==1) lw.data <- append(lw.data, c("l1i1.l1", "l1i2.l1"))
   

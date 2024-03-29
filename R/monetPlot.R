@@ -24,7 +24,6 @@ monetPlot <- function(rmm, parameter, lab=F, r=3, sav=F) {
   library(ggplot2)
   library(cowplot)
   library(ggmcmc)
-  library(stringr)
   
   # Retrieve mcmc list --------------------------------------------------------------------------- #
   

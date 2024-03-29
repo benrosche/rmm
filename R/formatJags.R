@@ -33,14 +33,6 @@ formatJags <- function(jags.out, hdi, r, monitor, Ns, l1, l3, level1, level2, le
     tibble::rownames_to_column(var="name") %>% 
     dplyr::rename(estimate=2, sd=3, lb=4, ub=5)
   
-  pppvalues <- # extract ppp here because they should remain a mean estimate 
-    reg.table %>%  
-    dplyr::filter(startsWith(name, "ppp.")) %>% 
-    dplyr::mutate_at(.vars=c("name"), .funs=function(x) str_remove(x, "ppp.")) %>%
-    dplyr::select(-sd, -lb, -ub)
-  
-  # 2do: ppp values for variance terms
-  
   # Mean and 95% CI or Mode and HDI -------------------------------------------------------------- #
   
   if(!isFALSE(hdi)) {
@@ -60,7 +52,7 @@ formatJags <- function(jags.out, hdi, r, monitor, Ns, l1, l3, level1, level2, le
     reg.table <- reg.table.hdi # replace
   } 
   
-  # Remove random effects, weights, and ppp from reg.table and save separately ------------------- #
+  # Remove random effects and weights from reg.table and save separately ------------------------- #
   
   if(monitor) {
     
@@ -126,14 +118,6 @@ formatJags <- function(jags.out, hdi, r, monitor, Ns, l1, l3, level1, level2, le
   pred <- reg.table %>% dplyr::filter(startsWith(name, "pred")) %>% dplyr::select(-sd, -lb, -ub) %>% dplyr::mutate(estimate = round(as.numeric(estimate), r)) %>% .$estimate
   reg.table <- reg.table %>% dplyr::filter(!startsWith(name, "pred"))
   
-  # PPP values (add as separate column, must be after HDI) 
-  reg.table <- 
-    reg.table %>% 
-    dplyr::left_join(pppvalues %>% dplyr::select(name, estimate) %>% dplyr::rename(ppp=estimate), by=c("name")) %>%
-    dplyr::mutate(ppp=case_when(estimate>0 ~ 1-ppp, # for positive estimates, the correct p-value = 1-p
-                                TRUE ~ ppp)) %>%
-    dplyr::filter(!startsWith(name, "ppp.")) 
-  
   # Rename --------------------------------------------------------------------------------------- #
   
   newnames <- reg.table %>% .$name
@@ -147,8 +131,8 @@ formatJags <- function(jags.out, hdi, r, monitor, Ns, l1, l3, level1, level2, le
     rename(coefficients=estimate) %>% # compatibility with lm() 
     dplyr::mutate(variable=newnames) %>% relocate(variable, .before = coefficients) %>%
     filter(!variable=="deviance") %>%
-    rbind(c("DIC", "DIC", jags.out$BUGSoutput$DIC, NA, NA, NA, NA)) %>%
-    dplyr::mutate_at(3:7, list(~round(as.numeric(.), r))) %>%
+    rbind(c("DIC", "DIC", jags.out$BUGSoutput$DIC, NA, NA, NA)) %>%
+    dplyr::mutate_at(3:6, list(~round(as.numeric(.), r))) %>%
     tibble::column_to_rownames(var = "name")
   
   # Return --------------------------------------------------------------------------------------- #

@@ -153,7 +153,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, 
   
   if(is.null(data)) stop("No data supplied.")
   if(chains==1 & !isFALSE(hdi)) stop("To give HDI estimates, chains>1 must to be specified.")
-  if(isTRUE(hdi)) hdi <- 0.95 # if TRUE specified by mistake hdi=0.95 is assumed.
+  if(isTRUE(hdi)) hdi <- 0.95 # if TRUE specified, hdi=0.95 is assumed.
   
   # ---------------------------------------------------------------------------------------------- #
   # 1. Dissect formula 
@@ -161,7 +161,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, 
   
   DIR <- system.file(package = "rmm")
   
-  c(ids, vars, l1, l3) %<-%  dissectFormula(data, family, formula)
+  c(ids, vars, l1, l3) %<-% dissectFormula(data, family, formula)
   
   # ---------------------------------------------------------------------------------------------- #
   # 2. Disentangle vars and data into l1-3
@@ -215,7 +215,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, 
       jags.out <- jags(data=jags.data, inits = jags.inits, n.chains = chains, parameters.to.save = jags.params, n.iter = iter, n.burnin = burnin, model.file = textConnection(modelstring)) 
       
     }
-     
+   
     # Format JAGS output ------------------------------------------------------------------------- #
     
     c(reg.table, w, re.l1, re.l3, pred) %<-% formatJags(jags.out, hdi, r, monitor, Ns, l1, l3, level1, level2, level3, weightf) 
@@ -245,7 +245,11 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, 
     
     # Return ------------------------------------------------------------------------------------- #
     
-    return(list("reg.table"=reg.table, "w"=w, "re.l1"=re.l1, "re.l3"=re.l3, "pred"=pred, "input"=input, "jags.out"=if(isTRUE(monitor)) jags.out else c()))
+    out <- list("reg.table"=reg.table, "w"=w, "re.l1"=re.l1, "re.l3"=re.l3, "pred"=pred, "input"=input, "jags.out"=if(isTRUE(monitor)) jags.out else c())
+    
+    class(out) <- "rmm"
+    
+    return(out)
     
   } else {
     

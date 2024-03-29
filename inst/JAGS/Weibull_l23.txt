@@ -8,7 +8,7 @@ model {
     t[j] ~ dweib(shape, lambda[j])
     
     # log(lambda) = l2 + l3
-    log(lambda[j]) <- l2[j] + l3[l3id[j]]
+    log(lambda[j]) <- -(l2[j] + l3[l3id[j]])*shape
     
     # Level 2: systematic component
     l2[j] <- inprod(X.l2[j,], b.l2)
@@ -27,17 +27,15 @@ model {
   # Priors regression coefficients, posterior predictive p-values
   for(x in 1:n.Xl2) {
     b.l2[x] ~ dnorm(0,0.0001)
-    ppp.b.l2[x] <- step(b.l2[x])
   }
   
   for(x in 1:n.Xl3) {
     b.l3[x] ~ dnorm(0,0.0001)
-    ppp.b.l3[x] <- step(b.l3[x])
   }
   
   # Priors variance terms
   shape ~ dexp(0.0001) 
-  sigma.l2 <- sqrt(3.142^2/(6*exp(2*log(shape))))
+  sigma.l2 <- 3.14159^2/(6*shape^2)
   
   tau.l3 ~ dscaled.gamma(25, 1)
   sigma.l3 <- 1/sqrt(tau.l3)
