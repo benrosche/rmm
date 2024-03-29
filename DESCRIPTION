@@ -1,7 +1,7 @@
 Package: rmm
 Type: Package
 Title: Generalized multiple membership multilevel regression
-Version: 0.1.0
+Version: 0.1.1
 Author: Benjamin Rosche
 Maintainer: Benjamin Rosche <benjamin.rosche@gmail.com>
 Description: The rmm package provides an interface to fit Bayesian multilevel regression models using JAGS. 
