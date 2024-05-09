@@ -47,7 +47,7 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, DIR,
   
   # No covariates at level 1?
   if(mm & length(l1vars)==0) { 
-    modelstring <- stringr::str_remove(modelstring,  fixed("  for(x in 1:n.Xl1) {\n    b.l1[x] ~ dnorm(0,0.0001)\n    ppp.b.l1[x] <- step(b.l1[x])\n  }\n  \n"))
+    modelstring <- stringr::str_remove(modelstring,  fixed("  for(x in 1:n.Xl1) {\n    b.l1[x] ~ dnorm(0,0.0001)\n  }\n  \n"))
     modelstring <- stringr::str_replace(modelstring, fixed("l1[i] <- inprod(X.l1[i,], b.l1) + re.l1[l1id[i]]"), "l1[i] <- re.l1[l1id[i]]")
   }
   
@@ -59,7 +59,7 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, DIR,
   
   # No covariates at level 3?
   if(hm & length(l3vars)==0) { 
-    modelstring <- stringr::str_remove(modelstring,  fixed("for(x in 1:n.Xl3) {\n    b.l3[x] ~ dnorm(0,0.0001)\n    ppp.b.l3[x] <- step(b.l3[x])\n  }\n  \n"))
+    modelstring <- stringr::str_remove(modelstring,  fixed("for(x in 1:n.Xl3) {\n    b.l3[x] ~ dnorm(0,0.0001)\n  }\n  \n"))
     modelstring <- stringr::str_replace(modelstring, fixed("l3[k] <- inprod(X.l3[k,], b.l3) + re.l3[k]"), "l3[k] <- re.l3[k]")
   }
   
@@ -76,9 +76,9 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, DIR,
     if(mmwfunction != "uw[i] <- 1/X.w[i,1]") modelstring <- stringr::str_replace(modelstring, fixed("uw[i] <- 1/X.w[i,1]"), mmwfunction)
     if(mmwconstraint == 2) modelstring <- stringr::str_replace(modelstring, fixed("w[i] <- uw[i] / sum(uw[l1i1.l1[i]:l1i2.l1[i]])"), "w[i] <- uw[i] * n.l2/sum(uw[]) # rescale to sum up to n.l1 overall")
     if(stringr::str_detect(mmwfunction, "b.w\\[.\\]")) { 
-      modelstring <- stringr::str_replace(modelstring, fixed("b.w\n"), paste0(mmwcoefstring, collapse = "")) 
+      modelstring <- stringr::str_replace(modelstring, fixed("b.w # placeholder\n"), paste0(mmwcoefstring, collapse = "")) 
     } else {
-      modelstring <- stringr::str_replace(modelstring, fixed("b.w\n"), "") 
+      modelstring <- stringr::str_replace(modelstring, fixed("b.w # placeholder\n"), "") 
     }
     
   }

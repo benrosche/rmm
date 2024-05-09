@@ -144,7 +144,7 @@
 
 rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, burnin=100, chains=3, seed=NULL, run=T, parallel=F, monitor=T, hdi=F, r=4, transform="center", modelfile=F, data=NULL) {
 
-  # formula = Surv(govdur, earlyterm) ~ 1 + majority + mwc + fdep; family = "Weibull"; priors = list("b.l2"="dnorm(0,1)"); inits=NULL; iter=1000; burnin=100; chains = 3; seed = 123; run = T; parallel = F; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
+  # formula = Surv(govdur, earlyterm) ~ 1 + majority + mwc + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/offset(n), c=1)) + hm(id=cid, name=cname, type=RE); family = "Weibull"; priors = list("b.l2"="dnorm(0,1)"); inits=NULL; iter=1000; burnin=100; chains = 3; seed = 123; run = T; parallel = F; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
   # source("./R/dissectFormula.R"); source("./R/createData.R"); source("./R/editModelstring.R"); source("./R/createJagsVars.R"); source("./R/formatJags.R"); 
   
   # ---------------------------------------------------------------------------------------------- #
