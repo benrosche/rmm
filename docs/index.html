@@ -6,14 +6,13 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Generalized multiple membership multilevel regression • rmm</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="bootstrap-toc.css">
 <script src="bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
 <script src="pkgdown.js"></script><script src="extra.js"></script><meta property="og:title" content="Generalized multiple membership multilevel regression">
-<meta property="og:description" content="The rmm package provides an interface to fit Bayesian multilevel regression models using JAGS. 
-    While the package allows fitting conventional multilevel models, the main purpose of this package is to fit micro-macro models.">
+<meta property="og:description" content="The rmm package provides an interface to fit Bayesian multilevel regression models using JAGS. While the package allows fitting conventional multilevel models, the main purpose of this package is to fit micro-macro models.">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -40,7 +39,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">rmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1</span>
       </span>
     </div>
 
@@ -73,7 +72,7 @@
   <a href="articles/faq.html">faq</a>
 </li>
 <li>
-  <a href="https://github.com/benrosche/rmm/">
+  <a href="https://github.com/benrosche/rmm/" class="external-link">
     <span class="fab fa-github"></span>
      
   </a>
@@ -91,13 +90,13 @@
       </header><div class="row">
   <div class="contents col-md-9">
 
-<div id="section" class="section level1">
-<div class="page-header"><h1 class="hasAnchor">
-<a href="#section" class="anchor" aria-hidden="true"></a><img src="reference/figures/rmm-hexagon.png" align="right">
+<div class="section level1">
+<div class="page-header"><h1 id="section">
+<img src="reference/figures/rmm-hexagon.png" align="right"><a class="anchor" aria-label="anchor" href="#section"></a>
 </h1></div>
-<div id="bayesian-multiple-membership-multilevel-regression-models-with-endogenized-weights" class="section level3">
-<h3 class="hasAnchor">
-<a href="#bayesian-multiple-membership-multilevel-regression-models-with-endogenized-weights" class="anchor" aria-hidden="true"></a>Bayesian multiple membership multilevel regression models with endogenized weights</h3>
+<div class="section level3">
+<h3 id="bayesian-multiple-membership-multilevel-regression-models-with-endogenized-weights">Bayesian multiple membership multilevel regression models with endogenized weights<a class="anchor" aria-label="anchor" href="#bayesian-multiple-membership-multilevel-regression-models-with-endogenized-weights"></a>
+</h3>
 <!-- badges: start -->
 
 <p><em>I am currently working on getting the package ready for a submission to CRAN.</em></p>
@@ -105,9 +104,9 @@
 <p>Most multilevel analyses examine how lower-level units (e.g. individuals) are affected by their embedding in contextual/aggregate units at a higher level (e.g. neighborhoods) (= macro-micro link). The rmm package uses the multiple membership multilevel model to conceptually reverse this setup. It allows studying how the effect of units at lower levels propagates to a higher level (= micro-macro link).</p>
 <p>Previous studies examining micro-macro links either aggregated or disaggregated the data. Both approaches obstruct the inherent aggregation problem, ignore dependencies among observations, which induces excessive Type-I and Type-II error, and cannot separate micro- from macro-level variance. The generalized multiple membership multilevel model (MMMM) is able to overcome these problems by explicitly modeling the aggregation from micro to macro level by including an aggregation function in the regression model. It is a theoretically and statistically sound solution to the study of micro-macro links with regression analysis.</p>
 </div>
-<div id="with-the-rmm-package-you-can" class="section level3">
-<h3 class="hasAnchor">
-<a href="#with-the-rmm-package-you-can" class="anchor" aria-hidden="true"></a>With the <strong>rmm</strong> package, you can…</h3>
+<div class="section level3">
+<h3 id="with-the-rmm-package-you-can">With the <strong>rmm</strong> package, you can…<a class="anchor" aria-label="anchor" href="#with-the-rmm-package-you-can"></a>
+</h3>
 <ul>
 <li><p>explicitly model how the effect of lower level units propagate to a higher level</p></li>
 <li><p>examine the fit of different aggregation functions, such as the min, max, mean, or sum</p></li>
@@ -118,9 +117,9 @@
 <p>This is the data structure that is being modeled:</p>
 </div>
 </div>
-<div id="section-1" class="section level1">
-<h1 class="hasAnchor">
-<a href="#section-1" class="anchor" aria-hidden="true"></a><img src="reference/figures/rmm-datastructure.png">
+<div class="section level1">
+<h1 id="section-1">
+<img src="reference/figures/rmm-datastructure.png"><a class="anchor" aria-label="anchor" href="#section-1"></a>
 </h1>
 <p>In this example of coalition governments in Israel, political parties are the level-1 units, governments are the level-2 units, and the relationship between parties and governments is the multiple membership structure.</p>
 <p>This is just an example. Multiple membership structures are ubiquitous in the real world. Other applications include:</p>
@@ -131,24 +130,24 @@
 </ul>
 <p>This is how the <code><a href="reference/rmm.html">rmm()</a></code> function looks like:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">coalgov</span><span class="op">)</span>
-<span class="fu"><a href="reference/rmm.html">rmm</a></span><span class="op">(</span><span class="va">Y</span> <span class="op">~</span> <span class="fl">1</span> <span class="op">+</span> <span class="va">X_l2</span> <span class="op">+</span> 
-      <span class="va">X_l3</span> <span class="op">+</span> <span class="fu">hm</span><span class="op">(</span>id<span class="op">=</span><span class="va">id_l3</span>, type<span class="op">=</span><span class="va">RE</span><span class="op">)</span> <span class="op">+</span>
-      <span class="fu">mm</span><span class="op">(</span><span class="fu">id</span><span class="op">(</span><span class="va">id_l2</span>, <span class="va">id_l1</span><span class="op">)</span>, <span class="fu">mmc</span><span class="op">(</span><span class="va">X_l1</span><span class="op">)</span>, <span class="fu">mmw</span><span class="op">(</span><span class="va">w</span> <span class="op">~</span> <span class="fl">1</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">^</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="op">(</span><span class="va">X_w</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, 
-    family<span class="op">=</span><span class="st">"Gaussian"</span>, data<span class="op">=</span><span class="va">coalgov</span><span class="op">)</span></code></pre></div>
-<div id="developers" class="section level3">
-<h3 class="hasAnchor">
-<a href="#developers" class="anchor" aria-hidden="true"></a>Developers</h3>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">coalgov</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/rmm.html">rmm</a></span><span class="op">(</span><span class="va">Y</span> <span class="op">~</span> <span class="fl">1</span> <span class="op">+</span> <span class="va">X_l2</span> <span class="op">+</span> </span>
+<span>      <span class="va">X_l3</span> <span class="op">+</span> <span class="fu">hm</span><span class="op">(</span>id<span class="op">=</span><span class="va">id_l3</span>, type<span class="op">=</span><span class="va">RE</span><span class="op">)</span> <span class="op">+</span></span>
+<span>      <span class="fu">mm</span><span class="op">(</span><span class="fu">id</span><span class="op">(</span><span class="va">id_l2</span>, <span class="va">id_l1</span><span class="op">)</span>, <span class="fu">mmc</span><span class="op">(</span><span class="va">X_l1</span><span class="op">)</span>, <span class="fu">mmw</span><span class="op">(</span><span class="va">w</span> <span class="op">~</span> <span class="fl">1</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">^</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="op">(</span><span class="va">X_w</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, </span>
+<span>    family<span class="op">=</span><span class="st">"Gaussian"</span>, data<span class="op">=</span><span class="va">coalgov</span><span class="op">)</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="developers">Developers<a class="anchor" aria-label="anchor" href="#developers"></a>
+</h3>
 <p>I welcome contributions to the package! Feel free to submit changes for review or contact me if you have any questions.</p>
 </div>
-<div id="issues-or-feature-requests" class="section level3">
-<h3 class="hasAnchor">
-<a href="#issues-or-feature-requests" class="anchor" aria-hidden="true"></a>Issues or Feature Requests</h3>
+<div class="section level3">
+<h3 id="issues-or-feature-requests">Issues or Feature Requests<a class="anchor" aria-label="anchor" href="#issues-or-feature-requests"></a>
+</h3>
 <p>If you would like to log an issue or submit a feature request, please create a new issue or comment on an existing issue on <a href="https://github.com/benrosche/rmm/issues" class="external-link">GitHub Issues</a> on this repo.</p>
 </div>
-<div id="changelog" class="section level3">
-<h3 class="hasAnchor">
-<a href="#changelog" class="anchor" aria-hidden="true"></a>Changelog</h3>
+<div class="section level3">
+<h3 id="changelog">Changelog<a class="anchor" aria-label="anchor" href="#changelog"></a>
+</h3>
 <p>See <a href="https://github.com/benrosche/rmm/news/index.html" class="external-link">NEWS.md</a> for the package changelog.</p>
 <p>More information can be found <a href="http://benrosche.com/projects/rmm/" class="external-link">here</a></p>
 </div>
@@ -160,25 +159,30 @@
     <div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li>Browse source code at <br><a href="https://github.com/benrosche/rmm/">https://​github.com/​benrosche/​rmm/​</a>
-</li>
-<li>Report a bug at <br><a href="https://github.com/benrosche/rmm/issues">https://​github.com/​benrosche/​rmm/​issues</a>
-</li>
+<li><a href="https://github.com/benrosche/rmm/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/benrosche/rmm/issues" class="external-link">Report a bug</a></li>
 </ul>
 </div>
 
 <div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
-<li><a href="https://www.r-project.org/Licenses/GPL-3">GPL-3</a></li>
+<li><a href="https://www.r-project.org/Licenses/GPL-3" class="external-link">GPL-3</a></li>
 </ul>
 </div>
 
 
+<div class="citation">
+<h2 data-toc-skip>Citation</h2>
+<ul class="list-unstyled">
+<li><a href="authors.html#citation">Citing rmm</a></li>
+</ul>
+</div>
+
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Benjamin Rosche <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0001-5196-625X" target="orcid.widget" aria-label="ORCID"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
+<li>Benjamin Rosche <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0001-5196-625X" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
 </ul>
 </div>
 
@@ -200,7 +204,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 1.6.1.9001.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
 </div>
 
       </footer>

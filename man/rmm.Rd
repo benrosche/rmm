@@ -9,15 +9,14 @@ rmm(
   family = "Gaussian",
   priors = NULL,
   inits = NULL,
-  iter = 1000,
-  burnin = 100,
+  n.iter = 1000,
+  n.burnin = 500,
+  n.thin = NULL,
   chains = 3,
   seed = NULL,
   run = T,
   parallel = F,
   monitor = T,
-  hdi = F,
-  r = 4,
   transform = "center",
   modelfile = F,
   data = NULL
@@ -32,9 +31,11 @@ rmm(
 
 \item{inits}{A list with parameter as tags and their initial values as values. This list will be used in all chains. If NULL, JAGS and rmm select appropriate inits.}
 
-\item{iter}{Total number of iterations.}
+\item{n.iter}{Total number of iterations.}
 
-\item{burnin}{Number of iterations that will be discarded .}
+\item{n.burnin}{Number of iterations that will be discarded.}
+
+\item{n.thin}{Thinning rate.}
 
 \item{chains}{Number of chains.}
 
@@ -43,10 +44,6 @@ rmm(
 \item{run}{A logical value (True or False) indicating whether JAGS should estimate the model.}
 
 \item{monitor}{A logical value (True or False). If \code{True}, weights, random effects, predictions, and JAGS output is saved as well.}
-
-\item{hdi}{Numeric or False. If confidence level \code{x} is specified (e.g. x=0.95), mode, standard deviation, and (x*100)\% HDI are given. If \code{False} is specified, mean, standard deviation, and 95\% CI are given.}
-
-\item{r}{Numeric. Rounding value. Default is 3.}
 
 \item{transform}{Character vector or FALSE. Specifying \code{center} or \code{std} to center or standardize continuous predictors before estimation. Specifying \code{std2} will divide by two times the standard deviation, so that regression coefficients are comparable to those of binary predictors (Gelman 2008).}
 
