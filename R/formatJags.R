@@ -39,7 +39,7 @@ formatJags <- function(jags.out, monitor, Ns, l1, l3, level1, level2, level3, we
     
     # Level-1 RE #
     
-    re.l1 <- if(mm) reg.table %>% dplyr::filter(startsWith(name, "re.l1")) %>% dplyr::select(-sd, -lb, -ub) %>% dplyr::mutate(estimate = round(as.numeric(estimate), r)) else c()
+    re.l1 <- if(mm) reg.table %>% dplyr::filter(startsWith(name, "re.l1")) %>% dplyr::select(-sd, -lb, -ub) else c()
    
     if(mm & mmwar) { # AR
       
