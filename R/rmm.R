@@ -109,14 +109,13 @@
 #' @param family Character vector. Currently supported are "Gaussian", "Logit", "Condlogit", "Weibull", or "Cox".
 #' @param priors A list with parameter names as tags and their prior specification as values. More details below.
 #' @param inits A list with parameter as tags and their initial values as values. This list will be used in all chains. If NULL, JAGS and rmm select appropriate inits.
-#' @param iter Total number of iterations.
-#' @param burnin Number of iterations that will be discarded .
+#' @param n.iter Total number of iterations.
+#' @param n.burnin Number of iterations that will be discarded.
+#' @param n.thin Thinning rate.
 #' @param chains Number of chains.
 #' @param seed A random number.
 #' @param run A logical value (True or False) indicating whether JAGS should estimate the model.
 #' @param monitor A logical value (True or False). If \code{True}, weights, random effects, predictions, and JAGS output is saved as well.
-#' @param hdi Numeric or False. If confidence level \code{x} is specified (e.g. x=0.95), mode, standard deviation, and (x*100)\% HDI are given. If \code{False} is specified, mean, standard deviation, and 95\% CI are given.
-#' @param r Numeric. Rounding value. Default is 3.
 #' @param transform Character vector or FALSE. Specifying \code{center} or \code{std} to center or standardize continuous predictors before estimation. Specifying \code{std2} will divide by two times the standard deviation, so that regression coefficients are comparable to those of binary predictors (Gelman 2008). 
 #' @param modelfile Character vector or TRUE|False. If TRUE, the JAGS model is saved in rmm/temp/modelstring.txt. If a file path is supplied as string, rmm will just create the data structure and use the provided modelfile. 
 #' @param data Dataframe object. The dataset must have level 1 as unit of analysis. More details below.
@@ -142,9 +141,9 @@
 #' @references 
 #' Rosche, B. (2021). A multilevel model for coalition governments: Uncovering dependencies within and across governments due to parties. https://doi.org/10.31235/osf.io/4bafr
 
-rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, burnin=100, chains=3, seed=NULL, run=T, parallel=F, monitor=T, hdi=F, r=4, transform="center", modelfile=F, data=NULL) {
+rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 1000, n.burnin = 500, n.thin = NULL, chains=3, seed=NULL, run=T, parallel=F, monitor=T, transform="center", modelfile=F, data=NULL) {
 
-  # formula = Surv(govdur, earlyterm) ~ 1 + majority + mwc + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/offset(n), c=1)) + hm(id=cid, name=cname, type=RE); family = "Weibull"; priors = list("b.l2"="dnorm(0,1)"); inits=NULL; iter=1000; burnin=100; chains = 3; seed = 123; run = T; parallel = F; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
+  # formula = Surv(govdur, earlyterm) ~ 1 + majority + mwc + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/offset(n), c=1)) + hm(id=cid, name=cname, type=RE); family = "Weibull"; priors = list("b.w"="dnorm(0,0.01)"); inits=NULL; iter=1000; burnin=100; chains = 3; seed = 123; run = T; parallel = F; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
   # source("./R/dissectFormula.R"); source("./R/createData.R"); source("./R/editModelstring.R"); source("./R/createJagsVars.R"); source("./R/formatJags.R"); 
   
   # ---------------------------------------------------------------------------------------------- #
@@ -200,7 +199,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, 
       # Run parallel ----------------------------------------------------------------------------- #
       
       readr::write_file(modelstring, paste0(DIR, "/temp/jags-parallel.txt"))
-      jags.out <- do.call(jags.parallel, list(data=jags.data, inits = jags.inits[1], n.chains = chains, parameters.to.save = jags.params, n.iter = iter, jags.seed = seed, n.burnin = burnin, model.file = paste0(DIR, "/temp/jags-parallel.txt")))
+      jags.out <- do.call(jags.parallel, list(data=jags.data, inits = jags.inits[1], n.chains = chains, parameters.to.save = jags.params, n.iter = n.iter, n.burnin = n.burnin, n.thin = n.thin, jags.seed = seed, model.file = paste0(DIR, "/temp/jags-parallel.txt")))
       file.remove(paste0(DIR, "/temp/jags-parallel.txt"))
       # Three peculiarities about jags.parallel:
       # - It cannot read the model from textConnection(modelstring)
@@ -212,13 +211,13 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, iter=1000, 
       # Run sequentially ------------------------------------------------------------------------- #
       
       set.seed(seed) 
-      jags.out <- jags(data=jags.data, inits = jags.inits, n.chains = chains, parameters.to.save = jags.params, n.iter = iter, n.burnin = burnin, model.file = textConnection(modelstring)) 
+      jags.out <- jags(data=jags.data, inits = jags.inits, n.chains = chains, parameters.to.save = jags.params, n.iter = n.iter, n.burnin = n.burnin, n.thin = n.thin, model.file = textConnection(modelstring)) 
       
-    }
+    } 
    
     # Format JAGS output ------------------------------------------------------------------------- #
     
-    c(reg.table, w, re.l1, re.l3, pred) %<-% formatJags(jags.out, hdi, r, monitor, Ns, l1, l3, level1, level2, level3, weightf) 
+    c(reg.table, w, re.l1, re.l3, pred) %<-% formatJags(jags.out, monitor, Ns, l1, l3, level1, level2, level3, weightf) 
     
     # Prepare return ----------------------------------------------------------------------------- #
     

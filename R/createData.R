@@ -56,13 +56,13 @@ createData <- function(data, ids, vars, l1, l3, transform) {
     l1dat <-
       data %>% 
       dplyr::arrange(l2id, l1id) %>% # important
-      dplyr::select(l1id, l2id, !!l1vars) %>%
-      dplyr::mutate(across(l1vars, ~cen_std(., transform))) # center continuous vars 
+      dplyr::select(l1id, l2id, all_of(l1vars)) %>%
+      dplyr::mutate(across(all_of(l1vars), ~cen_std(., transform))) # center continuous vars 
     
     wdat <- 
       data %>%
       dplyr::add_count(l2id, name="n") %>% 
-      dplyr::select(l1id, l2id, !!lwvars) %>%
+      dplyr::select(l1id, l2id, all_of(lwvars)) %>%
       dplyr::mutate(across(c(!!lwvars[!lwvars %in% offsetvars]), ~cen_std(., transform))) # do not transform offsetvars 
 
     
@@ -83,9 +83,9 @@ createData <- function(data, ids, vars, l1, l3, transform) {
     
     l3vars <- 
       data %>% 
-      dplyr::select(l3id, !!l23vars[-1]) %>%
+      dplyr::select(l3id, all_of(l23vars[-1])) %>%
       dplyr::group_by(l3id) %>%
-      dplyr::mutate(across(l23vars[-1], ~var(., na.rm = TRUE))) %>% # select variables that do not vary within levels
+      dplyr::mutate(across(all_of(l23vars[-1]), ~var(., na.rm = TRUE))) %>% # select variables that do not vary within levels
       dplyr::ungroup() %>% 
       dplyr::select_if(~sum(.)==0) %>%  
       colnames() 
@@ -111,12 +111,12 @@ createData <- function(data, ids, vars, l1, l3, transform) {
       
       l3dat <-
         data %>%
-        dplyr::select(l3id, !!l3vars) %>%
+        dplyr::select(l3id, all_of(l3vars)) %>%
         dplyr::group_by(l3id) %>%
         dplyr::filter(row_number()==1) %>%
         dplyr::ungroup() %>%
         dplyr::arrange(l3id) %>% 
-        dplyr::mutate(across(l3vars, ~cen_std(., transform)))
+        dplyr::mutate(across(all_of(l3vars), ~cen_std(., transform)))
       
     }
     
@@ -144,14 +144,18 @@ createData <- function(data, ids, vars, l1, l3, transform) {
     dplyr::mutate(l1i1 = ifelse(row_number()==1, 1, l1i1)) %>%
     dplyr::mutate(X0 = 1) %>%
     dplyr::select(l2id, l3id, l1i1, l1i2, l1n, !!lhs, !!l2vars) %>%
-    dplyr::mutate(across(l2vars, ~cen_std(., transform)))
+    dplyr::mutate(across(all_of(l2vars), ~cen_std(., transform)))
   
   # Collect return ------------------------------------------------------------------------------- #
   
-  return(list("data"=data, 
-              "level1"=list("dat"=l1dat, "vars"=l1vars), 
-              "level2"=list("dat"=l2dat, "vars"=l2vars, "lhs"=lhs), 
-              "level3"=list("dat"=l3dat, "vars"=l3vars), 
-              "weightf"=list("dat"=wdat, "vars"=lwvars, "offsetvars"=offsetvars)))
+  return(
+    list(
+      "data"=data, 
+      "level1"=list("dat"=l1dat, "vars"=l1vars), 
+      "level2"=list("dat"=l2dat, "vars"=l2vars, "lhs"=lhs), 
+      "level3"=list("dat"=l3dat, "vars"=l3vars), 
+      "weightf"=list("dat"=wdat, "vars"=lwvars, "offsetvars"=offsetvars)
+    )
+  )
   
 }

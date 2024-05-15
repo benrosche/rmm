@@ -2,7 +2,7 @@
 # Function formatJags
 # ================================================================================================ #
 
-formatJags <- function(jags.out, hdi, r, monitor, Ns, l1, l3, level1, level2, level3, weightf) {
+formatJags <- function(jags.out, monitor, Ns, l1, l3, level1, level2, level3, weightf) {
 
   # Unpack lists --------------------------------------------------------------------------------- #
 
@@ -32,25 +32,6 @@ formatJags <- function(jags.out, hdi, r, monitor, Ns, l1, l3, level1, level2, le
     as.data.frame(jags.out$BUGSoutput$summary[, c(1, 2, 3, 7)]) %>% 
     tibble::rownames_to_column(var="name") %>% 
     dplyr::rename(estimate=2, sd=3, lb=4, ub=5)
-  
-  # Mean and 95% CI or Mode and HDI -------------------------------------------------------------- #
-  
-  if(!isFALSE(hdi)) {
-    
-    mcmc.out <- MCMCvis::MCMCchains(mcmcplots::as.mcmc.rjags(jags.out)) 
-    
-    reg.table.hdi <- data.frame(name=NA, estimate=NA, sd=NA, lb=NA, ub=NA) 
-    
-    for(i in 1:dim(mcmc.out)[[2]]) {
-      dres <- density(mcmc.out[,i]) # density
-      mode <- dres$x[which.max(dres$y)] # get mode from density
-      hdiinterval <- HDInterval::hdi(mcmc.out[,i], credMass=hdi) # get HDI
-      sd <- sd(mcmc.out[,i])
-      reg.table.hdi[i,] <- c(colnames(mcmc.out)[i], mode, sd, hdiinterval[1] , hdiinterval[2])
-    }
-    
-    reg.table <- reg.table.hdi # replace
-  } 
   
   # Remove random effects and weights from reg.table and save separately ------------------------- #
   
@@ -86,14 +67,14 @@ formatJags <- function(jags.out, hdi, r, monitor, Ns, l1, l3, level1, level2, le
     
     # Level-3 RE #
     
-    re.l3 <- if(hm) reg.table %>% dplyr::filter(startsWith(name, "re.l3")) %>% dplyr::mutate(estimate = round(as.numeric(estimate), r)) %>% .$estimate else c()
+    re.l3 <- if(hm) reg.table %>% dplyr::filter(startsWith(name, "re.l3")) %>% pull(estimate) else c()
     reg.table <- reg.table %>% dplyr::filter(!startsWith(name, "re.l3[")) 
     
     # Weights #
     
     if(mm) {
       
-      w <- reg.table %>% dplyr::filter(startsWith(name, "w")) %>% dplyr::mutate(estimate = round(as.numeric(estimate), r)) %>% .$estimate
+      w <- reg.table %>% dplyr::filter(startsWith(name, "w")) %>% pull(estimate)
       
       id1 <- cumsum(l1n)-l1n+1
       id2 <- cumsum(l1n)
@@ -115,7 +96,7 @@ formatJags <- function(jags.out, hdi, r, monitor, Ns, l1, l3, level1, level2, le
   }
   
   # Predicted values
-  pred <- reg.table %>% dplyr::filter(startsWith(name, "pred")) %>% dplyr::select(-sd, -lb, -ub) %>% dplyr::mutate(estimate = round(as.numeric(estimate), r)) %>% .$estimate
+  pred <- reg.table %>% dplyr::filter(startsWith(name, "pred")) %>% dplyr::select(-sd, -lb, -ub) %>% pull(estimate)
   reg.table <- reg.table %>% dplyr::filter(!startsWith(name, "pred"))
   
   # Rename --------------------------------------------------------------------------------------- #
