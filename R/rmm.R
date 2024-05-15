@@ -106,7 +106,7 @@
 #' }
 #' ...
 #' @param formula A symbolic description of the model in form of an R formula. More details below.
-#' @param family Character vector. Currently supported are "Gaussian", "Logit", "Condlogit", "Weibull", or "Cox".
+#' @param family Character vector. Currently supported are "Gaussian", "Logit", "CondLogit", "Weibull", and "Cox".
 #' @param priors A list with parameter names as tags and their prior specification as values. More details below.
 #' @param inits A list with parameter as tags and their initial values as values. This list will be used in all chains. If NULL, JAGS and rmm select appropriate inits.
 #' @param n.iter Total number of iterations.
@@ -141,7 +141,7 @@
 #' @references 
 #' Rosche, B. (2021). A multilevel model for coalition governments: Uncovering dependencies within and across governments due to parties. https://doi.org/10.31235/osf.io/4bafr
 
-rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 1000, n.burnin = 500, n.thin = NULL, chains=3, seed=NULL, run=T, parallel=F, monitor=T, transform="center", modelfile=F, data=NULL) {
+rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 1000, n.burnin = 500, n.thin = max(1, floor((n.iter - n.burnin) / 1000)), chains=3, seed=NULL, run=T, parallel=F, monitor=T, transform="center", modelfile=F, data=NULL) {
 
   # formula = Surv(govdur, earlyterm) ~ 1 + majority + mwc + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/offset(n), c=1)) + hm(id=cid, name=cname, type=RE); family = "Weibull"; priors = list("b.w"="dnorm(0,0.01)"); inits=NULL; iter=1000; burnin=100; chains = 3; seed = 123; run = T; parallel = F; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
   # source("./R/dissectFormula.R"); source("./R/createData.R"); source("./R/editModelstring.R"); source("./R/createJagsVars.R"); source("./R/formatJags.R"); 
@@ -151,9 +151,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 10
   # ---------------------------------------------------------------------------------------------- #
   
   if(is.null(data)) stop("No data supplied.")
-  if(chains==1 & !isFALSE(hdi)) stop("To give HDI estimates, chains>1 must to be specified.")
-  if(isTRUE(hdi)) hdi <- 0.95 # if TRUE specified, hdi=0.95 is assumed.
-  
+
   # ---------------------------------------------------------------------------------------------- #
   # 1. Dissect formula 
   # ---------------------------------------------------------------------------------------------- #
@@ -236,11 +234,11 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 10
     input <- 
       if(isTRUE(monitor)) {
         append(list("family"=family, "priors"=priors, "inits"=inits, 
-                    "iter"=iter, "burnin"=burnin, "chains"=chains, "seed"=seed, "run"=run, "parallel"=parallel, 
-                    "monitor"=monitor, "hdi"=hdi, "r"=r, "transform"=transform, "modelfile"=modelfile,
+                    "n.iter"=n.iter, "n.burnin"=n.burnin, "n.thin"=n.thin, "chains"=chains, "seed"=seed, "run"=run, "parallel"=parallel, 
+                    "monitor"=monitor, "transform"=transform, "modelfile"=modelfile,
                     "lhs" = level2$lhs, "l1vars"=level1$vars, "l2vars"=level2$vars, "l3vars"=level3$vars, "transformedVars"=transformedVars,
                     "n.ul1"=Ns$n.ul1, "n.l1"=Ns$n.l1, "n.l2"=Ns$n.l2, "n.l3"=Ns$n.l3), c(l1, l3))
-      } else c()
+      } else c()  
     
     # Return ------------------------------------------------------------------------------------- #
     

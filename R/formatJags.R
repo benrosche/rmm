@@ -113,7 +113,6 @@ formatJags <- function(jags.out, monitor, Ns, l1, l3, level1, level2, level3, we
     dplyr::mutate(variable=newnames) %>% relocate(variable, .before = coefficients) %>%
     filter(!variable=="deviance") %>%
     rbind(c("DIC", "DIC", jags.out$BUGSoutput$DIC, NA, NA, NA)) %>%
-    dplyr::mutate_at(3:6, list(~round(as.numeric(.), r))) %>%
     tibble::column_to_rownames(var = "name")
   
   # Return --------------------------------------------------------------------------------------- #
