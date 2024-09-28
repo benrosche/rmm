@@ -114,12 +114,12 @@ createJagsVars <- function(data, family, level1, level2, level3, weightf, ids, l
   # Add model-specific params and data to jags.params and jags.data
   # ---------------------------------------------------------------------------------------------- #
   
-  if(family=="Gaussian") {
+  if(family %in% c("Gaussian", "Binomial")) {
     
     # Dependent variable
     Y <- l2dat %>% dplyr::rename(Y = !!lhs) %>% .$Y
     
-    # jags.data 
+    # jags.data
     jags.data <- append(jags.data, "Y")
     
     # jags.inits

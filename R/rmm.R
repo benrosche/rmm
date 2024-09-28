@@ -106,7 +106,7 @@
 #' }
 #' ...
 #' @param formula A symbolic description of the model in form of an R formula. More details below.
-#' @param family Character vector. Currently supported are "Gaussian", "Logit", "CondLogit", "Weibull", and "Cox".
+#' @param family Character vector. Currently supported are "Gaussian", "Binomial", "Weibull", and "Cox". Not yet implemented: "CondLogit"
 #' @param priors A list with parameter names as tags and their prior specification as values. More details below.
 #' @param inits A list with parameter as tags and their initial values as values. This list will be used in all chains. If NULL, JAGS and rmm select appropriate inits.
 #' @param n.iter Total number of iterations.
@@ -117,7 +117,7 @@
 #' @param run A logical value (True or False) indicating whether JAGS should estimate the model.
 #' @param monitor A logical value (True or False). If \code{True}, weights, random effects, predictions, and JAGS output is saved as well.
 #' @param transform Character vector or FALSE. Specifying \code{center} or \code{std} to center or standardize continuous predictors before estimation. Specifying \code{std2} will divide by two times the standard deviation, so that regression coefficients are comparable to those of binary predictors (Gelman 2008). 
-#' @param modelfile Character vector or TRUE|False. If TRUE, the JAGS model is saved in rmm/temp/modelstring.txt. If a file path is supplied as string, rmm will just create the data structure and use the provided modelfile. 
+#' @param modelfile Character vector or TRUE|False. If TRUE, the JAGS model is saved in rmm/temp/modelstring.txt. If a file path is supplied as string, rmm will just create the data structure and use the provided modelfile. Run \code{.libPaths()} to see where R packages are stored.
 #' @param data Dataframe object. The dataset must have level 1 as unit of analysis. More details below.
 #'
 #' @return A list with 7 elements: reg.table, w, re.l1, re.l3, pred, input, jags.out. If monitor=F, only the 
@@ -143,7 +143,7 @@
 
 rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 1000, n.burnin = 500, n.thin = max(1, floor((n.iter - n.burnin) / 1000)), chains=3, seed=NULL, run=T, parallel=F, monitor=T, transform="center", modelfile=F, data=NULL) {
 
-  # formula = Surv(govdur, earlyterm) ~ 1 + majority + mwc + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/offset(n), c=1)) + hm(id=cid, name=cname, type=RE); family = "Weibull"; priors = list("b.w"="dnorm(0,0.01)"); inits=NULL; iter=1000; burnin=100; chains = 3; seed = 123; run = T; parallel = F; monitor = T; hdi = 0.95; r = 3; transform = "center"; modelfile = T; data = coalgov
+  # formula = Surv(govdur, earlyterm) ~ 1 + majority + mwc; family = "Weibull"; priors=NULL; inits=NULL; n.iter=100; n.burnin=10; n.thin = max(1, floor((n.iter - n.burnin) / 1000)); chains = 3; seed = 123; run = T; parallel = F; monitor = T; transform = "center"; modelfile = T; data = coalgov
   # source("./R/dissectFormula.R"); source("./R/createData.R"); source("./R/editModelstring.R"); source("./R/createJagsVars.R"); source("./R/formatJags.R"); 
   
   # ---------------------------------------------------------------------------------------------- #
@@ -233,11 +233,16 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 10
     # Save info on input
     input <- 
       if(isTRUE(monitor)) {
-        append(list("family"=family, "priors"=priors, "inits"=inits, 
-                    "n.iter"=n.iter, "n.burnin"=n.burnin, "n.thin"=n.thin, "chains"=chains, "seed"=seed, "run"=run, "parallel"=parallel, 
-                    "monitor"=monitor, "transform"=transform, "modelfile"=modelfile,
-                    "lhs" = level2$lhs, "l1vars"=level1$vars, "l2vars"=level2$vars, "l3vars"=level3$vars, "transformedVars"=transformedVars,
-                    "n.ul1"=Ns$n.ul1, "n.l1"=Ns$n.l1, "n.l2"=Ns$n.l2, "n.l3"=Ns$n.l3), c(l1, l3))
+        append(
+          list(
+            "family"=family, "priors"=priors, "inits"=inits, 
+            "n.iter"=n.iter, "n.burnin"=n.burnin, "n.thin"=n.thin, "chains"=chains, "seed"=seed, "run"=run, "parallel"=parallel, 
+            "monitor"=monitor, "transform"=transform, "modelfile"=modelfile,
+            "lhs" = level2$lhs, "l1vars"=level1$vars, "l2vars"=level2$vars, "l3vars"=level3$vars, "transformedVars"=transformedVars,
+            "n.ul1"=Ns$n.ul1, "n.l1"=Ns$n.l1, "n.l2"=Ns$n.l2, "n.l3"=Ns$n.l3
+          ), 
+          c(l1, l3)
+        )
       } else c()  
     
     # Return ------------------------------------------------------------------------------------- #

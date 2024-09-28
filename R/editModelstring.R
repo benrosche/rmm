@@ -25,6 +25,8 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, DIR,
   
   if(family=="Gaussian") {
     modelstring <- if(isTRUE(mm)&isTRUE(hm)) readr::read_file(paste0(DIR, "/JAGS/Gaussian_l123.txt")) else if(isTRUE(mm)&isFALSE(hm)) readr::read_file(paste0(DIR, "/JAGS/Gaussian_l12.txt")) else if(isFALSE(mm)&isTRUE(hm)) readr::read_file(paste0(DIR, "/JAGS/Gaussian_l23.txt")) else if(isFALSE(mm)&isFALSE(hm)) readr::read_file(paste0(DIR, "/JAGS/Gaussian_l2.txt"))
+  } else if(family=="Binomial") {
+    modelstring <- if(isTRUE(mm)&isTRUE(hm)) readr::read_file(paste0(DIR, "/JAGS/Binomial_l123.txt")) else if(isTRUE(mm)&isFALSE(hm)) readr::read_file(paste0(DIR, "/JAGS/Binomial_l12.txt")) else if(isFALSE(mm)&isTRUE(hm)) readr::read_file(paste0(DIR, "/JAGS/Binomial_l23.txt")) else if(isFALSE(mm)&isFALSE(hm)) readr::read_file(paste0(DIR, "/JAGS/Binomial_l2.txt"))
   } else if(family=="Weibull") {
     modelstring <- if(isTRUE(mm)&isTRUE(hm)) readr::read_file(paste0(DIR, "/JAGS/Weibull_l123.txt")) else if(isTRUE(mm)&isFALSE(hm)) readr::read_file(paste0(DIR, "/JAGS/Weibull_l12.txt")) else if(isFALSE(mm)&isTRUE(hm)) readr::read_file(paste0(DIR, "/JAGS/Weibull_l23.txt")) else if(isFALSE(mm)&isFALSE(hm)) readr::read_file(paste0(DIR, "/JAGS/Weibull_l2.txt"))
   } else if(family=="Cox") {
@@ -42,7 +44,7 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, DIR,
     if(family=="Gaussian") modelstring <- stringr::str_replace(modelstring, "(Y\\[j\\] \\~) (dnorm\\(mu\\[j\\], tau.l2\\))", "\\1 \\2\n    pred[j] ~ \\2")
     if(family=="Weibull" & length(lhs)==2) modelstring <- stringr::str_replace(modelstring, "(t\\[j\\] \\~) (dweib\\(shape, lambda\\[j\\]\\))", "\\1 \\2\n\n    pred[j] ~ \\2")
     if(family=="Weibull" & length(lhs)==3) modelstring <- stringr::str_replace(modelstring, "(t\\[j\\] \\~) (dweib\\(shape, lambda\\[j\\]\\))", "\\1 \\2\n\n    ones[j] ~ dinterval(pred[j], ct.lbub[j,])\n    pred[j] ~ \\2")
-    # 2do: predictions for the Cox model
+    # 2do: predictions for Binomial and Cox model
   }
   
   # No covariates at level 1?

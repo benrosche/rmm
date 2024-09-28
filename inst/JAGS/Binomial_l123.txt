@@ -3,12 +3,11 @@ model {
   # Likelihood
   for(j in 1:n.l2) {
     
-    # Weibull regression
-    censored[j] ~ dinterval(t[j], ct.lb[j])  
-    t[j] ~ dweib(shape, lambda[j])
+    # Logistic regression
+    Y[j] ~ dbern(p[j])
     
     # Link function
-    log(lambda[j]) <- -(inprod(l1[l1i1[j]:l1i2[j]], w[l1i1[j]:l1i2[j]]) + l2[j] + l3[l3id[j]])*shape
+    logit(p[j]) <- inprod(l1[l1i1[j]:l1i2[j]], w[l1i1[j]:l1i2[j]]) + l2[j] + l3[l3id[j]]
     
     # Level 2: systematic component
     l2[j] <- inprod(X.l2[j,], b.l2)
@@ -53,11 +52,10 @@ model {
   b.w # placeholder
   
   # Prior: variance terms
-  tau.l1 ~ dscaled.gamma(25, 1) 
+  tau.l1 ~ dscaled.gamma(25, 1)
   sigma.l1 <- 1/sqrt(tau.l1)
-   
-  shape ~ dexp(0.0001) 
-  sigma.l2 <- 3.14159^2/(6*shape^2)
+  
+  sigma.l2 <- 3.14159^2/3 # Variance of logistic distribution 
   
   tau.l3 ~ dscaled.gamma(25, 1)
   sigma.l3 <- 1/sqrt(tau.l3)

@@ -12,8 +12,12 @@
 #' @exportS3Method summary rmm
 #' @author Benjamin Rosche <benjamin.rosche@@gmail.com>
 
-summary.rmm <- function(rmm) {
+summary.rmm <- function(rmm, r=3) {
   
-  return(rmm$reg.table) 
+  return( rmm$reg.table %>% dplyr::mutate(across(where(is.numeric), ~round(.,r))) )
   
 }
+
+
+
+

@@ -7,19 +7,19 @@ model {
     censored[j] ~ dinterval(t[j], ct.lb[j])  
     t[j] ~ dweib(shape, lambda[j])
     
-    # log(lambda) = l2
+    # Link function
     log(lambda[j]) <- -l2[j]*shape 
     
     # Level 2: systematic component
     l2[j] <- inprod(X.l2[j,], b.l2)
   }
   
-  # Priors regression coefficients, posterior predictive p-values
+  # Prior: regression coefficients
   for(x in 1:n.Xl2) {
     b.l2[x] ~ dnorm(0,0.0001)
   }
   
-  # Priors variance terms
+  # Prior: variance terms
   shape ~ dexp(0.0001) 
   sigma.l2 <- 3.14159^2/(6*shape^2)
   

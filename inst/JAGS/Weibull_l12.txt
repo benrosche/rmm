@@ -7,14 +7,14 @@ model {
     censored[j] ~ dinterval(t[j], ct.lb[j])  
     t[j] ~ dweib(shape, lambda[j])
     
-    # log(lambda) = aggregated(l1) + l2
+    # Link function
     log(lambda[j]) <- -(inprod(l1[l1i1[j]:l1i2[j]], w[l1i1[j]:l1i2[j]]) + l2[j])*shape
     
     # Level 2: systematic component
     l2[j] <- inprod(X.l2[j,], b.l2)
   }
   
-  # Level 1: systematic + random component, weights
+  # Level 1: systematic + random component
   for(i in 1:n.l1) {
     l1[i] <- inprod(X.l1[i,], b.l1) + re.l1[l1id[i]] 
     
@@ -23,12 +23,12 @@ model {
     w[i] <- uw[i] / sum(uw[l1i1.l1[i]:l1i2.l1[i]]) # rescale to sum up to 1 in each group
   }
   
-  # Distribution of random effects
+  # Random effects
   for (i in 1:n.ul1) {
     re.l1[i] ~ dnorm(0, tau.l1)
   }
   
-  # Priors regression coefficients, posterior predictive p-values
+  # Prior: regression coefficients
   for(x in 1:n.Xl1) {
     b.l1[x] ~ dnorm(0,0.0001)
   }
@@ -39,7 +39,7 @@ model {
   
   b.w # placeholder
   
-  # Priors variance terms
+  # Prior: variance terms
   tau.l1 ~ dscaled.gamma(25, 1)
   sigma.l1 <- 1/sqrt(tau.l1)
   
