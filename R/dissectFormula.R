@@ -70,7 +70,7 @@ dissectFormula <- function(data, family, formula) {
         mmwfunction <- stringr::str_replace(mmwfunction, fixed(paste0("offset(", lwvars[i], ")")), paste0("(X.w[i,", i, "])")) # without coefficient
       } else {
         mmwfunction <- stringr::str_replace(mmwfunction, fixed(lwvars[i]), paste0("(b.w[", i, "]*X.w[i,", i, "])")) # with coefficient
-        mmwcoefstring  <- append(mmwcoefstring, paste0("b.w[", i, "] ~ dnorm(0,0.0001)\n  ppp.b.w[", i, "] <- step(b.w[", i, "])\n  "))
+        mmwcoefstring  <- append(mmwcoefstring, paste0("b.w[", i, "] ~ dnorm(0,0.0001)\n  "))
       }
     }
     mmwfunction <- stringr::str_replace(mmwfunction, "w~", "uw[i] <- ")
