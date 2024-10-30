@@ -209,7 +209,7 @@ createJagsVars <- function(data, family, level1, level2, level3, weightf, ids, l
               "Ns" = list("n.l1"=n.l1, "l1n"=l1n, "n.ul1"=n.ul1, "n.l2"=n.l2, "n.l3"=n.l3, "n.Xl1"=n.Xl1, "n.Xl2"=n.Xl2, "n.Xl3"=n.Xl3, "n.Xw"=n.Xw, "n.GPN"=n.GPN, "n.GPNi"=n.GPNi, "n.GPn"=n.GPn),
               "Xs" = list("X.l1"=X.l1, "X.l2"=X.l2, "X.l3"=X.l3, "X.w"=X.w),
               "Ys" = Ys,
-              "jags.params" = jags.params, 
+              "jags.params" = jags.params,
               "jags.inits"  = jags.inits,
               "jags.data"   = jags.data)) 
   

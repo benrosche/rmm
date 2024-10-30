@@ -86,6 +86,9 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, DIR,
   }
   
   # Priors
+  
+  # BUG (!) somewhere here the outcome function y ~ dnorm(mu, ...) is commented. Probably a good idea to re write this code ...
+  
   if(!is.null(priors)) {
     
     # Change parameters
