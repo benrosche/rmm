@@ -22,7 +22,7 @@ Depends:
     zeallot
 URL: http://benrosche.com/projects/rmm/
 BugReports: https://github.com/benrosche/rmm/issues
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Authors@R: person("Benjamin", "Rosche", role=c("aut", "cre"), 
     email="benjamin.rosche@gmail.com", comment=c(ORCID="0000-0001-5196-625X"))
 Suggests: 

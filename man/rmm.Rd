@@ -11,7 +11,7 @@ rmm(
   inits = NULL,
   n.iter = 1000,
   n.burnin = 500,
-  n.thin = NULL,
+  n.thin = max(1, floor((n.iter - n.burnin)/1000)),
   chains = 3,
   seed = NULL,
   run = T,
@@ -25,7 +25,7 @@ rmm(
 \arguments{
 \item{formula}{A symbolic description of the model in form of an R formula. More details below.}
 
-\item{family}{Character vector. Currently supported are "Gaussian", "Logit", "Condlogit", "Weibull", or "Cox".}
+\item{family}{Character vector. Currently supported are "Gaussian", "Binomial", "Weibull", and "Cox". Not yet implemented: "CondLogit"}
 
 \item{priors}{A list with parameter names as tags and their prior specification as values. More details below.}
 
@@ -47,7 +47,7 @@ rmm(
 
 \item{transform}{Character vector or FALSE. Specifying \code{center} or \code{std} to center or standardize continuous predictors before estimation. Specifying \code{std2} will divide by two times the standard deviation, so that regression coefficients are comparable to those of binary predictors (Gelman 2008).}
 
-\item{modelfile}{Character vector or TRUE|False. If TRUE, the JAGS model is saved in rmm/temp/modelstring.txt. If a file path is supplied as string, rmm will just create the data structure and use the provided modelfile.}
+\item{modelfile}{Character vector or TRUE|False. If TRUE, the JAGS model is saved in rmm/temp/modelstring.txt. If a file path is supplied as string, rmm will just create the data structure and use the provided modelfile. Run \code{.libPaths()} to see where R packages are stored.}
 
 \item{data}{Dataframe object. The dataset must have level 1 as unit of analysis. More details below.}
 }

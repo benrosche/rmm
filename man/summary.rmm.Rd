@@ -4,7 +4,7 @@
 \alias{summary.rmm}
 \title{summary() method for an rmm object}
 \usage{
-\method{summary}{rmm}(rmm)
+\method{summary}{rmm}(rmm, r = 3)
 }
 \value{
 Returns a table with regression results.

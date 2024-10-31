@@ -1,6 +1,6 @@
 #' @title Create monetPlots for your rmm results.
 #'
-#' @description The function \strong{rmmmonetPlot} creates a density plot of the posterior 
+#' @description The function \strong{monetPlot} creates a density plot of the posterior 
 #' distribution of your model parameters and the traceplot that led to this density.
 #' 
 #' @param rmm A rmm object. rmm has to be run with monitor=T
@@ -19,80 +19,77 @@
 #' @export monetPlot
 #' @author Benjamin Rosche <benjamin.rosche@@gmail.com>
 
-monetPlot <- function(rmm, parameter, lab=F, r=3, sav=F) {
+monetPlot <- function(rmm, parameter, centrality="median", lab=F, r=3, sav=F) {
   
   library(ggplot2)
-  library(cowplot)
   library(ggmcmc)
+  library(coda)
+  library(patchwork)
+  library(bayestestR)
   
-  # Retrieve mcmc list --------------------------------------------------------------------------- #
+  # Get mcmclist and posterior stats ------------------------------------------------------------- #
   
   if(is.null(rmm$jags.out)) stop("JAGS output could not be retrieved. monitor=T must be specified when running rmm.")
-  mcmclist <- mcmcplots::as.mcmc.rjags(rmm$jags.out)
   
-  # Differentiate between b.l1 and b.l1[1] ------------------------------------------------------- #
+  mcmclist <- 
+    rmm$jags.out %>% 
+    as.mcmc() %>% 
+    .[, parameter, drop = FALSE]
   
-  parameter <- unlist(strsplit(parameter, fixed=T, split="["))
-  
-  if(length(parameter)>1) {
-    parameter[2] <- gsub("[^0-9]", "", parameter[2]) 
-    pobj <- ggs(mcmclist, family=paste0("^",parameter[1], "\\[[", parameter[2], "]\\]"))
-  } else {
-    pobj <- ggs(mcmclist, family=parameter) %>% filter(Parameter == parameter)
-  }
-  
-  # Parameter statistics ------------------------------------------------------------------------- #
-  
-  # getmode <- function(v) {
-  #   uniqv <- unique(v)
-  #   uniqv[which.max(tabulate(match(v, uniqv)))]
-  # }
-  
-  pmean <- round(mean(pobj$value), r)
-  p05 <- round(min(pobj$value), r)
-  p95 <- round(max(pobj$value), r)
+  param <- describe_posterior(mcmclist, centrality=centrality, ci=1) 
   
   # Modify theme --------------------------------------------------------------------------------- #
   
   theme_light2 <- 
     theme_light() +
-    theme(legend.position="none",
-          plot.title = element_blank(),
-          panel.grid.minor = element_blank(),
-          panel.grid.major = element_blank(),
-          strip.text = element_blank()
-          ) 
+    theme(
+      text = element_text(size = 16),
+      legend.position="none",
+      plot.title = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.grid.major = element_blank(),
+      strip.text = element_blank()
+    ) 
   theme_set(theme_light2)
   
-  lbl <- ifelse(lab==F, parameter, lab)
-
   # Create plots --------------------------------------------------------------------------------- #
   
-  # Density plot
-  p1 <- ggs_density(pobj) + 
-    labs(y = "Density") +
-    geom_vline(xintercept=0) +
-    geom_vline(xintercept=pmean, linetype="dashed") +
-    theme_light2 +
-    theme(axis.ticks=element_blank(), axis.title.x = element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())
-   
-  # Traceplot
-  p2 <- ggs_traceplot(pobj, original_burnin = F) + coord_flip() +
-    labs(x = paste0("Scans (", max(pobj$Chain), " chains)"), y = paste0("Parameter: ", lbl)) +
-    scale_y_continuous(breaks = c(p05, 0, pmean, p95)) +
-    geom_hline(yintercept=0) +
-    geom_hline(yintercept=pmean, linetype="dashed") +
-    theme_light2
+  mcmc_ggs <- ggs(mcmclist)
   
-  plot <- plot_grid(p1, p2, align = 'hv', nrow = 2)
-  # 2do: Try to model as facet_grid so that people can add to it as they please. plot_grid does not
-  #      allow for anymore changes in form of + ...
+  # Density plot
+  p1 <- 
+    ggs_density(mcmc_ggs) + 
+    geom_vline(xintercept=0) +
+    geom_vline(xintercept=round(param[,2], r), linetype="dashed") +
+    theme_light2 +
+    theme(
+      axis.ticks=element_blank(), 
+      axis.text.x=element_blank(), 
+      axis.text.y=element_blank()
+    ) +
+    labs(x=NULL, y = "Density", subtitle = paste0("Parameter: ", parameter, ifelse(!isFALSE(lab), paste0(" - ", lab), "")))
+  
+  # Traceplot
+  p2 <- 
+    ggs_traceplot(mcmc_ggs, original_burnin = F) + 
+    geom_hline(yintercept=0) +
+    geom_hline(yintercept=round(param[,2], r), linetype="dashed") +
+    coord_flip() +
+    scale_y_continuous(breaks = c(0, round(param[,2], r), round(param[,4], r), round(param[,5], r)) %>% sort()) +
+    theme_light2 +
+    labs(x = paste0("Iteration (", max(mcmc_ggs$Chain), " chains)"), y = NULL) 
+  
+  p <- 
+    (p1 / p2) +
+    plot_layout(heights = c(1, 1)) +  
+    plot_annotation(theme = theme(plot.margin = unit(c(0, 0, 0, 0), "cm"))) 
+  
   
   # Save?
   if(sav==T) {
     ggsave(
-      paste0(gsub("[[:space:]]", "", str_squish(lbl)), ".png"),
-      plot,
+      paste0(gsub("[[:space:]]", "", str_squish(parameter)), ".png"),
+      p,
       width = 11,
       height = 6, 
       units='in', 
@@ -100,5 +97,5 @@ monetPlot <- function(rmm, parameter, lab=F, r=3, sav=F) {
     )
   }
   
-  return(plot)
+  return(p)
 }

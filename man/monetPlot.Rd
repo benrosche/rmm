@@ -4,7 +4,7 @@
 \alias{monetPlot}
 \title{Create monetPlots for your rmm results.}
 \usage{
-monetPlot(rmm, parameter, lab = F, r = 3, sav = F)
+monetPlot(rmm, parameter, centrality = "median", lab = F, r = 3, sav = F)
 }
 \arguments{
 \item{rmm}{A rmm object. rmm has to be run with monitor=T}
@@ -21,7 +21,7 @@ monetPlot(rmm, parameter, lab = F, r = 3, sav = F)
 Returns a plot. The solid vertical is at 0 and the dashed vertical line is the mode of the posterior distributions.
 }
 \description{
-The function \strong{rmmmonetPlot} creates a density plot of the posterior 
+The function \strong{monetPlot} creates a density plot of the posterior 
 distribution of your model parameters and the traceplot that led to this density.
 }
 \examples{
