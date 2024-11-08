@@ -232,18 +232,16 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 10
     
     # Save info on input
     input <- 
-      if(isTRUE(monitor)) {
-        append(
-          list(
-            "family"=family, "priors"=priors, "inits"=inits, 
-            "n.iter"=n.iter, "n.burnin"=n.burnin, "n.thin"=n.thin, "chains"=chains, "seed"=seed, "run"=run, "parallel"=parallel, 
-            "monitor"=monitor, "transform"=transform, "modelfile"=modelfile,
-            "lhs" = level2$lhs, "l1vars"=level1$vars, "l2vars"=level2$vars, "l3vars"=level3$vars, "transformedVars"=transformedVars,
-            "n.ul1"=Ns$n.ul1, "n.l1"=Ns$n.l1, "n.l2"=Ns$n.l2, "n.l3"=Ns$n.l3
-          ), 
-          c(l1, l3)
-        )
-      } else c()  
+      append(
+        list(
+          "family"=family, "priors"=priors, "inits"=inits, 
+          "n.iter"=n.iter, "n.burnin"=n.burnin, "n.thin"=n.thin, "chains"=chains, "seed"=seed, "run"=run, "parallel"=parallel, 
+          "monitor"=monitor, "transform"=transform, "modelfile"=modelfile,
+          "lhs" = level2$lhs, "l1vars"=level1$vars, "l2vars"=level2$vars, "l3vars"=level3$vars, "transformedVars"=transformedVars,
+          "n.ul1"=Ns$n.ul1, "n.l1"=Ns$n.l1, "n.l2"=Ns$n.l2, "n.l3"=Ns$n.l3
+        ), 
+        c(l1, l3)
+      )
     
     # Return ------------------------------------------------------------------------------------- #
     
