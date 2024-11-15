@@ -20,7 +20,7 @@ model {
   }
   
   # Prior: variance terms
-  shape ~ dexp(0.0001) 
+  shape ~ dgamma(0.01, 0.01)
   sigma.l2 <- 3.14159^2/(6*shape^2)
   
 }
