@@ -2,7 +2,7 @@
 % Please edit documentation in R/rmm.R
 \name{rmm}
 \alias{rmm}
-\title{Bayesian multiple membership multilevel models with endogenized weights using 'JAGS'}
+\title{Bayesian multiple membership multilevel models with parameterizable weights using 'JAGS'.}
 \usage{
 rmm(
   formula,
@@ -17,7 +17,7 @@ rmm(
   run = T,
   parallel = F,
   monitor = T,
-  transform = "center",
+  transform = F,
   modelfile = F,
   data = NULL
 )
@@ -59,30 +59,32 @@ A list with 7 elements: reg.table, w, re.l1, re.l3, pred, input, jags.out. If mo
 }
 \description{
 The \strong{rmm} package provides an interface to fit Bayesian multiple membership 
-multilevel models with endogenized weights using \href{http://mcmc-jags.sourceforge.net/}{JAGS}.
+multilevel models with parameterizable weights using \href{http://mcmc-jags.sourceforge.net/}{JAGS}.
 }
 \details{
-The main function of \strong{rmm} is \code{rmm}, which uses formula syntax to specify a multiple membership 
-multilevel model with endogenized weights. Based on the supplied formulas, data, and additional information, 
-it writes code to fit the model in JAGS. Subsequently, the JAGS output is processed to ease the
-interpretation of the model results.
+The core function of \strong{rmm}, \code{rmm}, allows users to specify a multiple membership 
+multilevel model with parameterizable weights. The package generates the JAGS code to fit the model
+and processes the JAGS output to aid the interpretation of the model results.
  
 In order to fit the models, JAGS must be \href{https://sourceforge.net/projects/mcmc-jags/files/}{installed}.
 
-The package \strong{rmm} estimates models with a complex nonstandard multilevel structure, known 
-as multiple membership multilevel structure. The difference of this package to other packages and programs 
-to estimate multiple membership multilevel models, such as \code{\link[brms]{brms}} or \href{http://www.bristol.ac.uk/cmm/software/mlwin/}{MLwiN}, 
-is that \strong{rmm} allows to endogenize the membership weights with a weight function. In doing so, rmm allows 
-to examine the process by which the effects of lower-level units aggregate to a higher level (micro-macro link).
+The \strong{rmm} package estimates models with a complex, nonstandard multilevel structure, 
+known as a multiple membership multilevel structure. Unlike other packages and programs for 
+estimating multiple membership multilevel models, such as \code{\link[brms]{brms}} or 
+\href{http://www.bristol.ac.uk/cmm/software/mlwin/}{MLwiN}, \strong{rmm} allows users to 
+parameterize the weights using a weight function specified in formula syntax. This feature 
+enables researchers to investigate how the effects of lower-level units aggregate to a 
+higher level (micro-macro link).
 
-Accessible introductions to multiple membership models are given by the report by Fielding and Goldstein (2006) 
-and the book chapter by Beretvas (2010). More advanced treatments of multiple membership models are  
-provided in the multilevel textbook by Goldstein (2011, Chapter 13), the book chapters on 
-multiple membership models by Rasbash and Browne (2001, 2008), the paper by Browne et al. (2001), and the report by Leckie (2013).
+Accessible introductions to multiple membership models can be found in the report by 
+Fielding and Goldstein (2006) and the book chapter by Beretvas (2010). More advanced 
+discussions are provided in Goldstein's multilevel modeling textbook (2011, Chapter 13), 
+the book chapters on multiple membership models by Rasbash and Browne (2001, 2008), 
+the paper by Browne et al. (2001), and the report by Leckie (2013).
 
 \bold{General formula structure}  
 
-\code{Y ~ 1 + mm(id(l1id, l2id), mmc(X.L1), mmw(w ~ 1 / offset(N), constraint=1)) + X.L2 + X.L3 + hm(id=l3id, name=l3name, type=FE, showFE=F)} 
+\code{Y ~ 1 + mm(id(l1id, l2id), mmc(X.L1), mmw(w ~ 1 / N, constraint=1)) + X.L2 + X.L3 + hm(id=l3id, name=l3name, type=FE, showFE=F)} 
 \itemize{
   \item Dependent variable: \strong{Y}
   \item Multiple membership object: \strong{mm()} to analyze how the effects of level-1 predictors from multiple constituting members aggregate to level 2
@@ -96,7 +98,7 @@ multiple membership models by Rasbash and Browne (2001, 2008), the paper by Brow
   \item Gaussian continuous variable \code{Y}
   \item Binomial outcome for logistic regression \code{Y}
   \item Conditional logistic outcomes \code{???}
-  \item Weibull survival time: \code{Surv(survivaltime, event)} or \code{Surv(survivaltime, event, upperlimit)} (where upperlimit is the upper limit for predictions(!))
+  \item Weibull survival time: \code{Surv(survivaltime, event)}
   \item Cox survival time: \code{Surv(survivaltime, event)}
 }
 
@@ -108,11 +110,11 @@ An intercept at the main level 2 is added whether or not a \code{1} is specified
 
 \itemize{
   \item \code{id()} to indicate level-1 and level-2 ids
-  \item \code{mmc()} to specify level-1 predictors. No intercept allowed. Interaction terms have to be included as separate variables. 
+  \item \code{mmc()} to specify level-1 predictors. No intercept allowed. Interaction terms have to be included as separate variables. Can be left empty.
   \item \code{mmw()} to specify the weight function (micro-macro link). The function can be nonlinear and contain variables but needs to be identifiable. 
-        To give a few examples: \code{w ~ 1/offset(N)} specifies mean-aggregation, with N being a variables that indicates the number of level-1 units per level-2 entity.
-        If no mmw() is specified, \code{w ~ 1/offset(N)} is assumed. In Rosche (2021), I propose to use \code{w ~ 1/offset(N)^exp(-(X.W))} as the general form for weight functions. 
-        This function ensures that weights are limited by 0 and 1. Specifying variables as \code{offset(X.W)} will not estimate a parameter for this variable. 
+        To give a few examples: \code{w ~ 1/N} specifies mean-aggregation, with N being a variables that indicates the number of level-1 units per level-2 entity.
+        If no mmw() is specified, \code{w ~ 1/N} is assumed. In Rosche (2025), I propose to use \code{w ~ 1/N^exp(-(b1*X.W))} as the general form for weight functions. 
+        This function ensures that weights are limited by 0 and 1. Parameters can be specified as b1, b2, ..., bn.
         
         Two different identification restrictions are provided:
   \itemize{
@@ -132,15 +134,15 @@ An intercept at the main level 2 is added whether or not a \code{1} is specified
   \item \code{id=l3id} to indicate level-3 id
   \item \code{name=l3name} to specify value labels for level 3 units. 
   \item \code{type=RE} (default) or \code{type=FE} to choose between random- or fixed effect estimation. 
-        If RE is chosen, level 3 predictors can be added. If FE is chosen, each level 3 unit has its own intercept and level 3 predictors are removed. 
-        If \code{showFE=TRUE} the fixed effects are reported, otherwise omitted (default). The first l3id is the base.
+If RE is chosen, level 3 predictors can be added. If FE is chosen, each level 3 unit has its own intercept and level 3 predictors are removed. 
+If \code{showFE=TRUE} the fixed effects are reported, otherwise omitted (default). The first l3id is the base.
 }
 
 \bold{More details on changing priors}
 
 Priors of the following parameters may be changed: \code{b.l1, b.l2, b.l3, b.w, tau.l1, tau.l2, tau.l3}. 
-The priors are specified as a list with parameter names as tags and their prior specification as values:
-\code{priors=list("b.l1"="dnorm(0,0.01)")}. In this example, the priors of all level-1 regression coefficients 
+The priors are specified as a character vector:
+\code{priors=c("b.l1~dnorm(0,0.01)")}. In this example, the priors of all level-1 regression coefficients 
 are changed to a more informative prior that has a smaller variance than the default (\code{dnorm(0,0.0001)}). 
 I refer to the \href{https://sourceforge.net/projects/mcmc-jags/files/Manuals/4.x/jags_user_manual.pdf}{JAGS manual} 
 for more details on possible prior specifications. 
@@ -166,7 +168,7 @@ I suggest starting with \code{priors = list("b.w"="dnorm(0,0.1)"} and then incre
 }
 \examples{
 data(coalgov)
-m1 <- rmm(Surv(govdur, earlyterm, govmaxdur) ~ 1 + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/offset(n), constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
+m1 <- rmm(Surv(govdur, earlyterm, govmaxdur) ~ 1 + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/n, constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
           family="Weibull", monitor=T, data=coalgov)
 m1$reg.table # the regression output
 m1$w         # the estimated weights
@@ -175,11 +177,12 @@ m1$re.l3     # the level-3 random effects
 m1$pred      # posterior predictions of the dependent variable (linear predictor for \code{family="Gaussian"}, survival time for \code{family="Weibull"})
 m1$input     # internal variables
 jags.out <- m1$jags.out # JAGS output
+m1 \%>\% summary() # regression output
 monetPlot(m1, "b.l1") # monetPlot to inspect the posterior distribution of the model parameters
 
 }
 \references{
-Rosche, B. (2021). A multilevel model for coalition governments: Uncovering dependencies within and across governments due to parties. https://doi.org/10.31235/osf.io/4bafr
+Rosche, B. (2025). A multilevel model for coalition governments: Uncovering dependencies within and across governments due to parties. https://doi.org/10.31235/osf.io/4bafr
 }
 \author{
 Benjamin Rosche <benjamin.rosche@gmail.com>

@@ -65,7 +65,7 @@ This is how the ```rmm()``` function looks like:
 data(coalgov)
 rmm(Y ~ 1 + X_l2 + 
       X_l3 + hm(id=id_l3, type=RE) +
-      mm(id(id_l2, id_l1), mmc(X_l1), mmw(w ~ 1/offset(n)^exp(-(X_w)))), 
+      mm(id(id_l2, id_l1), mmc(X_l1), mmw(w ~ 1/n^exp(-(X_w)))), 
     family="Gaussian", data=coalgov)
 ```
 

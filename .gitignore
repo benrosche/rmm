@@ -6,3 +6,5 @@ rmm.Rcheck/
 rmm*.tar.gz
 rmm*.tgz
 inst/doc
+/doc/
+/Meta/

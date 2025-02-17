@@ -11,6 +11,8 @@ monetPlot(rmm, parameter, centrality = "median", lab = F, r = 3, sav = F)
 
 \item{parameter}{A string with the parameter name. The internal name has to be used, which are the rownames in the rmm reg.table output.}
 
+\item{centrality}{A string specifying one of the following options: "median", "mean", "MAP", or "mode".}
+
 \item{lab}{String to describe the parameter on the graph's x-axis. Optional. If not specified, the internal parameter name is used.}
 
 \item{r}{Specify number of decimal places. Default equals 3.}
@@ -26,7 +28,7 @@ distribution of your model parameters and the traceplot that led to this density
 }
 \examples{
 data(coalgov)
-m1 <- rmm(Surv(govdur, earlyterm) ~ 1 + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/offset(n), constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
+m1 <- rmm(Surv(govdur, earlyterm) ~ 1 + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/n, constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
           family="Weibull", monitor=T, data=coalgov)
 monetPlot(m1, parameter="b.l1")
 

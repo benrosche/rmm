@@ -1,11 +1,10 @@
 Package: rmm
 Type: Package
-Title: Generalized multiple membership multilevel regression
+Title: Bayesian multiple membership multilevel models with parameterizable weights using 'JAGS'.
 Version: 0.1.1
 Author: Benjamin Rosche
 Maintainer: Benjamin Rosche <benjamin.rosche@gmail.com>
-Description: The rmm package provides an interface to fit Bayesian multilevel regression models using JAGS. 
-    While the package allows fitting conventional multilevel models, the main purpose of this package is to fit micro-macro models.
+Description: The rmm package provides an interface to fit Bayesian multiple membership multilevel models with parameterizable weights using JAGS.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
@@ -19,7 +18,8 @@ Depends:
     HDInterval,
     MCMCvis,
     mcmcplots,
-    zeallot
+    zeallot,
+    R (>= 3.5)
 URL: http://benrosche.com/projects/rmm/
 BugReports: https://github.com/benrosche/rmm/issues
 RoxygenNote: 7.3.2
@@ -27,5 +27,7 @@ Authors@R: person("Benjamin", "Rosche", role=c("aut", "cre"),
     email="benjamin.rosche@gmail.com", comment=c(ORCID="0000-0001-5196-625X"))
 Suggests: 
     rmarkdown,
-    knitr
+    knitr,
+    testthat (>= 3.0.0)
 VignetteBuilder: knitr
+Config/testthat/edition: 3

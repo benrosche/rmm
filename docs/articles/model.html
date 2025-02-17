@@ -6,13 +6,12 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Model structure • rmm</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><script src="../extra.js"></script><meta property="og:title" content="Model structure">
-<meta property="og:description" content="rmm">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -25,7 +24,7 @@
 </script>
 </head>
 <body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-article">
       <header><div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
@@ -39,7 +38,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1</span>
       </span>
     </div>
 
@@ -48,7 +47,7 @@
 <li>
   <a href="../index.html">
     <span class="fa fa-home"></span>
-     
+
   </a>
 </li>
 <li>
@@ -74,7 +73,7 @@
 <li>
   <a href="https://github.com/benrosche/rmm/" class="external-link">
     <span class="fab fa-github"></span>
-     
+
   </a>
 </li>
       </ul>
@@ -85,36 +84,121 @@
 </div>
 <!--/.navbar -->
 
-      
 
-      </header><script src="model_files/header-attrs-2.11/header-attrs.js"></script><div class="row">
+
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Model structure</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/benrosche/rmm/blob/master/vignettes/model.Rmd" class="external-link"><code>vignettes/model.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/benrosche/rmm/blob/HEAD/vignettes/model.Rmd" class="external-link"><code>vignettes/model.Rmd</code></a></small>
       <div class="hidden name"><code>model.Rmd</code></div>
 
     </div>
 
     
     
-<p>Let <span class="math inline">\(y_{i}^{(2)}\)</span> be an outcome at level 2, where subscript <span class="math inline">\(i\)</span> indexes level 2 units and superscript <span class="math inline">\((2)\)</span> indicates that the outcome is located at the second level. Using the generalized multiple membership multilevel model with endogenized weights (MMMM), we can model this outcome in terms of an aggregated level 1 effect <span class="math inline">\(\theta_{i}^{(1)}\)</span> and a level 2 effect <span class="math inline">\(\theta_{i}^{(2)}\)</span>:</p>
-<p><span class="math display">\[\begin{equation} y_{i}^{(2)}=\theta_{i}^{(1)}+\theta_{i}^{(2)} \tag{1} \end{equation}\]</span></p>
-<p>The level 2 effect in equation (1) is determined by a systematic component of observed explanatory variables at level 2 <span class="math inline">\(x_{i}^{(2)}\)</span> with regression coefficients <span class="math inline">\(\beta^{(2)}\)</span>and a random component <span class="math inline">\(u_{i}^{(2)}\)</span>:</p>
-<p><span class="math display">\[\begin{equation} \theta_{i}^{(2)}=x_{i}^{\intercal (2)}\beta^{(2)}+u_{i}^{(2)} \tag{2} \end{equation}\]</span></p>
-<p>The random component at this level is a disturbance term, which is assumed to be normally distributed with a mean of zero and constant variance <span class="math inline">\(u_{i}^{(2)}\sim N(0,\sigma_{u^{(2)}}^{2})\)</span>. This part of the model represents the conventional single-level model structure.</p>
-<p>The aggregated level 1 effect <span class="math inline">\(\theta_{i}^{(1)}\)</span> in equation (1) models the aggregation of the effects of level 1 units to the second level. It is determined by a weighted sum of the effect of each level 1 unit <span class="math inline">\(j\)</span> on the level 2 outcome in the set of level 1 units <span class="math inline">\(z(i)\)</span> embedded in level 2 unit <span class="math inline">\(i\)</span>:</p>
-<p><span class="math display">\[\begin{equation} \theta_{i}^{(1)}=\sum_{j \in z(i)}w_{ij}\zeta_{ij} \tag{3} \end{equation}\]</span></p>
-<p>That is, subscript <span class="math inline">\(j=1,...,J\)</span> indexes level 1 units and the indexing function <span class="math inline">\(z(i)\)</span> returns all level 1 units that are members of level 2 unit <span class="math inline">\(i\)</span>. The multiple membership construct aggregates individual level 1 effects <span class="math inline">\(\zeta_{ij}\)</span> by taking their weighted sum with weights <span class="math inline">\(w_{ij}=w_{ij}^{*}\)</span> for all parties <span class="math inline">\(j \in z(i)\)</span> and <span class="math inline">\(w_{ij}=0\)</span> for all parties <span class="math inline">\(j \notin z(i)\)</span>.</p>
-<p>The individual-level 1 effects <span class="math inline">\(\zeta_{ij}\)</span> are determined by a systematic component of observed explanatory variables at level 1 <span class="math inline">\(x_{ij}^{(1)}\)</span> with regression coefficients <span class="math inline">\(\beta^{(1)}\)</span> and a random component <span class="math inline">\(u_{ij}^{(1)}\)</span>, representing the joint impact of unobserved variables:</p>
-<p><span class="math display">\[\begin{equation} \zeta_{ij}=x_{ij}^{\intercal (1)}\beta^{(1)}+u_{ij}^{(1)} \tag{4} \end{equation}\]</span></p>
-<p>The random component at this level is also assumed to be normally distributed with a mean of zero and constant variance <span class="math inline">\(u_{ij}^{(1)}\sim N(0,\sigma_{u^{(1)}}^{2})\)</span>.</p>
-<p>To examine how the effects of level 1 units propagates to the second level, we endogenize the weights instead of assigning fixed values to each unit:</p>
-<p><span class="math display">\[\begin{equation} \begin{split} w_{ij}=\frac{1}{n_{i}^{exp(-(x_{ij}^{\intercal W}\beta^{W}))}} \\ s.t. \sum_{i} \sum_{j} w_{ij}=N \end{split} \tag{5} \end{equation}\]</span></p>
-<p>where <span class="math inline">\(x_{ij}^{W}\)</span> are explanatory variables with regression coefficients <span class="math inline">\(\beta^{W}\)</span>, <span class="math inline">\(n_{i}\)</span> is the number of members level 2 unit <span class="math inline">\(i\)</span>, and <span class="math inline">\(N\)</span> equals the total number of observations in the dataset. In this form, the weights are bounded by <span class="math inline">\([0,1]\)</span>.</p>
-<p>The weight regression coefficients estimate the impact of explanatory variables on the specific weight of a level 1 unit in its effect on the level 2 outcome. If the weight variables have no impact on the aggregation process, i.e. <span class="math inline">\(\beta^{W}=0\)</span>, the weights reduce to <span class="math inline">\(w_{ij}=\frac{1}{n_{i}}\)</span> (mean aggregation). If <span class="math inline">\(\beta^{W} \neq 0\)</span>, the weights reveal a more complex interplay of level 1 units in their effect on the level 2 outcome. That is, weights will deviate from <span class="math inline">\(\frac{1}{n_{i}}\)</span> and are no longer constant within and between level 2 units. Instead, they depend on <span class="math inline">\(x_{ij}^{W}\)</span>.</p>
+<p>Let
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>y</mi><mi>i</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><annotation encoding="application/x-tex">y_{i}^{(2)}</annotation></semantics></math>
+be an outcome at level 2, where subscript
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
+indexes level 2 units and superscript
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mo stretchy="true" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(2)</annotation></semantics></math>
+indicates that the outcome is located at the second level. Using the
+generalized multiple membership multilevel model with endogenized
+weights (MMMM), we can model this outcome in terms of an aggregated
+level 1 effect
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>θ</mi><mi>i</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><annotation encoding="application/x-tex">\theta_{i}^{(1)}</annotation></semantics></math>
+and a level 2 effect
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>θ</mi><mi>i</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><annotation encoding="application/x-tex">\theta_{i}^{(2)}</annotation></semantics></math>:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>y</mi><mi>i</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mo>=</mo><msubsup><mi>θ</mi><mi>i</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mo>+</mo><msubsup><mi>θ</mi><mi>i</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mo stretchy="true" form="postfix">)</mo></mrow></msubsup></mrow><annotation encoding="application/x-tex">\begin{equation} y_{i}^{(2)}=\theta_{i}^{(1)}+\theta_{i}^{(2)} \tag{1} \end{equation}</annotation></semantics></math></p>
+<p>The level 2 effect in equation (1) is determined by a systematic
+component of observed explanatory variables at level 2
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>x</mi><mi>i</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><annotation encoding="application/x-tex">x_{i}^{(2)}</annotation></semantics></math>
+with regression coefficients
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>β</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mo stretchy="true" form="postfix">)</mo></mrow></msup><annotation encoding="application/x-tex">\beta^{(2)}</annotation></semantics></math>and
+a random component
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>u</mi><mi>i</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><annotation encoding="application/x-tex">u_{i}^{(2)}</annotation></semantics></math>:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>θ</mi><mi>i</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mo>=</mo><msubsup><mi>x</mi><mi>i</mi><mrow><mi>⊺</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow></msubsup><msup><mi>β</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mo stretchy="true" form="postfix">)</mo></mrow></msup><mo>+</mo><msubsup><mi>u</mi><mi>i</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mo stretchy="true" form="postfix">)</mo></mrow></msubsup></mrow><annotation encoding="application/x-tex">\begin{equation} \theta_{i}^{(2)}=x_{i}^{\intercal (2)}\beta^{(2)}+u_{i}^{(2)} \tag{2} \end{equation}</annotation></semantics></math></p>
+<p>The random component at this level is a disturbance term, which is
+assumed to be normally distributed with a mean of zero and constant
+variance
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>u</mi><mi>i</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mo>∼</mo><mi>N</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo>,</mo><msubsup><mi>σ</mi><msup><mi>u</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mo stretchy="true" form="postfix">)</mo></mrow></msup><mn>2</mn></msubsup><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">u_{i}^{(2)}\sim N(0,\sigma_{u^{(2)}}^{2})</annotation></semantics></math>.
+This part of the model represents the conventional single-level model
+structure.</p>
+<p>The aggregated level 1 effect
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>θ</mi><mi>i</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><annotation encoding="application/x-tex">\theta_{i}^{(1)}</annotation></semantics></math>
+in equation (1) models the aggregation of the effects of level 1 units
+to the second level. It is determined by a weighted sum of the effect of
+each level 1 unit
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>j</mi><annotation encoding="application/x-tex">j</annotation></semantics></math>
+on the level 2 outcome in the set of level 1 units
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>z</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">z(i)</annotation></semantics></math>
+embedded in level 2 unit
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>θ</mi><mi>i</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mo>=</mo><munder><mo>∑</mo><mrow><mi>j</mi><mo>∈</mo><mi>z</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow></munder><msub><mi>w</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><msub><mi>ζ</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></mrow><annotation encoding="application/x-tex">\begin{equation} \theta_{i}^{(1)}=\sum_{j \in z(i)}w_{ij}\zeta_{ij} \tag{3} \end{equation}</annotation></semantics></math></p>
+<p>That is, subscript
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>j</mi><mo>=</mo><mn>1</mn><mo>,</mo><mi>.</mi><mi>.</mi><mi>.</mi><mo>,</mo><mi>J</mi></mrow><annotation encoding="application/x-tex">j=1,...,J</annotation></semantics></math>
+indexes level 1 units and the indexing function
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>z</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">z(i)</annotation></semantics></math>
+returns all level 1 units that are members of level 2 unit
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>.
+The multiple membership construct aggregates individual level 1 effects
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ζ</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><annotation encoding="application/x-tex">\zeta_{ij}</annotation></semantics></math>
+by taking their weighted sum with weights
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>w</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>=</mo><msubsup><mi>w</mi><mrow><mi>i</mi><mi>j</mi></mrow><mo>*</mo></msubsup></mrow><annotation encoding="application/x-tex">w_{ij}=w_{ij}^{*}</annotation></semantics></math>
+for all parties
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>j</mi><mo>∈</mo><mi>z</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">j \in z(i)</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>w</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">w_{ij}=0</annotation></semantics></math>
+for all parties
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>j</mi><mo>∉</mo><mi>z</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">j \notin z(i)</annotation></semantics></math>.</p>
+<p>The individual-level 1 effects
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ζ</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><annotation encoding="application/x-tex">\zeta_{ij}</annotation></semantics></math>
+are determined by a systematic component of observed explanatory
+variables at level 1
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>x</mi><mrow><mi>i</mi><mi>j</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><annotation encoding="application/x-tex">x_{ij}^{(1)}</annotation></semantics></math>
+with regression coefficients
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>β</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></msup><annotation encoding="application/x-tex">\beta^{(1)}</annotation></semantics></math>
+and a random component
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>u</mi><mrow><mi>i</mi><mi>j</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><annotation encoding="application/x-tex">u_{ij}^{(1)}</annotation></semantics></math>,
+representing the joint impact of unobserved variables:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>ζ</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>=</mo><msubsup><mi>x</mi><mrow><mi>i</mi><mi>j</mi></mrow><mrow><mi>⊺</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow></msubsup><msup><mi>β</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></msup><mo>+</mo><msubsup><mi>u</mi><mrow><mi>i</mi><mi>j</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></msubsup></mrow><annotation encoding="application/x-tex">\begin{equation} \zeta_{ij}=x_{ij}^{\intercal (1)}\beta^{(1)}+u_{ij}^{(1)} \tag{4} \end{equation}</annotation></semantics></math></p>
+<p>The random component at this level is also assumed to be normally
+distributed with a mean of zero and constant variance
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>u</mi><mrow><mi>i</mi><mi>j</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mo>∼</mo><mi>N</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo>,</mo><msubsup><mi>σ</mi><msup><mi>u</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></msup><mn>2</mn></msubsup><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">u_{ij}^{(1)}\sim N(0,\sigma_{u^{(1)}}^{2})</annotation></semantics></math>.</p>
+<p>To examine how the effects of level 1 units propagates to the second
+level, we endogenize the weights instead of assigning fixed values to
+each unit:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><msub><mi>w</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>=</mo><mfrac><mn>1</mn><msubsup><mi>n</mi><mi>i</mi><mrow><mi>e</mi><mi>x</mi><mi>p</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>−</mi><mrow><mo stretchy="true" form="prefix">(</mo><msubsup><mi>x</mi><mrow><mi>i</mi><mi>j</mi></mrow><mrow><mi>⊺</mi><mi>W</mi></mrow></msubsup><msup><mi>β</mi><mi>W</mi></msup><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow></mrow></msubsup></mfrac></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"><mi>s</mi><mi>.</mi><mi>t</mi><mi>.</mi><munder><mo>∑</mo><mi>i</mi></munder><munder><mo>∑</mo><mi>j</mi></munder><msub><mi>w</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>=</mo><mi>N</mi></mtd></mtr></mtable><annotation encoding="application/x-tex">\begin{equation} \begin{split} w_{ij}=\frac{1}{n_{i}^{exp(-(x_{ij}^{\intercal W}\beta^{W}))}} \\ s.t. \sum_{i} \sum_{j} w_{ij}=N \end{split} \tag{5} \end{equation}</annotation></semantics></math></p>
+<p>where
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>x</mi><mrow><mi>i</mi><mi>j</mi></mrow><mi>W</mi></msubsup><annotation encoding="application/x-tex">x_{ij}^{W}</annotation></semantics></math>
+are explanatory variables with regression coefficients
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>β</mi><mi>W</mi></msup><annotation encoding="application/x-tex">\beta^{W}</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>n</mi><mi>i</mi></msub><annotation encoding="application/x-tex">n_{i}</annotation></semantics></math>
+is the number of members level 2 unit
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>,
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math>
+equals the total number of observations in the dataset. In this form,
+the weights are bounded by
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="true" form="prefix">[</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="true" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">[0,1]</annotation></semantics></math>.</p>
+<p>The weight regression coefficients estimate the impact of explanatory
+variables on the specific weight of a level 1 unit in its effect on the
+level 2 outcome. If the weight variables have no impact on the
+aggregation process,
+i.e. <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>β</mi><mi>W</mi></msup><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\beta^{W}=0</annotation></semantics></math>,
+the weights reduce to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>w</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>=</mo><mfrac><mn>1</mn><msub><mi>n</mi><mi>i</mi></msub></mfrac></mrow><annotation encoding="application/x-tex">w_{ij}=\frac{1}{n_{i}}</annotation></semantics></math>
+(mean aggregation). If
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>β</mi><mi>W</mi></msup><mo>≠</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\beta^{W} \neq 0</annotation></semantics></math>,
+the weights reveal a more complex interplay of level 1 units in their
+effect on the level 2 outcome. That is, weights will deviate from
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mfrac><mn>1</mn><msub><mi>n</mi><mi>i</mi></msub></mfrac><annotation encoding="application/x-tex">\frac{1}{n_{i}}</annotation></semantics></math>
+and are no longer constant within and between level 2 units. Instead,
+they depend on
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>x</mi><mrow><mi>i</mi><mi>j</mi></mrow><mi>W</mi></msubsup><annotation encoding="application/x-tex">x_{ij}^{W}</annotation></semantics></math>.</p>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -132,16 +216,16 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link external-link">pkgdown</a> 1.6.1.9001.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
       </footer>
 </div>
 
-  
 
 
-  
+
+
 
   </body>
 </html>

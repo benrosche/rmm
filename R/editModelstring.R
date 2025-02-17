@@ -2,35 +2,77 @@
 # Function editModelstring 
 # ================================================================================================ #
 
-editModelstring <- function(family, priors, l1, l3, level1, level2, level3, DIR, monitor, modelfile) {
+editModelstring <- function(family, priors, l1, l3, level1, level2, level3, weightf, DIR, monitor, modelfile) {
   
-  # Unpack lists --------------------------------------------------------------------------------- #
+  # Unpack variables ----------------------------------------------------------------------------- #
   
-  lhs <- level2$lhs
+  lhs <- level2[["lhs"]]
   
-  l1vars <- level1$vars
-  l2vars <- level2$vars
-  l3vars <- level3$vars
+  l1vars <- level1[["vars"]]
+  l2vars <- level2[["vars"]]
+  l3vars <- level3[["vars"]]
+  lwvars <- weightf[["vars"]]
+  lwparams <- weightf[["params"]]
   
-  mm <- l1$mm
-  mmwfunction <- l1$mmwfunction
-  mmwcoefstring <- l1$mmwcoefstring
-  mmwconstraint <- l1$mmwconstraint
-  mmwar <- l1$mmwar
+  mm <- l1[["mm"]]
+  mmwfunction <- l1[["mmwfunction"]]
+  mmwcoefstring <- l1[["mmwcoefstring"]]
+  mmwconstraint <- l1[["mmwconstraint"]]
+  mmwar <- l1[["mmwar"]]
   
-  hm <- l3$hm
-  l3type <- l3$l3type
+  hm <- l3[["hm"]]
+  l3type <- l3[["l3type"]]
   
   # Model family --------------------------------------------------------------------------------- #
   
   if(family=="Gaussian") {
-    modelstring <- if(isTRUE(mm)&isTRUE(hm)) readr::read_file(paste0(DIR, "/JAGS/Gaussian_l123.txt")) else if(isTRUE(mm)&isFALSE(hm)) readr::read_file(paste0(DIR, "/JAGS/Gaussian_l12.txt")) else if(isFALSE(mm)&isTRUE(hm)) readr::read_file(paste0(DIR, "/JAGS/Gaussian_l23.txt")) else if(isFALSE(mm)&isFALSE(hm)) readr::read_file(paste0(DIR, "/JAGS/Gaussian_l2.txt"))
+    
+    if(isTRUE(mm)&isTRUE(hm)) {
+      modelstring <- readr::read_file(paste0(DIR, "/JAGS/Gaussian_l123.txt"))
+    } else if(isTRUE(mm)&isFALSE(hm)) {
+      modelstring <- readr::read_file(paste0(DIR, "/JAGS/Gaussian_l12.txt")) 
+    } else if(isFALSE(mm)&isTRUE(hm)) { 
+      modelstring <- readr::read_file(paste0(DIR, "/JAGS/Gaussian_l23.txt")) 
+    } else if(isFALSE(mm)&isFALSE(hm)) { 
+      modelstring <- readr::read_file(paste0(DIR, "/JAGS/Gaussian_l2.txt")) 
+    }
+    
   } else if(family=="Binomial") {
-    modelstring <- if(isTRUE(mm)&isTRUE(hm)) readr::read_file(paste0(DIR, "/JAGS/Binomial_l123.txt")) else if(isTRUE(mm)&isFALSE(hm)) readr::read_file(paste0(DIR, "/JAGS/Binomial_l12.txt")) else if(isFALSE(mm)&isTRUE(hm)) readr::read_file(paste0(DIR, "/JAGS/Binomial_l23.txt")) else if(isFALSE(mm)&isFALSE(hm)) readr::read_file(paste0(DIR, "/JAGS/Binomial_l2.txt"))
+    
+    if(isTRUE(mm)&isTRUE(hm)) {
+      modelstring <- readr::read_file(paste0(DIR, "/JAGS/Binomial_l123.txt"))
+    }  else if(isTRUE(mm)&isFALSE(hm)) { 
+      modelstring <- readr::read_file(paste0(DIR, "/JAGS/Binomial_l12.txt")) 
+    } else if(isFALSE(mm)&isTRUE(hm)) { 
+      modelstring <- readr::read_file(paste0(DIR, "/JAGS/Binomial_l23.txt")) 
+    } else if(isFALSE(mm)&isFALSE(hm)) { 
+      modelstring <- readr::read_file(paste0(DIR, "/JAGS/Binomial_l2.txt")) 
+    }
+    
   } else if(family=="Weibull") {
-    modelstring <- if(isTRUE(mm)&isTRUE(hm)) readr::read_file(paste0(DIR, "/JAGS/Weibull_l123.txt")) else if(isTRUE(mm)&isFALSE(hm)) readr::read_file(paste0(DIR, "/JAGS/Weibull_l12.txt")) else if(isFALSE(mm)&isTRUE(hm)) readr::read_file(paste0(DIR, "/JAGS/Weibull_l23.txt")) else if(isFALSE(mm)&isFALSE(hm)) readr::read_file(paste0(DIR, "/JAGS/Weibull_l2.txt"))
+    
+    if(isTRUE(mm)&isTRUE(hm)) {
+      modelstring <- readr::read_file(paste0(DIR, "/JAGS/Weibull_l123.txt")) 
+    } else if(isTRUE(mm)&isFALSE(hm)) { 
+      modelstring <- readr::read_file(paste0(DIR, "/JAGS/Weibull_l12.txt")) 
+    } else if(isFALSE(mm)&isTRUE(hm)) { 
+      modelstring <- readr::read_file(paste0(DIR, "/JAGS/Weibull_l23.txt")) 
+    } else if(isFALSE(mm)&isFALSE(hm)) { 
+      modelstring <- readr::read_file(paste0(DIR, "/JAGS/Weibull_l2.txt")) 
+    }
+    
   } else if(family=="Cox") {
-    modelstring <- if(isTRUE(mm)&isTRUE(hm)) readr::read_file(paste0(DIR, "/JAGS/Cox_l123.txt")) else if(isTRUE(mm)&isFALSE(hm)) readr::read_file(paste0(DIR, "/JAGS/Cox_l12.txt")) else if(isFALSE(mm)&isTRUE(hm)) readr::read_file(paste0(DIR, "/JAGS/Cox_l23.txt")) else if(isFALSE(mm)&isFALSE(hm)) readr::read_file(paste0(DIR, "/JAGS/Cox_l2.txt"))
+    
+    if(isTRUE(mm)&isTRUE(hm)) {
+      modelstring <- readr::read_file(paste0(DIR, "/JAGS/Cox_l123.txt")) 
+    } else if(isTRUE(mm)&isFALSE(hm)) {
+      modelstring <- readr::read_file(paste0(DIR, "/JAGS/Cox_l12.txt")) 
+    } else if(isFALSE(mm)&isTRUE(hm)) {
+      modelstring <- readr::read_file(paste0(DIR, "/JAGS/Cox_l23.txt")) 
+    } else if(isFALSE(mm)&isFALSE(hm)) { 
+      modelstring <- readr::read_file(paste0(DIR, "/JAGS/Cox_l2.txt")) 
+    }
+    
   }
   
   win2unix <- function(str) {
@@ -43,7 +85,7 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, DIR,
   if(monitor) {
     if(family=="Gaussian") modelstring <- stringr::str_replace(modelstring, "(Y\\[j\\] \\~) (dnorm\\(mu\\[j\\], tau.l2\\))", "\\1 \\2\n    pred[j] ~ \\2")
     if(family=="Weibull" & length(lhs)==2) modelstring <- stringr::str_replace(modelstring, "(t\\[j\\] \\~) (dweib\\(shape, lambda\\[j\\]\\))", "\\1 \\2\n\n    pred[j] ~ \\2")
-    if(family=="Weibull" & length(lhs)==3) modelstring <- stringr::str_replace(modelstring, "(t\\[j\\] \\~) (dweib\\(shape, lambda\\[j\\]\\))", "\\1 \\2\n\n    ones[j] ~ dinterval(pred[j], ct.lbub[j,])\n    pred[j] ~ \\2")
+    if(family=="Weibull" & length(lhs)==3) modelstring <- stringr::str_replace(modelstring, "(t\\[j\\] \\~) (dweib\\(shape, lambda\\[j\\]\\))", "\\1 \\2\n\n    ones[j] ~ dinterval(pred[j], ct.lbub[j,])\n    pred[j] ~ \\2") # 2do: Remove?
     # 2do: predictions for Binomial and Cox model
   }
   
@@ -75,8 +117,33 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, DIR,
   # Weight function
   if(mm) {
     
-    if(mmwfunction != "uw[i] <- 1/X.w[i,1]") modelstring <- stringr::str_replace(modelstring, fixed("uw[i] <- 1/X.w[i,1]"), mmwfunction)
-    if(mmwconstraint == 2) modelstring <- stringr::str_replace(modelstring, fixed("w[i] <- uw[i] / sum(uw[l1i1.l1[i]:l1i2.l1[i]])"), "w[i] <- uw[i] * n.l2/sum(uw[]) # rescale to sum up to n.l1 overall")
+    # Translate weight function into JAGS format
+
+    # Replace parameters
+    if(length(lwparams)>0) {
+      for(i in 1:length(lwparams)) {
+        mmwfunction <- str_replace_all(mmwfunction, fixed(lwparams[i]), paste0("b.w[",i,"]")) 
+        mmwcoefstring  <- append(mmwcoefstring, paste0("b.w[", i, "] ~ dnorm(0,0.0001)\n  ")) # collect priors
+      }
+    }
+
+    # Replace variables
+    for(i in 1:length(lwvars)) {
+      mmwfunction <- str_replace_all(mmwfunction, paste0("\\b", lwvars[i], "\\b"), paste0("X.w[i,", i, "]")) # replace variables 
+    }
+    
+    # Replace w
+    mmwfunction <- stringr::str_replace(mmwfunction, "w ~", "uw[i] <- ")
+
+    # Insert mmwfunction into modelstring
+    modelstring <- stringr::str_replace(modelstring, fixed("uw[i] <- 1/X.w[i,1]"), mmwfunction)
+    
+    # Insert constraint into modelstring
+    if(mmwconstraint == 2) {
+      modelstring <- stringr::str_replace(modelstring, fixed("w[i] <- uw[i] / sum(uw[l1i1.l1[i]:l1i2.l1[i]])"), "w[i] <- uw[i] * n.l2/sum(uw[]) # rescale to sum up to n.l1")
+    }
+    
+    # Insert priors into modelstring
     if(stringr::str_detect(mmwfunction, "b.w\\[.\\]")) { 
       modelstring <- stringr::str_replace(modelstring, fixed("b.w # placeholder\n"), paste0(mmwcoefstring, collapse = "")) 
     } else {
@@ -91,29 +158,23 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, DIR,
   
   if(!is.null(priors)) {
     
-    # Change parameters
-    params <- unlist(sapply(names(priors), function(x) { 
-      if(x %in% c("b.l1", "b.l2", "b.l3")) {
-        paste0(x, "[x] ~ ") 
-      } else if(x %in% c("b.w")) {
-        if(isFALSE(mm)) stop("Priors cannot be set for b.w if no mm() construct is specified.")
-        paste0(sapply(mmwcoefstring, function(y) stringr::str_extract(y, "b.w\\[.\\]"), USE.NAMES = F), " ~ ")
-      } else { 
-        paste0(x, " ~ ")
-      }
-    }, simplify = F), use.names = T)
-    
-    # Change priors 
-    newpriors <- unlist(mapply(function(x, n) if(n == "b.w") rep(list(x), length(mmwcoefstring)) else list(x), priors, names(priors), SIMPLIFY=F), recursive=F)
-  
-    # Change priors in modelstring
-    for(i in 1:length(params)) {
-      modelstring <- stringr::str_replace(modelstring, fixed(as.vector(params[i])), paste0(params[i],  newpriors[names(params[i])][[1]], " # "))
+    for(i in 1:length(priors)) {
+      
+      prior.new <- str_extract(priors[i], "^[^~]+") %>% trimws() 
+      pattern <- paste0("\\b(", prior.new, "\\[.*?\\])\\s*~[^\\n]*")
+      
+      modelstring <- stringr::str_replace(modelstring, pattern, paste0("\\1 ", str_extract(priors[i], "~.*"))) # str_extract is to keep [x] after parameters
+      
     }
+  
   }
   
-  if(isTRUE(modelfile)) readr::write_file(modelstring, paste0(DIR, "/temp/modelstring.txt")) # save model to file
-  else if (!isFALSE(modelfile) & length(modelfile)>0) modelstring <- readr::read_file(modelfile) # read model from file
+  # Save or read modelstring
+  if(isTRUE(modelfile)) {
+    readr::write_file(modelstring, paste0(DIR, "/temp/modelstring.txt")) # save model to file
+  } else if(!isFALSE(modelfile) & length(modelfile)>0) {
+    modelstring <- readr::read_file(modelfile) # read model from file
+  }
   
   return(modelstring)
   

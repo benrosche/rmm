@@ -6,20 +6,20 @@ createData <- function(data, ids, vars, l1, l3, transform) {
   
   # Unpack lists --------------------------------------------------------------------------------- #
   
-  l12ids <- ids$l12ids
-  l3id   <- ids$l3id
+  l12ids <- ids[["l12ids"]]
+  l3id <- ids[["l3id"]]
   
-  lhs <- vars$lhs
-  l1vars <- vars$l1vars
-  l23vars <- vars$l23vars
-  lwvars <- vars$lwvars
-  offsetvars <- vars$offsetvars
+  lhs <- vars[["lhs"]]
+  l1vars <- vars[["l1vars"]]
+  l23vars <- vars[["l23vars"]]
+  lwvars <- vars[["lwvars"]]
+  lwparams <- vars[["lwparams"]]
   
-  mm <- l1$mm
+  mm <- l1[["mm"]]
   
-  hm <- l3$hm
-  l3type <- l3$l3type
-  l3name <- l3$l3name
+  hm <- l3[["hm"]]
+  l3type <- l3[["l3type"]]
+  l3name <- l3[["l3name"]]
   
   # Center or Standardize ------------------------------------------------------------------------ #
   
@@ -42,8 +42,7 @@ createData <- function(data, ids, vars, l1, l3, transform) {
   
   data <-
     data %>% 
-    dplyr::rename(l1id = !!l12ids[1], l2id = !!l12ids[2]) %>%
-    dplyr::mutate(l3id = !!rlang::sym(l3id)) %>% 
+    dplyr::rename(l1id = all_of(l12ids[1]), l2id = all_of(l12ids[2]), l3id = all_of(l3id)) %>%
     dplyr::group_by(l1id) %>% dplyr::mutate(l1id = cur_group_id()) %>% dplyr::ungroup() %>%
     dplyr::group_by(l2id) %>% dplyr::mutate(l2id = cur_group_id()) %>% dplyr::ungroup() %>%
     dplyr::group_by(l3id) %>% dplyr::mutate(l3id = cur_group_id()) %>% dplyr::ungroup() %>%
@@ -57,14 +56,12 @@ createData <- function(data, ids, vars, l1, l3, transform) {
       data %>% 
       dplyr::arrange(l2id, l1id) %>% # important
       dplyr::select(l1id, l2id, all_of(l1vars)) %>%
-      dplyr::mutate(across(all_of(l1vars), ~cen_std(., transform))) # center continuous vars 
+      dplyr::mutate(across(all_of(l1vars), ~cen_std(., transform))) # cen_std() continuous vars 
     
     wdat <- 
       data %>%
       dplyr::add_count(l2id, name="n") %>% 
-      dplyr::select(l1id, l2id, all_of(lwvars)) %>%
-      dplyr::mutate(across(c(!!lwvars[!lwvars %in% offsetvars]), ~cen_std(., transform))) # do not transform offsetvars 
-
+      dplyr::select(l1id, l2id, all_of(lwvars)) # weight variables are not cen_std()
     
   } else { # no l1
     
@@ -72,7 +69,6 @@ createData <- function(data, ids, vars, l1, l3, transform) {
     l1dat <- NULL
     
     lwvars <- c()
-    offsetvars <- c()
     wdat <- NULL
     
   }
@@ -88,15 +84,15 @@ createData <- function(data, ids, vars, l1, l3, transform) {
       dplyr::mutate(across(all_of(l23vars[-1]), ~var(., na.rm = TRUE))) %>% # select variables that do not vary within levels
       dplyr::ungroup() %>% 
       dplyr::select_if(~sum(.)==0) %>%  
-      colnames() 
+      names() 
     
     l2vars <- l23vars[!l23vars %in% l3vars] # must be at this position to be able to overwrite l3vars
     
-    if(l3type=="FE") { 
+    if(l3type=="FE") { # FE
       
       l3dat <-
         data %>% 
-        dplyr::rename(l3name=!!l3name) %>%
+        dplyr::rename(l3name=all_of(l3name)) %>%
         dplyr::select(l3id, any_of("l3name")) %>%
         dplyr::group_by(l3id) %>%
         dplyr::filter(row_number()==1) %>%
@@ -143,8 +139,8 @@ createData <- function(data, ids, vars, l1, l3, transform) {
     dplyr::mutate(l1i2=cumsum(l1n), l1i1=lag(l1i2)+1) %>%
     dplyr::mutate(l1i1 = ifelse(row_number()==1, 1, l1i1)) %>%
     dplyr::mutate(X0 = 1) %>%
-    dplyr::select(l2id, l3id, l1i1, l1i2, l1n, !!lhs, !!l2vars) %>%
-    dplyr::mutate(across(all_of(l2vars), ~cen_std(., transform)))
+    dplyr::select(l2id, l3id, l1i1, l1i2, l1n, all_of(lhs), all_of(l2vars)) %>%
+    dplyr::mutate(across(all_of(l2vars), ~cen_std(., transform))) # cen_std() continuous vars 
   
   # Collect return ------------------------------------------------------------------------------- #
   
@@ -154,7 +150,7 @@ createData <- function(data, ids, vars, l1, l3, transform) {
       "level1"=list("dat"=l1dat, "vars"=l1vars), 
       "level2"=list("dat"=l2dat, "vars"=l2vars, "lhs"=lhs), 
       "level3"=list("dat"=l3dat, "vars"=l3vars), 
-      "weightf"=list("dat"=wdat, "vars"=lwvars, "offsetvars"=offsetvars)
+      "weightf"=list("dat"=wdat, "vars"=lwvars, "params"=lwparams)
     )
   )
   

@@ -1,30 +1,32 @@
-#' @title Bayesian multiple membership multilevel models with endogenized weights using 'JAGS'
+#' @title Bayesian multiple membership multilevel models with parameterizable weights using 'JAGS'.
 #'
 #' @description The \strong{rmm} package provides an interface to fit Bayesian multiple membership 
-#' multilevel models with endogenized weights using \href{http://mcmc-jags.sourceforge.net/}{JAGS}.
+#' multilevel models with parameterizable weights using \href{http://mcmc-jags.sourceforge.net/}{JAGS}.
 #' 
 #' @details 
-#' The main function of \strong{rmm} is \code{rmm}, which uses formula syntax to specify a multiple membership 
-#' multilevel model with endogenized weights. Based on the supplied formulas, data, and additional information, 
-#' it writes code to fit the model in JAGS. Subsequently, the JAGS output is processed to ease the
-#' interpretation of the model results.
+#' The core function of \strong{rmm}, \code{rmm}, allows users to specify a multiple membership 
+#' multilevel model with parameterizable weights. The package generates the JAGS code to fit the model
+#' and processes the JAGS output to aid the interpretation of the model results.
 #'  
 #' In order to fit the models, JAGS must be \href{https://sourceforge.net/projects/mcmc-jags/files/}{installed}.
 #' 
-#' The package \strong{rmm} estimates models with a complex nonstandard multilevel structure, known 
-#' as multiple membership multilevel structure. The difference of this package to other packages and programs 
-#' to estimate multiple membership multilevel models, such as \code{\link[brms]{brms}} or \href{http://www.bristol.ac.uk/cmm/software/mlwin/}{MLwiN}, 
-#' is that \strong{rmm} allows to endogenize the membership weights with a weight function. In doing so, rmm allows 
-#' to examine the process by which the effects of lower-level units aggregate to a higher level (micro-macro link).
+#' The \strong{rmm} package estimates models with a complex, nonstandard multilevel structure, 
+#' known as a multiple membership multilevel structure. Unlike other packages and programs for 
+#' estimating multiple membership multilevel models, such as \code{\link[brms]{brms}} or 
+#' \href{http://www.bristol.ac.uk/cmm/software/mlwin/}{MLwiN}, \strong{rmm} allows users to 
+#' parameterize the weights using a weight function specified in formula syntax. This feature 
+#' enables researchers to investigate how the effects of lower-level units aggregate to a 
+#' higher level (micro-macro link).
 #' 
-#' Accessible introductions to multiple membership models are given by the report by Fielding and Goldstein (2006) 
-#' and the book chapter by Beretvas (2010). More advanced treatments of multiple membership models are  
-#' provided in the multilevel textbook by Goldstein (2011, Chapter 13), the book chapters on 
-#' multiple membership models by Rasbash and Browne (2001, 2008), the paper by Browne et al. (2001), and the report by Leckie (2013).
+#' Accessible introductions to multiple membership models can be found in the report by 
+#' Fielding and Goldstein (2006) and the book chapter by Beretvas (2010). More advanced 
+#' discussions are provided in Goldstein's multilevel modeling textbook (2011, Chapter 13), 
+#' the book chapters on multiple membership models by Rasbash and Browne (2001, 2008), 
+#' the paper by Browne et al. (2001), and the report by Leckie (2013).
 #' 
 #' \bold{General formula structure}  
 #' 
-#' \code{Y ~ 1 + mm(id(l1id, l2id), mmc(X.L1), mmw(w ~ 1 / offset(N), constraint=1)) + X.L2 + X.L3 + hm(id=l3id, name=l3name, type=FE, showFE=F)} 
+#' \code{Y ~ 1 + mm(id(l1id, l2id), mmc(X.L1), mmw(w ~ 1 / N, constraint=1)) + X.L2 + X.L3 + hm(id=l3id, name=l3name, type=FE, showFE=F)} 
 #' \itemize{
 #'   \item Dependent variable: \strong{Y}
 #'   \item Multiple membership object: \strong{mm()} to analyze how the effects of level-1 predictors from multiple constituting members aggregate to level 2
@@ -38,7 +40,7 @@
 #'   \item Gaussian continuous variable \code{Y}
 #'   \item Binomial outcome for logistic regression \code{Y}
 #'   \item Conditional logistic outcomes \code{???}
-#'   \item Weibull survival time: \code{Surv(survivaltime, event)} or \code{Surv(survivaltime, event, upperlimit)} (where upperlimit is the upper limit for predictions(!))
+#'   \item Weibull survival time: \code{Surv(survivaltime, event)}
 #'   \item Cox survival time: \code{Surv(survivaltime, event)}
 #' }
 #' 
@@ -50,11 +52,11 @@
 #' 
 #' \itemize{
 #'   \item \code{id()} to indicate level-1 and level-2 ids
-#'   \item \code{mmc()} to specify level-1 predictors. No intercept allowed. Interaction terms have to be included as separate variables. 
+#'   \item \code{mmc()} to specify level-1 predictors. No intercept allowed. Interaction terms have to be included as separate variables. Can be left empty.
 #'   \item \code{mmw()} to specify the weight function (micro-macro link). The function can be nonlinear and contain variables but needs to be identifiable. 
-#'         To give a few examples: \code{w ~ 1/offset(N)} specifies mean-aggregation, with N being a variables that indicates the number of level-1 units per level-2 entity.
-#'         If no mmw() is specified, \code{w ~ 1/offset(N)} is assumed. In Rosche (2021), I propose to use \code{w ~ 1/offset(N)^exp(-(X.W))} as the general form for weight functions. 
-#'         This function ensures that weights are limited by 0 and 1. Specifying variables as \code{offset(X.W)} will not estimate a parameter for this variable. 
+#'         To give a few examples: \code{w ~ 1/N} specifies mean-aggregation, with N being a variables that indicates the number of level-1 units per level-2 entity.
+#'         If no mmw() is specified, \code{w ~ 1/N} is assumed. In Rosche (2025), I propose to use \code{w ~ 1/N^exp(-(b1*X.W))} as the general form for weight functions. 
+#'         This function ensures that weights are limited by 0 and 1. Parameters can be specified as b1, b2, ..., bn.
 #'         
 #'         Two different identification restrictions are provided:
 #'   \itemize{
@@ -74,15 +76,15 @@
 #'   \item \code{id=l3id} to indicate level-3 id
 #'   \item \code{name=l3name} to specify value labels for level 3 units. 
 #'   \item \code{type=RE} (default) or \code{type=FE} to choose between random- or fixed effect estimation. 
-#'         If RE is chosen, level 3 predictors can be added. If FE is chosen, each level 3 unit has its own intercept and level 3 predictors are removed. 
-#'         If \code{showFE=TRUE} the fixed effects are reported, otherwise omitted (default). The first l3id is the base.
+#' If RE is chosen, level 3 predictors can be added. If FE is chosen, each level 3 unit has its own intercept and level 3 predictors are removed. 
+#' If \code{showFE=TRUE} the fixed effects are reported, otherwise omitted (default). The first l3id is the base.
 #' }
 #' 
 #' \bold{More details on changing priors}
 #' 
 #' Priors of the following parameters may be changed: \code{b.l1, b.l2, b.l3, b.w, tau.l1, tau.l2, tau.l3}. 
-#' The priors are specified as a list with parameter names as tags and their prior specification as values:
-#' \code{priors=list("b.l1"="dnorm(0,0.01)")}. In this example, the priors of all level-1 regression coefficients 
+#' The priors are specified as a character vector:
+#' \code{priors=c("b.l1~dnorm(0,0.01)")}. In this example, the priors of all level-1 regression coefficients 
 #' are changed to a more informative prior that has a smaller variance than the default (\code{dnorm(0,0.0001)}). 
 #' I refer to the \href{https://sourceforge.net/projects/mcmc-jags/files/Manuals/4.x/jags_user_manual.pdf}{JAGS manual} 
 #' for more details on possible prior specifications. 
@@ -125,7 +127,7 @@
 #'         level-3 random effects (if specified in the model), predicted values of the dependent variable, and the internally created variables are returned. 
 #'         The last element of the list is the unformatted Jags output. 
 #' @examples data(coalgov)
-#' m1 <- rmm(Surv(govdur, earlyterm, govmaxdur) ~ 1 + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/offset(n), constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
+#' m1 <- rmm(Surv(govdur, earlyterm, govmaxdur) ~ 1 + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/n, constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
 #'           family="Weibull", monitor=T, data=coalgov)
 #' m1$reg.table # the regression output
 #' m1$w         # the estimated weights
@@ -134,17 +136,19 @@
 #' m1$pred      # posterior predictions of the dependent variable (linear predictor for \code{family="Gaussian"}, survival time for \code{family="Weibull"})
 #' m1$input     # internal variables
 #' jags.out <- m1$jags.out # JAGS output
+#' m1 %>% summary() # regression output
 #' monetPlot(m1, "b.l1") # monetPlot to inspect the posterior distribution of the model parameters
 #'
 #' @export rmm
 #' @author Benjamin Rosche <benjamin.rosche@@gmail.com>
-#' @references 
-#' Rosche, B. (2021). A multilevel model for coalition governments: Uncovering dependencies within and across governments due to parties. https://doi.org/10.31235/osf.io/4bafr
+#' @references  
+#' Rosche, B. (2025). A multilevel model for coalition governments: Uncovering dependencies within and across governments due to parties. https://doi.org/10.31235/osf.io/4bafr
 
-rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 1000, n.burnin = 500, n.thin = max(1, floor((n.iter - n.burnin) / 1000)), chains=3, seed=NULL, run=T, parallel=F, monitor=T, transform="center", modelfile=F, data=NULL) {
-
-  # formula = Surv(govdur, earlyterm) ~ 1 + majority + mwc + mm(id(pid, gid), mmc(ipd), mmw(w ~  1/offset(n), constraint=1)); family = "Weibull";  priors=list("b.l1"="dnorm(0,1)", "b.l2"="dnorm(0,1)", "b.w"="dnorm(0,1)"); inits=NULL; n.iter=100; n.burnin=10; n.thin = max(1, floor((n.iter - n.burnin) / 1000)); chains = 3; seed = 123; run = T; parallel = F; monitor = T; transform = "center"; modelfile = T; data = coalgov
+rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 1000, n.burnin = 500, n.thin = max(1, floor((n.iter - n.burnin) / 1000)), chains=3, seed=NULL, run=T, parallel=F, monitor=T, transform=F, modelfile=F, data=NULL) {
+  
+  # formula = lnCMEDV ~ NOX + CRIM + RM + DIS + AGE + mm(id(tid, tid_nb), mmc(NOX_nb + CRIM_nb + RM_nb + DIS_nb + AGE_nb), mmw(w ~ 1/n, constraint = 1)); family = "Gaussian";  priors=c("b.l1~dnorm(0,1)", "b.l2~dnorm(0,1)", "b.w~dnorm(0,1)"); inits=NULL; n.iter=100; n.burnin=10; n.thin = max(1, floor((n.iter - n.burnin) / 1000)); chains = 3; seed = 123; run = T; parallel = F; monitor = T; transform = "center"; modelfile = T; data = boston_df
   # source("./R/dissectFormula.R"); source("./R/createData.R"); source("./R/editModelstring.R"); source("./R/createJagsVars.R"); source("./R/formatJags.R"); 
+  # Surv(govdur, earlyterm)
   
   # ---------------------------------------------------------------------------------------------- #
   # 0. Checks
@@ -158,28 +162,28 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 10
   
   DIR <- system.file(package = "rmm")
   
-  c(ids, vars, l1, l3) %<-% dissectFormula(data, family, formula)
+  c(ids, vars, l1, l3) %<-% dissectFormula(formula, family, data) # updated (Jan 2025)
   
   # ---------------------------------------------------------------------------------------------- #
-  # 2. Disentangle vars and data into l1-3
+  # 2. Disentangle vars and data into l1 to l3
   # ---------------------------------------------------------------------------------------------- #
   
-  c(data, level1, level2, level3, weightf) %<-% createData(data, ids, vars, l1, l3, transform)
+  c(data, level1, level2, level3, weightf) %<-% createData(data, ids, vars, l1, l3, transform) # updated (Feb 2025)
   
   # Remove varlist
   rm(vars)
 
   # ---------------------------------------------------------------------------------------------- #
-  # 3. Edit modelstring 
+  # 3. Create/edit jags modelstring 
   # ---------------------------------------------------------------------------------------------- #
   
-  modelstring <- editModelstring(family, priors, l1, l3, level1, level2, level3, DIR, monitor, modelfile)
+  modelstring <- editModelstring(family, priors, l1, l3, level1, level2, level3, weightf, DIR, monitor, modelfile) # updated (Feb 2025)
 
   # ---------------------------------------------------------------------------------------------- #
   # 4. Transform data into JAGS format
   # ---------------------------------------------------------------------------------------------- #
   
-  c(ids, Ns, Xs, Ys, jags.params, jags.inits, jags.data) %<-% createJagsVars(data, family, level1, level2, level3, weightf, ids, l1, l3, monitor, modelfile, chains, inits)
+  c(ids, Ns, Xs, Ys, jags.params, jags.inits, jags.data) %<-% createJagsVars(data, family, level1, level2, level3, weightf, ids, l1, l3, monitor, modelfile, chains, inits) # updated (Feb 2025)
   
   list2env(c(ids, Ns, Xs, Ys), envir=environment())
   
@@ -217,7 +221,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 10
     
     c(reg.table, w, re.l1, re.l3, pred) %<-% formatJags(jags.out, monitor, Ns, l1, l3, level1, level2, level3, weightf) 
     
-    # Prepare return ----------------------------------------------------------------------------- #
+    # Prepare additional information ------------------------------------------------------------- #
     
     # Save info on transformed vars
     isTransformed <- function(df) {
@@ -225,14 +229,15 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 10
       return(names(tvars)[tvars==T])
     }
   
-    transformedVars <- c(if(!is.null(level1[["dat"]])) isTransformed(level1 %>% .$dat %>% dplyr::select(!!level1[["vars"]])),
-                         if(!is.null(level2[["dat"]])) isTransformed(level2 %>% .$dat %>% dplyr::select(!!level2[["vars"]])),
-                         if(!is.null(level3[["dat"]])) isTransformed(level3 %>% .$dat %>% dplyr::select(!!level3[["vars"]])),
-                         if(!is.null(weightf[["dat"]])) isTransformed(weightf %>% .$dat %>% dplyr::select(!!weightf[["vars"]])))
+    transformedVars <- c()
+    if(!is.null(level1[["dat"]])) transformedVars <- c(transformedVars, isTransformed(level1[["dat"]] %>% dplyr::select(all_of(level1[["vars"]]))))
+    if(!is.null(level2[["dat"]])) transformedVars <- c(transformedVars, isTransformed(level2[["dat"]] %>% dplyr::select(all_of(level2[["vars"]]))))
+    if(!is.null(level3[["dat"]])) transformedVars <- c(transformedVars, isTransformed(level3[["dat"]] %>% dplyr::select(all_of(level3[["vars"]]))))
+    if(!is.null(weightf[["dat"]])) transformedVars <- c(transformedVars, isTransformed(weightf[["dat"]] %>% dplyr::select(all_of(weightf[["vars"]]))))
     
     # Save info on input
     input <- 
-      append(
+      c(
         list(
           "family"=family, "priors"=priors, "inits"=inits, 
           "n.iter"=n.iter, "n.burnin"=n.burnin, "n.thin"=n.thin, "chains"=chains, "seed"=seed, "run"=run, "parallel"=parallel, 
@@ -243,7 +248,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 10
         c(l1, l3)
       )
     
-    # Return ------------------------------------------------------------------------------------- #
+    # Create return ------------------------------------------------------------------------------ #
     
     out <- list("reg.table"=reg.table, "w"=w, "re.l1"=re.l1, "re.l3"=re.l3, "pred"=pred, "input"=input, "jags.out"=if(isTRUE(monitor)) jags.out else c())
     

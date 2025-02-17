@@ -39,19 +39,19 @@ regression analysis.
 
 ### With the **rmm** package, you can…
 
--   explicitly model how the effect of lower level units propagate to a
-    higher level
+- explicitly model how the effect of lower level units propagate to a
+  higher level
 
--   examine the fit of different aggregation functions, such as the min,
-    max, mean, or sum
+- examine the fit of different aggregation functions, such as the min,
+  max, mean, or sum
 
--   uncover heterogeneity in the effect of lower-level units on
-    higher-level entities
+- uncover heterogeneity in the effect of lower-level units on
+  higher-level entities
 
--   control dependencies that arise from a multiple membership
-    (crisscrossing) data structure
+- control dependencies that arise from a multiple membership
+  (crisscrossing) data structure
 
--   estimate the (residual) variance at the lower and the higher level
+- estimate the (residual) variance at the lower and the higher level
 
 This is the data structure that is being modeled:
 
@@ -65,19 +65,19 @@ structure.
 This is just an example. Multiple membership structures are ubiquitous
 in the real world. Other applications include:
 
--   MMMM can be used to model **spatial structures**. Level-1 units, in
-    this case, would be the neighborhoods in the influence sphere of the
-    focal neighborhood, and level-2 units would be the focal
-    neighborhoods. The benefit of using MMMM over other spatial
-    regression models is that the weight matrix can be endogenized,
-    which is not currently possible with other methods
--   MMMM can be used to model **network structures**. While this
-    possibility has been explored in other work (Tranmer et al. 2014),
-    the MMMM allows to endogenize the weight matrix, which is not
-    currently possible with other multiple membership multilevel
-    software, such as brms or MLWiN.
--   more multiple membership structures in the wild: multi-party wars,
-    treaties, international organizations
+- MMMM can be used to model **spatial structures**. Level-1 units, in
+  this case, would be the neighborhoods in the influence sphere of the
+  focal neighborhood, and level-2 units would be the focal
+  neighborhoods. The benefit of using MMMM over other spatial regression
+  models is that the weight matrix can be endogenized, which is not
+  currently possible with other methods
+- MMMM can be used to model **network structures**. While this
+  possibility has been explored in other work (Tranmer et al. 2014), the
+  MMMM allows to endogenize the weight matrix, which is not currently
+  possible with other multiple membership multilevel software, such as
+  brms or MLWiN.
+- more multiple membership structures in the wild: multi-party wars,
+  treaties, international organizations
 
 This is how the `rmm()` function looks like:
 
@@ -85,7 +85,7 @@ This is how the `rmm()` function looks like:
 data(coalgov)
 rmm(Y ~ 1 + X_l2 + 
       X_l3 + hm(id=id_l3, type=RE) +
-      mm(id(id_l2, id_l1), mmc(X_l1), mmw(w ~ 1/offset(n)^exp(-(X_w)))), 
+      mm(id(id_l2, id_l1), mmc(X_l1), mmw(w ~ 1/n^exp(-(X_w)))), 
     family="Gaussian", data=coalgov)
 ```
 

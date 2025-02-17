@@ -19,7 +19,6 @@ formatJags <- function(jags.out, monitor, Ns, l1, l3, level1, level2, level3, we
   mm <- l1$mm
   mmwar <- l1$mmwar
   lwvars <- weightf$vars
-  offsetvars <- weightf$offsetvars
   
   n.ul1 <- Ns$n.ul1
   l1n  <- Ns$l1n
@@ -102,7 +101,7 @@ formatJags <- function(jags.out, monitor, Ns, l1, l3, level1, level2, level3, we
     
   }
   
-  # Predicted values
+  # Predicted values #
   pred <- reg.table %>% dplyr::filter(startsWith(name, "pred")) %>% dplyr::select(-sd, -lb, -ub) %>% pull(coefficients)
   reg.table <- reg.table %>% dplyr::filter(!startsWith(name, "pred"))
   
@@ -112,7 +111,6 @@ formatJags <- function(jags.out, monitor, Ns, l1, l3, level1, level2, level3, we
   newnames[stringr::str_detect(newnames, "b.l1")] <- l1vars
   newnames[stringr::str_detect(newnames, "b.l2")] <- l2vars
   newnames[stringr::str_detect(newnames, "b.l3")] <- if(!is.null(l3name) & l3type=="FE") {l3dat %>% pull(l3name)}[-1] else l3vars
-  newnames[stringr::str_detect(newnames, "b.w")]  <- lwvars[!lwvars %in% offsetvars]
   
   reg.table <- 
     reg.table %>% 

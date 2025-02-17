@@ -16,3 +16,31 @@
 #' @examples
 #' data(coalgov)
 "coalgov"
+
+#'
+#' CILS4EU 
+#'
+#' ...
+#' schoolid school identifier
+#' classid classroom identifier
+#' youthid student identifier 
+#' sex 
+#' etn
+#' parent_edu
+#' parent_inc
+#' test_lang
+#' test_cogn
+#'
+#' @docType data
+#'
+#' @usage data(schoolnets)
+#' @format ...
+#' \describe{
+#'   \item{Col1}{description of Col1}
+#' ...
+#' }
+#' @examples
+#' data(schoolnets)
+#' @rdname schoolnets
+"nodedat"
+"edgedat"

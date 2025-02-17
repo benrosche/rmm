@@ -1,48 +1,20 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://benrosche.github.io/rmm/404.html</loc>
-  </url>
-  <url>
-    <loc>https://benrosche.github.io/rmm/articles/estimate-model.html</loc>
-  </url>
-  <url>
-    <loc>https://benrosche.github.io/rmm/articles/examples.html</loc>
-  </url>
-  <url>
-    <loc>https://benrosche.github.io/rmm/articles/faq.html</loc>
-  </url>
-  <url>
-    <loc>https://benrosche.github.io/rmm/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>https://benrosche.github.io/rmm/articles/installation.html</loc>
-  </url>
-  <url>
-    <loc>https://benrosche.github.io/rmm/articles/model.html</loc>
-  </url>
-  <url>
-    <loc>https://benrosche.github.io/rmm/articles/rmm.html</loc>
-  </url>
-  <url>
-    <loc>https://benrosche.github.io/rmm/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://benrosche.github.io/rmm/index.html</loc>
-  </url>
-  <url>
-    <loc>https://benrosche.github.io/rmm/news/index.html</loc>
-  </url>
-  <url>
-    <loc>https://benrosche.github.io/rmm/reference/coalgov.html</loc>
-  </url>
-  <url>
-    <loc>https://benrosche.github.io/rmm/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://benrosche.github.io/rmm/reference/monetPlot.html</loc>
-  </url>
-  <url>
-    <loc>https://benrosche.github.io/rmm/reference/rmm.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://benrosche.github.io/rmm/404.html</loc></url>
+<url><loc>https://benrosche.github.io/rmm/articles/estimate-model.html</loc></url>
+<url><loc>https://benrosche.github.io/rmm/articles/examples.html</loc></url>
+<url><loc>https://benrosche.github.io/rmm/articles/faq.html</loc></url>
+<url><loc>https://benrosche.github.io/rmm/articles/index.html</loc></url>
+<url><loc>https://benrosche.github.io/rmm/articles/installation.html</loc></url>
+<url><loc>https://benrosche.github.io/rmm/articles/model.html</loc></url>
+<url><loc>https://benrosche.github.io/rmm/articles/rmm.html</loc></url>
+<url><loc>https://benrosche.github.io/rmm/authors.html</loc></url>
+<url><loc>https://benrosche.github.io/rmm/index.html</loc></url>
+<url><loc>https://benrosche.github.io/rmm/news/index.html</loc></url>
+<url><loc>https://benrosche.github.io/rmm/reference/coalgov.html</loc></url>
+<url><loc>https://benrosche.github.io/rmm/reference/index.html</loc></url>
+<url><loc>https://benrosche.github.io/rmm/reference/monetPlot.html</loc></url>
+<url><loc>https://benrosche.github.io/rmm/reference/rmm.html</loc></url>
+<url><loc>https://benrosche.github.io/rmm/reference/schoolnets.html</loc></url>
+<url><loc>https://benrosche.github.io/rmm/reference/summary.rmm.html</loc></url>
 </urlset>
+
