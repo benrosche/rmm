@@ -245,7 +245,7 @@ mod.rmm2 %>% getLambda()
 
 Let’s take a closer look at the`rmm()` function by typing `?rmm`:
 
-![](C:/Users/benja/OneDrive - Princeton University/GitHub/rmm/docs/articles/examples_files/rmm-help.jpg){height="70%;" width="70%"}
+![](C:/Users/benja/OneDrive%20-%20Princeton%20University/GitHub/rmm/docs/articles/examples_files/rmm-help.jpg){height="70%;" width="70%"}
 
 **The formula object**
 
@@ -255,7 +255,8 @@ The only difference compared to a `lm()` formula is the inclusion of the `mm()` 
 Within this container, we define three sub-containers:\
 - `ids()` for the identifiers\
 - `mmc()` for the covariates being considered,\
-- `mmw()` to endogenize the weight function. Here, `w ~ 1/n` specifies the row-standardized weight.
+- `mmw()` to endogenize the weight function.
+Here, `w ~ 1/n` specifies the row-standardized weight.
 
 The combination of the spatial lag and spatial error models can also be estimated within the spatial regression framework.
 Let's estimate it and compare the results:
@@ -335,14 +336,17 @@ $$
 where $n$ is the number of neighbors of location $i$, and $X\beta$ represents the covariates used to determine the weights.
 
 This formulation has two key advantages:\
-1. It ensures weights remain bounded between 0 and 1.\
-2. When $X\beta = \boldsymbol{0}$, the weights simplify to $w = \frac{1}{n}$, which corresponds to the standard row-standardized weights.
+1.
+It ensures weights remain bounded between 0 and 1.\
+2.
+When $X\beta = \boldsymbol{0}$, the weights simplify to $w = \frac{1}{n}$, which corresponds to the standard row-standardized weights.
 
 **The issue of scaling**:
 
 With row-standardized weights, the total sum of weights is $\sum_{i=1}^{506} \sum_{j} w_{ij} = \sum_{i=1}^{506} 1 = 506$.
 
-To ensure this overall sum remains unchanged, we need to carefully specify constraints. Recall that neighbor effects are aggregated as $\sum_{j \in n(i)} w_{j} (z_{j}^{\intercal} \gamma + u_{j})$.
+To ensure this overall sum remains unchanged, we need to carefully specify constraints.
+Recall that neighbor effects are aggregated as $\sum_{j \in n(i)} w_{j} (z_{j}^{\intercal} \gamma + u_{j})$.
 
 If the total sum of weights changes, the regression coefficients $\gamma$ will be rescaled.
 To prevent this, we can apply one of two constraints:
@@ -350,7 +354,8 @@ To prevent this, we can apply one of two constraints:
 -   **`constraint=1`**: Ensures that the weights of a location's neighbors sum to 1 for each focal location, while allowing them to vary within each location.\
 -   **`constraint=2`**: Ensures that all weights sum to the total number of neighborhoods, allowing them to vary both within and across locations.
 
-Both constraints identify the model but have different substantive interpretations. Here, we will use weights that sum to 1 for each focal location while allowing variation within locations (constraint=1):
+Both constraints identify the model but have different substantive interpretations.
+Here, we will use weights that sum to 1 for each focal location while allowing variation within locations (constraint=1):
 
 ```{r}
 # Spatial fixed effects + spatial random effect with "endogenized" weights:
@@ -375,7 +380,8 @@ monetPlot(mod.rmm3, parameter="b.w", centrality="median")
 
 We find that the degree of dissimilarity between a location and its neighbors significantly affects the aggregation weights, with more similar neighbors exerting greater influence than less similar ones.
 
-In other words, features of neighbors that differ significantly from the focal location in terms of air quality, crime levels, and other factors have less impact on home values in the focal neighborhood. This insight would be impossible to uncover using conventional spatial regression models!
+In other words, features of neighbors that differ significantly from the focal location in terms of air quality, crime levels, and other factors have less impact on home values in the focal neighborhood.
+This insight would be impossible to uncover using conventional spatial regression models!
 
 If we set `monitor=T`, we can take a look at the weight estimates:
 
@@ -391,12 +397,14 @@ The weights sum to 1 for each focal location but vary across neighbors of each l
 
 Ben 2do:
 
-- Introduce predict() function\
-- Compare predictive performance
+-   Introduce predict() function\
+-   Compare predictive performance
 
 ### All your friends or just your best friend? {#e2}
 
-A widely used peer effect model in economics is the linear-in-means model, which assumes that all peers in a group exert an equal influence on an individual. In contrast, sociology often emphasizes the best-friend model, which assumes that an individual's primary influence comes from their closest friend. In this example, I use the MMMM to empirically test which of these models better fits the data.
+A widely used peer effect model in economics is the linear-in-means model, which assumes that all peers in a group exert an equal influence on an individual.
+In contrast, sociology often emphasizes the best-friend model, which assumes that an individual's primary influence comes from their closest friend.
+In this example, I use the MMMM to empirically test which of these models better fits the data.
 
 ```{r}
 
@@ -476,7 +484,8 @@ mod.rmm4$w %>% head() # inspect estimated weight matrix
 
 ```
 
-The results suggest that the linear-in-means model is appropriate: the best friend does not appear to have a greater impact than the other nominated friends as b1=`r mod.rmm4$reg.table %>% filter(variable=="b.w") %>% pull(coefficients) %>% round(.,2)`. Since the estimated aggregation is close to linear-in-means, the effect size of `parent_inc_to` does not differ between models:
+The results suggest that the linear-in-means model is appropriate: the best friend does not appear to have a greater impact than the other nominated friends as b1=`r mod.rmm4$reg.table %>% filter(variable=="b.w") %>% pull(coefficients) %>% round(.,2)`.
+Since the estimated aggregation is close to linear-in-means, the effect size of `parent_inc_to` does not differ between models:
 
 ```{r}
 
@@ -504,6 +513,7 @@ ggplot(coefs, aes(x=variable, y=coefficients, color=model)) +
 
 ### The effect of political parties' financial dependency on the survival coalition governments {#e3}
 
-Here, I replicate the example from the paper, examining whether the survival of coalition governments is influenced by parties' financial dependencies and whether this influence varies across coalition partners. [Rosche (2025)](https://osf.io/preprints/socarxiv/4bafr_v1).
+Here, I replicate the example from the paper, examining whether the survival of coalition governments is influenced by parties' financial dependencies and whether this influence varies across coalition partners.
+[Rosche (2025)](https://osf.io/preprints/socarxiv/4bafr_v1).
 
 Tbd
