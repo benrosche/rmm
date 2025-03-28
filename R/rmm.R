@@ -118,7 +118,6 @@
 #' @param seed A random number.
 #' @param run A logical value (True or False) indicating whether JAGS should estimate the model.
 #' @param monitor A logical value (True or False). If \code{True}, weights, random effects, predictions, and JAGS output is saved as well.
-#' @param transform Character vector or FALSE. Specifying \code{center} or \code{std} to center or standardize continuous predictors before estimation. Specifying \code{std2} will divide by two times the standard deviation, so that regression coefficients are comparable to those of binary predictors (Gelman 2008). 
 #' @param modelfile Character vector or TRUE|False. If TRUE, the JAGS model is saved in rmm/temp/modelstring.txt. If a file path is supplied as string, rmm will just create the data structure and use the provided modelfile. Run \code{.libPaths()} to see where R packages are stored.
 #' @param data Dataframe object. The dataset must have level 1 as unit of analysis. More details below.
 #'
@@ -144,9 +143,9 @@
 #' @references  
 #' Rosche, B. (2025). A multilevel model for coalition governments: Uncovering dependencies within and across governments due to parties. https://doi.org/10.31235/osf.io/4bafr
 
-rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 1000, n.burnin = 500, n.thin = max(1, floor((n.iter - n.burnin) / 1000)), chains=3, seed=NULL, run=T, parallel=F, monitor=T, transform=F, modelfile=F, data=NULL) {
+rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 1000, n.burnin = 500, n.thin = max(1, floor((n.iter - n.burnin) / 1000)), chains=3, seed=NULL, run=T, parallel=F, monitor=T, modelfile=F, data=NULL) {
   
-  # formula = lnCMEDV ~ NOX + CRIM + RM + DIS + AGE + mm(id(tid, tid_nb), mmc(NOX_nb + CRIM_nb + RM_nb + DIS_nb + AGE_nb), mmw(w ~ 1/n, constraint = 1)); family = "Gaussian";  priors=c("b.l1~dnorm(0,1)", "b.l2~dnorm(0,1)", "b.w~dnorm(0,1)"); inits=NULL; n.iter=100; n.burnin=10; n.thin = max(1, floor((n.iter - n.burnin) / 1000)); chains = 3; seed = 123; run = T; parallel = F; monitor = T; transform = "center"; modelfile = T; data = boston_df
+  # formula = sim.y ~ 1 + majority + mm(id(pid, gid), mmc(ipd), mmw(w ~ b1*sim.w+b2*ipd, c=2)); family = "Gaussian";  priors=c("b.w~dunif(0,1)", "b.l1~dnorm(0,1)", "tau.l2~dscaled.gamma(50,2)"); inits=NULL; n.iter=100; n.burnin=10; n.thin = max(1, floor((n.iter - n.burnin) / 1000)); chains = 3; seed = 123; run = T; parallel = F; monitor = T; transform = "center"; modelfile = F; data = coalgov
   # source("./R/dissectFormula.R"); source("./R/createData.R"); source("./R/editModelstring.R"); source("./R/createJagsVars.R"); source("./R/formatJags.R"); 
   # Surv(govdur, earlyterm)
   
@@ -168,7 +167,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 10
   # 2. Disentangle vars and data into l1 to l3
   # ---------------------------------------------------------------------------------------------- #
   
-  c(data, level1, level2, level3, weightf) %<-% createData(data, ids, vars, l1, l3, transform) # updated (Feb 2025)
+  c(data, level1, level2, level3, weightf) %<-% createData(data, ids, vars, l1, l3) # updated (Feb 2025)
   
   # Remove varlist
   rm(vars)
@@ -223,18 +222,6 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 10
     
     # Prepare additional information ------------------------------------------------------------- #
     
-    # Save info on transformed vars
-    isTransformed <- function(df) {
-      tvars <- if(dim(df)[2]>0) sapply(names(df), function(x) mean(df[[x]])<0.0001) else F
-      return(names(tvars)[tvars==T])
-    }
-  
-    transformedVars <- c()
-    if(!is.null(level1[["dat"]])) transformedVars <- c(transformedVars, isTransformed(level1[["dat"]] %>% dplyr::select(all_of(level1[["vars"]]))))
-    if(!is.null(level2[["dat"]])) transformedVars <- c(transformedVars, isTransformed(level2[["dat"]] %>% dplyr::select(all_of(level2[["vars"]]))))
-    if(!is.null(level3[["dat"]])) transformedVars <- c(transformedVars, isTransformed(level3[["dat"]] %>% dplyr::select(all_of(level3[["vars"]]))))
-    if(!is.null(weightf[["dat"]])) transformedVars <- c(transformedVars, isTransformed(weightf[["dat"]] %>% dplyr::select(all_of(weightf[["vars"]]))))
-    
     # Save info on input
     input <- 
       c(
@@ -242,7 +229,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 10
           "family"=family, "priors"=priors, "inits"=inits, 
           "n.iter"=n.iter, "n.burnin"=n.burnin, "n.thin"=n.thin, "chains"=chains, "seed"=seed, "run"=run, "parallel"=parallel, 
           "monitor"=monitor, "transform"=transform, "modelfile"=modelfile,
-          "lhs" = level2$lhs, "l1vars"=level1$vars, "l2vars"=level2$vars, "l3vars"=level3$vars, "transformedVars"=transformedVars,
+          "lhs" = level2$lhs, "l1vars"=level1$vars, "l2vars"=level2$vars, "l3vars"=level3$vars, 
           "n.ul1"=Ns$n.ul1, "n.l1"=Ns$n.l1, "n.l2"=Ns$n.l2, "n.l3"=Ns$n.l3
         ), 
         c(l1, l3)

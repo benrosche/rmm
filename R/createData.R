@@ -2,7 +2,7 @@
 # Function createData
 # ================================================================================================ #
 
-createData <- function(data, ids, vars, l1, l3, transform) {
+createData <- function(data, ids, vars, l1, l3) {
   
   # Unpack lists --------------------------------------------------------------------------------- #
   
@@ -20,20 +20,6 @@ createData <- function(data, ids, vars, l1, l3, transform) {
   hm <- l3[["hm"]]
   l3type <- l3[["l3type"]]
   l3name <- l3[["l3name"]]
-  
-  # Center or Standardize ------------------------------------------------------------------------ #
-  
-  cen_std <- function(x, transform) { 
-    if(transform=="center") {
-      if(is.numeric(x) & dim(table(x))>2) x-mean(x) else x 
-    } else if(transform=="std") {
-      if(is.numeric(x) & dim(table(x))>2) (x-mean(x))/sqrt(var(x)) else x 
-    } else if(transform=="std2") {
-      if(is.numeric(x) & dim(table(x))>2) (x-mean(x))/(2*sqrt(var(x))) else x 
-    } else {
-      x
-    }
-  }
   
   # Rename and regroup ids and sort -------------------------------------------------------------- #
   
@@ -55,8 +41,7 @@ createData <- function(data, ids, vars, l1, l3, transform) {
     l1dat <-
       data %>% 
       dplyr::arrange(l2id, l1id) %>% # important
-      dplyr::select(l1id, l2id, all_of(l1vars)) %>%
-      dplyr::mutate(across(all_of(l1vars), ~cen_std(., transform))) # cen_std() continuous vars 
+      dplyr::select(l1id, l2id, all_of(l1vars))
     
     wdat <- 
       data %>%
@@ -111,8 +96,7 @@ createData <- function(data, ids, vars, l1, l3, transform) {
         dplyr::group_by(l3id) %>%
         dplyr::filter(row_number()==1) %>%
         dplyr::ungroup() %>%
-        dplyr::arrange(l3id) %>% 
-        dplyr::mutate(across(all_of(l3vars), ~cen_std(., transform)))
+        dplyr::arrange(l3id) 
       
     }
     
@@ -139,8 +123,7 @@ createData <- function(data, ids, vars, l1, l3, transform) {
     dplyr::mutate(l1i2=cumsum(l1n), l1i1=lag(l1i2)+1) %>%
     dplyr::mutate(l1i1 = ifelse(row_number()==1, 1, l1i1)) %>%
     dplyr::mutate(X0 = 1) %>%
-    dplyr::select(l2id, l3id, l1i1, l1i2, l1n, all_of(lhs), all_of(l2vars)) %>%
-    dplyr::mutate(across(all_of(l2vars), ~cen_std(., transform))) # cen_std() continuous vars 
+    dplyr::select(l2id, l3id, l1i1, l1i2, l1n, all_of(lhs), all_of(l2vars)) 
   
   # Collect return ------------------------------------------------------------------------------- #
   

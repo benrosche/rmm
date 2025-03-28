@@ -154,16 +154,33 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, weig
   
   # Priors
   
-  # BUG (!) somewhere here the outcome function y ~ dnorm(mu, ...) is commented. Probably a good idea to re write this code ...
-  
   if(!is.null(priors)) {
     
     for(i in 1:length(priors)) {
+    
+      # Extract full param (e.g., b.w or b.w[1])
+      full_param <- str_extract(priors[i], "^[^~<]+") %>% str_squish()
       
-      prior.new <- str_extract(priors[i], "^[^~]+") %>% trimws() 
-      pattern <- paste0("\\b(", prior.new, "\\[.*?\\])\\s*~[^\\n]*")
-      
-      modelstring <- stringr::str_replace(modelstring, pattern, paste0("\\1 ", str_extract(priors[i], "~.*"))) # str_extract is to keep [x] after parameters
+      # Check if full_param is indexed (e.g., b.w[1])
+      if (str_detect(full_param, "\\[")) {
+        
+        # Replace prior for one parameter
+        full_param_escaped <- str_replace_all(full_param, "(\\[|\\])", "\\\\\\1")
+        pattern <- paste0("(?m)^([ \\t]*)", full_param_escaped, "\\s*(~|<-)\\s*[^\\n]*")
+        modelstring <- str_replace(modelstring, pattern, paste0("\\1", priors[i]))
+        
+      } else {
+        
+        # Replace prior for all indices of a parameter
+        base_param <- str_extract(priors[i], "^[^~<]+") %>% str_squish()
+        operator <- str_extract(priors[i], "(~|<-)")
+        rhs <- str_extract(priors[i], "(?<=~|<-).*") %>% str_squish()
+        escaped <- str_replace_all(base_param, "(\\.|\\[|\\])", "\\\\\\1") # for regex
+        # pattern <- paste0("(?m)^\\s*(", escaped, "\\[[^\\]]+\\])\\s*(~|<-)\\s*[^\\n]*")
+        pattern <- paste0("(?m)^\\s*(", escaped, "(?:\\[[^\\]]+\\])?)\\s*(~|<-)\\s*[^\\n]*")
+        modelstring <- str_replace_all(modelstring, pattern, paste0("\\1 ", operator, " ", rhs))
+
+      }
       
     }
   
