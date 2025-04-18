@@ -2,7 +2,7 @@
 # Function createJagsVars
 # ================================================================================================ #
 
-createJagsVars <- function(data, family, level1, level2, level3, weightf, ids, l1, l3, monitor, modelfile, chains, inits) {
+createJagsVars <- function(data, family, level1, level2, level3, weight, ids, l1, l3, monitor, modelfile, chains, inits) {
    
   # Unpack lists --------------------------------------------------------------------------------- #
   
@@ -26,9 +26,10 @@ createJagsVars <- function(data, family, level1, level2, level3, weightf, ids, l
   l3vars <- level3[["vars"]]
   l3dat  <- level3[["dat"]]
   
-  lwvars <- weightf[["vars"]]
-  lwparams <- weightf[["params"]]
-  lwdat <- weightf[["dat"]]
+  wvars <- weight[["vars"]]
+  wvars_p <- weight[["vars_p"]]
+  wparams <- weight[["params"]]
+  wdat <- weight[["dat"]]
   
   # ---------------------------------------------------------------------------------------------- #
   # Create IDs, Xs, and Ns
@@ -53,7 +54,7 @@ createJagsVars <- function(data, family, level1, level2, level3, weightf, ids, l
   X.l1 <- if(length(l1vars)>0) l1dat %>% dplyr::select(all_of(l1vars)) %>% as.matrix() else c()
   X.l2 <- if(length(l2vars)>0) l2dat %>% dplyr::select(all_of(l2vars)) %>% as.matrix() else c()
   X.l3 <- if(length(l3vars)>0) l3dat %>% dplyr::select(all_of(l3vars)) %>% as.matrix() else c()
-  X.w  <- if(length(lwvars)>0) lwdat %>% dplyr::select(all_of(lwvars)) %>% as.matrix() else c()
+  X.w  <- if(length(wvars)>0)   wdat %>% dplyr::select(all_of(wvars))  %>% as.matrix() else c()
   
   # Ns ------------------------------------------------------------------------------------------- #
   
@@ -76,55 +77,55 @@ createJagsVars <- function(data, family, level1, level2, level3, weightf, ids, l
   
   # Level 1 -------------------------------------------------------------------------------------- #
   
-  l1.param <- c()
+  l1.params <- c()
   l1.data <- c()
   
-  if(mm) l1.param <- c(l1.param, "sigma.l1")
+  if(mm) l1.params <- c(l1.params, "sigma.l1")
   if(mm) l1.data  <- c(l1.data, c("l1id", "l1i1", "l1i2", "n.l1", "n.ul1"))
-  if(mm & !is.null(n.Xl1)) { l1.data <- c(l1.data, c("X.l1", "n.Xl1")); l1.param <- c(l1.param, c("b.l1")) }
+  if(mm & !is.null(n.Xl1)) { l1.data <- c(l1.data, c("X.l1", "n.Xl1")); l1.params <- c(l1.params, c("b.l1")) }
   
-  if(mm & monitor) l1.param <- c(l1.param, "re.l1")
+  if(mm & monitor) l1.params <- c(l1.params, "re.l1")
   if(mm & mmwar)   l1.data  <- c(l1.data, c("n.GPn", "n.GPNi"))
 
   # Level 2 -------------------------------------------------------------------------------------- #
   
-  l2.param <- c()
+  l2.params <- c()
   l2.data <- c()
   
-  l2.data  <- c(l2.data, "n.l2")
-  if(!is.null(n.Xl2)) { l2.data <- c(l2.data, c("X.l2", "n.Xl2")); l2.param <- c(l2.param, c("b.l2")) }
+  if(family!="Cox") l2.params <- c(l2.params, "sigma.l2") # Cox model does not have a variance term at level 2
+  l2.data <- c(l2.data, "n.l2")
+  if(!is.null(n.Xl2)) { l2.params <- c(l2.params, c("b.l2")); l2.data <- c(l2.data, c("X.l2", "n.Xl2")) }
   
-  if(monitor) l2.param <- c(l2.param, "pred") # predicted values of the dependent variable
-  if(monitor&!family=="Cox") l2.param <- c(l2.param, "sigma.l2") # Cox model does not have a variance term at level 2
+  if(monitor) l2.params <- c(l2.params, "pred") # predicted values of the dependent variable
 
   # Level 3 -------------------------------------------------------------------------------------- #
   
-  l3.param <- c()
+  l3.params <- c()
   l3.data <- c()
   
-  if(hm & l3type=="RE" & isTRUE(monitor)) l3.param <- c(l3.param, "sigma.l3", "re.l3") 
-  if(hm & l3type=="RE" & isFALSE(monitor)) l3.param <- c(l3.param, "sigma.l3") 
+  if(hm & l3type=="RE" & isTRUE(monitor)) l3.params <- c(l3.params, "sigma.l3", "re.l3") 
+  if(hm & l3type=="RE" & isFALSE(monitor)) l3.params <- c(l3.params, "sigma.l3") 
   if(hm) l3.data <- c(l3.data, "l3id", "n.l3")
  
   if(!is.null(n.Xl3)) l3.data <- c(l3.data, c("X.l3", "n.Xl3"))
-  if(!is.null(n.Xl3) & (l3type=="RE" | (l3type=="FE" & showFE==T))) l3.param <- c(l3.param, c("b.l3")) 
+  if(!is.null(n.Xl3) & (l3type=="RE" | (l3type=="FE" & showFE==T))) l3.params <- c(l3.params, c("b.l3")) 
   
   # Weight function ------------------------------------------------------------------------------ #
   
-  lw.param <- c()
-  lw.data <- c()
+  w.params <- c()
+  w.data <- c()
   
-  if(length(lwparams)>0 & monitor == T) lw.param <- c(lw.param, "b.w", "w")
-  if(length(lwparams)==0 & length(lwvars)>0 & monitor==T) lw.param <- c(lw.param, "w") 
-  if(length(lwparams)>0 & monitor == F) lw.param <- c(lw.param, "b.w") 
+  if(length(wparams)>0 & monitor == T) w.params <- c(w.params, "b.w", "w")
+  if(length(wparams)==0 & length(wvars)>0 & monitor==T) w.params <- c(w.params, "w") 
+  if(length(wparams)>0 & monitor == F) w.params <- c(w.params, "b.w") 
 
-  if(mm) lw.data <- c(lw.data, "X.w")
-  if(mmwconstraint==1) lw.data <- c(lw.data, c("l1i1.l1", "l1i2.l1"))
+  if(mm) w.data <- c(w.data, "X.w")
+  if(mmwconstraint==1) w.data <- c(w.data, c("l1i1.l1", "l1i2.l1"))
   
   # Collect terms -------------------------------------------------------------------------------- #
   
-  jags.params <- c(l1.param, l2.param, l3.param, lw.param)
-  jags.data   <- c(l1.data, l2.data, l3.data, lw.data)
+  jags.params <- c(l1.params, l2.params, l3.params, w.params)
+  jags.data   <- c(l1.data, l2.data, l3.data, w.data)
   
   # ---------------------------------------------------------------------------------------------- #
   # Add model-specific params and data to jags.params and jags.data

@@ -2,28 +2,24 @@
 # Function formatJags
 # ================================================================================================ #
 
-formatJags <- function(jags.out, monitor, Ns, l1, l3, level1, level2, level3, weightf) {
+formatJags <- function(jags.out, monitor, Ns, l1, l3, level1, level2, level3, weight) {
 
   # Unpack lists --------------------------------------------------------------------------------- #
 
-  l1vars <- level1$vars
-  l2vars <- level2$vars
-  l3vars <- level3$vars
+  l1vars <- level1[["vars"]]
+  l2vars <- level2[["vars"]]
+  l3vars <- if(!is.null(l3[["l3name"]]) & l3[["l3type"]]=="FE") {level3[["dat"]] %>% pull(l3name)}[-1] else level3[["vars"]]
   
-  l3dat  <- level3$dat
+  hm     <- l3[["hm"]] 
+  mm     <- l1[["mm"]]
+  mmwar  <- l1[["mmwar"]]
+  wvars  <- weight[["vars"]]
+  wvars_p <- weight[["vars_p"]]
   
-  hm <- l3$hm
-  l3name <- l3$l3name
-  l3type <- l3$l3type
-  
-  mm <- l1$mm
-  mmwar <- l1$mmwar
-  lwvars <- weightf$vars
-  
-  n.ul1 <- Ns$n.ul1
-  l1n  <- Ns$l1n
-  n.l2 <- Ns$n.l2
-  n.GPN <- Ns$n.GPN
+  n.ul1  <- Ns[["n.ul1"]]
+  l1n    <- Ns[["l1n"]]
+  n.l2   <- Ns[["n.l2"]]
+  n.GPN  <- Ns[["n.GPN"]]
   
   # Create reg.table from JAGS output ------------------------------------------------------------ #
   
@@ -110,8 +106,9 @@ formatJags <- function(jags.out, monitor, Ns, l1, l3, level1, level2, level3, we
   newnames <- reg.table %>% pull(name)
   newnames[stringr::str_detect(newnames, "b.l1")] <- l1vars
   newnames[stringr::str_detect(newnames, "b.l2")] <- l2vars
-  newnames[stringr::str_detect(newnames, "b.l3")] <- if(!is.null(l3name) & l3type=="FE") {l3dat %>% pull(l3name)}[-1] else l3vars
-  
+  newnames[stringr::str_detect(newnames, "b.l3")] <- l3vars
+  newnames[stringr::str_detect(newnames, "b.w")]  <- wvars_p
+
   reg.table <- 
     reg.table %>% 
     dplyr::mutate(variable=newnames) %>% relocate(variable, .before = coefficients) %>%

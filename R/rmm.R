@@ -145,9 +145,8 @@
 
 rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 1000, n.burnin = 500, n.thin = max(1, floor((n.iter - n.burnin) / 1000)), chains=3, seed=NULL, run=T, parallel=F, monitor=T, modelfile=F, data=NULL) {
   
-  # formula = sim.y ~ 1 + majority + mm(id(pid, gid), mmc(ipd), mmw(w ~ b1*sim.w+b2*ipd, c=2)); family = "Gaussian";  priors=c("b.w~dunif(0,1)", "b.l1~dnorm(0,1)", "tau.l2~dscaled.gamma(50,2)"); inits=NULL; n.iter=100; n.burnin=10; n.thin = max(1, floor((n.iter - n.burnin) / 1000)); chains = 3; seed = 123; run = T; parallel = F; monitor = T; transform = "center"; modelfile = F; data = coalgov
+  # formula = sim.y ~ 1 + majority + mm(id(pid, gid), mmc(ipd), mmw(w ~ 1/n^exp(-(b1*rile.gov_SD)), c=2)); family = "Gaussian";  priors=c("b.w~dunif(0,1)", "b.l1~dnorm(0,1)", "tau.l2~dscaled.gamma(50,2)"); inits=NULL; n.iter=100; n.burnin=10; n.thin = max(1, floor((n.iter - n.burnin) / 1000)); chains = 3; seed = 123; run = T; parallel = F; monitor = F; modelfile = F; data = coalgov %>% rename(rile.gov_SD=hetero)
   # source("./R/dissectFormula.R"); source("./R/createData.R"); source("./R/editModelstring.R"); source("./R/createJagsVars.R"); source("./R/formatJags.R"); 
-  # Surv(govdur, earlyterm)
   
   # ---------------------------------------------------------------------------------------------- #
   # 0. Checks
@@ -167,7 +166,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 10
   # 2. Disentangle vars and data into l1 to l3
   # ---------------------------------------------------------------------------------------------- #
   
-  c(data, level1, level2, level3, weightf) %<-% createData(data, ids, vars, l1, l3) # updated (Feb 2025)
+  c(data, level1, level2, level3, weight) %<-% createData(data, ids, vars, l1, l3) # updated (Feb 2025)
   
   # Remove varlist
   rm(vars)
@@ -176,13 +175,13 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 10
   # 3. Create/edit jags modelstring 
   # ---------------------------------------------------------------------------------------------- #
   
-  modelstring <- editModelstring(family, priors, l1, l3, level1, level2, level3, weightf, DIR, monitor, modelfile) # updated (Feb 2025)
+  modelstring <- editModelstring(family, priors, l1, l3, level1, level2, level3, weight, DIR, monitor, modelfile) # updated (Feb 2025)
 
   # ---------------------------------------------------------------------------------------------- #
   # 4. Transform data into JAGS format
   # ---------------------------------------------------------------------------------------------- #
   
-  c(ids, Ns, Xs, Ys, jags.params, jags.inits, jags.data) %<-% createJagsVars(data, family, level1, level2, level3, weightf, ids, l1, l3, monitor, modelfile, chains, inits) # updated (Feb 2025)
+  c(ids, Ns, Xs, Ys, jags.params, jags.inits, jags.data) %<-% createJagsVars(data, family, level1, level2, level3, weight, ids, l1, l3, monitor, modelfile, chains, inits) # updated (Feb 2025)
   
   list2env(c(ids, Ns, Xs, Ys), envir=environment())
   
@@ -218,7 +217,7 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 10
    
     # Format JAGS output ------------------------------------------------------------------------- #
     
-    c(reg.table, w, re.l1, re.l3, pred) %<-% formatJags(jags.out, monitor, Ns, l1, l3, level1, level2, level3, weightf) 
+    c(reg.table, w, re.l1, re.l3, pred) %<-% formatJags(jags.out, monitor, Ns, l1, l3, level1, level2, level3, weight) 
     
     # Prepare additional information ------------------------------------------------------------- #
     
@@ -227,8 +226,8 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 10
       c(
         list(
           "family"=family, "priors"=priors, "inits"=inits, 
-          "n.iter"=n.iter, "n.burnin"=n.burnin, "n.thin"=n.thin, "chains"=chains, "seed"=seed, "run"=run, "parallel"=parallel, 
-          "monitor"=monitor, "transform"=transform, "modelfile"=modelfile,
+          "n.iter"=n.iter, "n.burnin"=n.burnin, "n.thin"=n.thin, "chains"=chains, "parallel"=parallel, "seed"=seed,
+          "monitor"=monitor, "modelfile"=modelfile, "run"=run, 
           "lhs" = level2$lhs, "l1vars"=level1$vars, "l2vars"=level2$vars, "l3vars"=level3$vars, 
           "n.ul1"=Ns$n.ul1, "n.l1"=Ns$n.l1, "n.l2"=Ns$n.l2, "n.l3"=Ns$n.l3
         ), 

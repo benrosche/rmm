@@ -2,7 +2,7 @@
 # Function editModelstring 
 # ================================================================================================ #
 
-editModelstring <- function(family, priors, l1, l3, level1, level2, level3, weightf, DIR, monitor, modelfile) {
+editModelstring <- function(family, priors, l1, l3, level1, level2, level3, weight, DIR, monitor, modelfile) {
   
   # Unpack variables ----------------------------------------------------------------------------- #
   
@@ -11,12 +11,12 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, weig
   l1vars <- level1[["vars"]]
   l2vars <- level2[["vars"]]
   l3vars <- level3[["vars"]]
-  lwvars <- weightf[["vars"]]
-  lwparams <- weightf[["params"]]
+  wvars <- weight[["vars"]]
+  wvars_p <- weight[["vars_p"]]
+  wparams <- weight[["params"]]
   
   mm <- l1[["mm"]]
   mmwfunction <- l1[["mmwfunction"]]
-  mmwcoefstring <- l1[["mmwcoefstring"]]
   mmwconstraint <- l1[["mmwconstraint"]]
   mmwar <- l1[["mmwar"]]
   
@@ -119,17 +119,18 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, weig
     
     # Translate weight function into JAGS format
 
-    # Replace parameters
-    if(length(lwparams)>0) {
-      for(i in 1:length(lwparams)) {
-        mmwfunction <- str_replace_all(mmwfunction, fixed(lwparams[i]), paste0("b.w[",i,"]")) 
-        mmwcoefstring  <- append(mmwcoefstring, paste0("b.w[", i, "] ~ dnorm(0,0.0001)\n  ")) # collect priors
+    # Replace parameters in mmwfunction with JAGS code
+    if(length(wparams)>0) {
+      mmwpriors <- c()
+      for(i in 1:length(wparams)) {
+        mmwfunction <- str_replace_all(mmwfunction, fixed(wparams[i]), paste0("b.w[",i,"]")) 
+        mmwpriors  <- append(mmwpriors, paste0("b.w[", i, "] ~ dnorm(0,0.0001)\n  ")) # collect priors
       }
     }
 
     # Replace variables
-    for(i in 1:length(lwvars)) {
-      mmwfunction <- str_replace_all(mmwfunction, paste0("\\b", lwvars[i], "\\b"), paste0("X.w[i,", i, "]")) # replace variables 
+    for(i in 1:length(wvars)) {
+      mmwfunction <- str_replace_all(mmwfunction, paste0("\\b", wvars[i], "\\b"), paste0("X.w[i,", i, "]")) # replace variables 
     }
     
     # Replace w
@@ -145,7 +146,7 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, weig
     
     # Insert priors into modelstring
     if(stringr::str_detect(mmwfunction, "b.w\\[.\\]")) { 
-      modelstring <- stringr::str_replace(modelstring, fixed("b.w # placeholder\n"), paste0(mmwcoefstring, collapse = "")) 
+      modelstring <- stringr::str_replace(modelstring, fixed("b.w # placeholder\n"), paste0(mmwpriors, collapse = "")) 
     } else {
       modelstring <- stringr::str_replace(modelstring, fixed("b.w # placeholder\n"), "") 
     }

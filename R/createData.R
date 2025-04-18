@@ -12,8 +12,9 @@ createData <- function(data, ids, vars, l1, l3) {
   lhs <- vars[["lhs"]]
   l1vars <- vars[["l1vars"]]
   l23vars <- vars[["l23vars"]]
-  lwvars <- vars[["lwvars"]]
-  lwparams <- vars[["lwparams"]]
+  wvars <- vars[["wvars"]]
+  wvars_p <- vars[["wvars_p"]]
+  wparams <- vars[["wparams"]]
   
   mm <- l1[["mm"]]
   
@@ -46,15 +47,12 @@ createData <- function(data, ids, vars, l1, l3) {
     wdat <- 
       data %>%
       dplyr::add_count(l2id, name="n") %>% 
-      dplyr::select(l1id, l2id, all_of(lwvars)) # weight variables are not cen_std()
+      dplyr::select(l1id, l2id, all_of(wvars)) 
     
   } else { # no l1
     
-    l1vars <- c()
     l1dat <- NULL
-    
-    lwvars <- c()
-    wdat <- NULL
+    wdat  <- NULL
     
   }
   
@@ -133,7 +131,7 @@ createData <- function(data, ids, vars, l1, l3) {
       "level1"=list("dat"=l1dat, "vars"=l1vars), 
       "level2"=list("dat"=l2dat, "vars"=l2vars, "lhs"=lhs), 
       "level3"=list("dat"=l3dat, "vars"=l3vars), 
-      "weightf"=list("dat"=wdat, "vars"=lwvars, "params"=lwparams)
+      "weight"=list("dat"=wdat,  "vars"=wvars, "vars_p"=wvars_p, "params"=wparams)
     )
   )
   

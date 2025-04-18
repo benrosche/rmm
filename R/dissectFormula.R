@@ -65,13 +65,14 @@ dissectFormula <- function(formula, family, data) {
       mmwfunction <- str_extract(mmwstring, "^[^,]+") %>% trimws() # extract w ~ ...
       if(is.na(mmwfunction)) stop("Weight function: w ~ ... not specified.")
       
-      # Extract weight variables
-      lwvars <- mmwfunction %>% as.formula() %>% all.vars()
-      lwvars <- lwvars[!str_detect(lwvars, "^b[0-9]+$|^w$")] %>% trimws() # extract rhs of weight function
-      if(isFALSE(all(lwvars %in% names(data)))) stop("Weight variables in weight function w ~ ... could not be found in the dataset.")
-      if(length(lwvars)==0) stop("No weight variables in weight function w ~ ... specified.")
+      # Extract weight variables and parameters
+      wvars <- mmwfunction %>% as.formula() %>% all.vars() %>% trimws()
+      wparams <- stringr::str_extract_all(mmwfunction, "\\bb\\d+\\b")[[1]] %>% unique() %>% trimws()
+      wvars <- setdiff(wvars, c("w", wparams))
+      wvars_p <- stringr::str_match_all(mmwfunction, "b\\d\\s*\\*\\s*([a-zA-Z_][a-zA-Z0-9_\\.]+)")[[1]][,2] %>% trimws()
       
-      lwparams <- str_extract_all(mmwfunction, "\\bb\\d+\\b")[[1]] %>% unique()
+      if(isFALSE(all(wvars %in% names(data)))) stop("Weight variables in weight function w ~ ... could not be found in the dataset.")
+      if(length(wvars)==0) stop("No variables in weight function w ~ ... specified.")
       
       # Determine constraint
       mmwconstraint <- stringr::str_match(mmwstring, "(constraint|c)\\s*=\\s*([^,)]+)") %>% trimws()
@@ -98,8 +99,9 @@ dissectFormula <- function(formula, family, data) {
     
     l12ids <- c("l1id", "l2id") # must be here
     l1vars <- c()
-    lwvars <- c()
-    lwparams <- c()
+    wvars <- c()
+    wvars_p <- c()
+    wparams <- c()
     mmwfunction <- c()
     mmwconstraint <- F
     mmwar <- F
@@ -168,8 +170,9 @@ dissectFormula <- function(formula, family, data) {
           "lhs"=lhs, 
           "l1vars"=l1vars, 
           "l23vars"=l23vars, 
-          "lwvars"=lwvars,
-          "lwparams"=lwparams
+          "wvars"=wvars,
+          "wvars_p"=wvars_p,
+          "wparams"=wparams
         ),
       "l1"=
         list(
