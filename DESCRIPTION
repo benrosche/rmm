@@ -1,7 +1,7 @@
 Package: rmm
 Type: Package
 Title: Bayesian multiple membership multilevel models with parameterizable weights using 'JAGS'.
-Version: 0.1.1
+Version: 0.2.0
 Author: Benjamin Rosche
 Maintainer: Benjamin Rosche <benjamin.rosche@gmail.com>
 Description: The rmm package provides an interface to fit Bayesian multiple membership multilevel models with parameterizable weights using JAGS.
