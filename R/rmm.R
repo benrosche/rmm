@@ -126,7 +126,7 @@
 #'         level-3 random effects (if specified in the model), predicted values of the dependent variable, and the internally created variables are returned. 
 #'         The last element of the list is the unformatted Jags output. 
 #' @examples data(coalgov)
-#' m1 <- rmm(Surv(govdur, earlyterm, govmaxdur) ~ 1 + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/n, constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
+#' m1 <- rmm(Surv(govdur, earlyterm, govmaxdur) ~ 1 + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/n, constraint=T)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
 #'           family="Weibull", monitor=T, data=coalgov)
 #' m1$reg.table # the regression output
 #' m1$w         # the estimated weights
@@ -145,7 +145,7 @@
 
 rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 1000, n.burnin = 500, n.thin = max(1, floor((n.iter - n.burnin) / 1000)), chains=3, seed=NULL, run=T, parallel=F, monitor=T, modelfile=F, data=NULL) {
   
-  # formula = sim.y ~ 1 + majority + mm(id(pid, gid), mmc(ipd), mmw(w ~ 1/n^exp(-(b1*rile.gov_SD)), c=2)); family = "Gaussian";  priors=c("b.w~dunif(0,1)", "b.l1~dnorm(0,1)", "tau.l2~dscaled.gamma(50,2)"); inits=NULL; n.iter=100; n.burnin=10; n.thin = max(1, floor((n.iter - n.burnin) / 1000)); chains = 3; seed = 123; run = T; parallel = F; monitor = F; modelfile = F; data = coalgov %>% rename(rile.gov_SD=hetero)
+  # formula = sim.y ~ 1 + majority + mm(id(pid, gid), mmc(ipd), mmw(w ~ 1/n^exp(-(b0 + b1*rile.gov_SD)), c=T)); family = "Gaussian";  priors=c("b.w~dunif(0,1)", "b.l1~dnorm(0,1)", "tau.l2~dscaled.gamma(50,2)"); inits=NULL; n.iter=100; n.burnin=10; n.thin = max(1, floor((n.iter - n.burnin) / 1000)); chains = 3; seed = 123; run = T; parallel = F; monitor = T; modelfile = F; data = coalgov %>% rename(rile.gov_SD=hetero)
   # source("./R/dissectFormula.R"); source("./R/createData.R"); source("./R/editModelstring.R"); source("./R/createJagsVars.R"); source("./R/formatJags.R"); 
   
   # ---------------------------------------------------------------------------------------------- #
@@ -176,6 +176,18 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 10
   # ---------------------------------------------------------------------------------------------- #
   
   modelstring <- editModelstring(family, priors, l1, l3, level1, level2, level3, weight, DIR, monitor, modelfile) # updated (Feb 2025)
+  
+  # Save or read modelstring
+  if(isTRUE(modelfile)) {
+    readr::write_file(modelstring, "modelstring.txt") # save model to file
+    message(paste0("modelfile.txt was saved in ", getwd()))
+  } else if(!isFALSE(modelfile) & length(modelfile)>0) {
+    tryCatch({
+      modelstring <- readr::read_file(modelfile) # read model from file
+    }, error = function(e) {
+      stop("Could not find/read model file in ", modelfile)
+    })
+  }
 
   # ---------------------------------------------------------------------------------------------- #
   # 4. Transform data into JAGS format
@@ -198,9 +210,11 @@ rmm <- function(formula, family="Gaussian", priors=NULL, inits=NULL, n.iter = 10
       
       # Run parallel ----------------------------------------------------------------------------- #
       
-      readr::write_file(modelstring, paste0(DIR, "/temp/jags-parallel.txt"))
-      jags.out <- do.call(jags.parallel, list(data=jags.data, inits = jags.inits[1], n.chains = chains, parameters.to.save = jags.params, n.iter = n.iter, n.burnin = n.burnin, n.thin = n.thin, jags.seed = seed, model.file = paste0(DIR, "/temp/jags-parallel.txt")))
-      file.remove(paste0(DIR, "/temp/jags-parallel.txt"))
+      parallelfile <- tempfile(fileext = ".jags") # crate temp modelfile for parallel execution
+      on.exit(unlink(parallelfile), add = TRUE) # ensure it will be deleted again after function call
+      writeLines(modelstring, parallelfile) # save modelstring to parallelfile
+      jags.out <- do.call(jags.parallel, list(data=jags.data, inits = jags.inits[1], n.chains = chains, parameters.to.save = jags.params, n.iter = n.iter, n.burnin = n.burnin, n.thin = n.thin, jags.seed = seed, model.file = parallelfile))
+      
       # Three peculiarities about jags.parallel:
       # - It cannot read the model from textConnection(modelstring)
       # - It cannot read variables from the global environment - do.call needs to be used 

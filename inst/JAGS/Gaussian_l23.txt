@@ -2,13 +2,10 @@ model {
   
   # Likelihood
   for(j in 1:n.l2) {
-    
     # Linear regression
     Y[j] ~ dnorm(mu[j], tau.l2)
-    
     # Link function
     mu[j] <- l2[j] + l3[l3id[j]]
-    
     # Level 2: systematic component
     l2[j] <- inprod(X.l2[j,], b.l2)
   }

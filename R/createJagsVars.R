@@ -120,7 +120,7 @@ createJagsVars <- function(data, family, level1, level2, level3, weight, ids, l1
   if(length(wparams)>0 & monitor == F) w.params <- c(w.params, "b.w") 
 
   if(mm) w.data <- c(w.data, "X.w")
-  if(mmwconstraint==1) w.data <- c(w.data, c("l1i1.l1", "l1i2.l1"))
+  if(mmwconstraint==T) w.data <- c(w.data, c("l1i1.l1", "l1i2.l1"))
   
   # Collect terms -------------------------------------------------------------------------------- #
   

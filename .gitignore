@@ -8,3 +8,6 @@ rmm*.tgz
 inst/doc
 /doc/
 /Meta/
+.httr-oauth
+.DS_Store
+.quarto

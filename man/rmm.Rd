@@ -165,7 +165,7 @@ I suggest starting with \code{priors = list("b.w"="dnorm(0,0.1)"} and then incre
 }
 \examples{
 data(coalgov)
-m1 <- rmm(Surv(govdur, earlyterm, govmaxdur) ~ 1 + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/n, constraint=1)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
+m1 <- rmm(Surv(govdur, earlyterm, govmaxdur) ~ 1 + mm(id(pid, gid), mmc(fdep), mmw(w ~ 1/n, constraint=T)) + majority + hm(id=cid, name=cname, type=RE, showFE=F),
           family="Weibull", monitor=T, data=coalgov)
 m1$reg.table # the regression output
 m1$w         # the estimated weights

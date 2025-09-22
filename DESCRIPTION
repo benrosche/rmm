@@ -17,12 +17,11 @@ Depends:
     R2jags,
     HDInterval,
     MCMCvis,
-    mcmcplots,
     zeallot,
     R (>= 3.5)
 URL: http://benrosche.com/projects/rmm/
 BugReports: https://github.com/benrosche/rmm/issues
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Authors@R: person("Benjamin", "Rosche", role=c("aut", "cre"), 
     email="benjamin.rosche@gmail.com", comment=c(ORCID="0000-0001-5196-625X"))
 Suggests: 

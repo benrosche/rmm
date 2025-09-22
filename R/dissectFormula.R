@@ -15,7 +15,7 @@ dissectFormula <- function(formula, family, data) {
   # Extract left- and right-hand side from formula ----------------------------------------------- #
   
   lhs <- formula[[2]] %>% all.vars()
-  rhs <- terms(formula) %>% attr(., "term.labels")
+  rhs <- c(if(attr(terms(formula), "intercept") == 1) "X0", attr(terms(formula), "term.labels"))
   
   if(family=="Gaussian" & length(lhs)>1) stop("family=\"Gaussian\" takes only one variable on the left-hand side of the formula.")
   if(family=="Weibull" & length(lhs)!=2) stop("family=\"Weibull\" takes two variables on the left-hand side: 'Surv(survtime, event)'")
@@ -63,24 +63,25 @@ dissectFormula <- function(formula, family, data) {
       
       # Extract weight function
       mmwfunction <- str_extract(mmwstring, "^[^,]+") %>% trimws() # extract w ~ ...
+      mmwfunction <- str_replace(mmwfunction, "\\bb0\\b", "b0 * X0") # insert intercept variable
       if(is.na(mmwfunction)) stop("Weight function: w ~ ... not specified.")
       
       # Extract weight variables and parameters
       wvars <- mmwfunction %>% as.formula() %>% all.vars() %>% trimws()
       wparams <- stringr::str_extract_all(mmwfunction, "\\bb\\d+\\b")[[1]] %>% unique() %>% trimws()
       wvars <- setdiff(wvars, c("w", wparams))
-      wvars_p <- stringr::str_match_all(mmwfunction, "b\\d\\s*\\*\\s*([a-zA-Z_][a-zA-Z0-9_\\.]+)")[[1]][,2] %>% trimws()
+      wvars_p <- stringr::str_match_all(mmwfunction, "b\\d\\s*\\*\\s*([a-zA-Z_][a-zA-Z0-9_\\.]+)")[[1]][,2] %>% trimws() # variables with parameters
       
-      if(isFALSE(all(wvars %in% names(data)))) stop("Weight variables in weight function w ~ ... could not be found in the dataset.")
+      if(isFALSE(all(setdiff(wvars, c("X0", "n")) %in% names(data)))) stop("One or more weight variables in weight function w ~ ... could not be found in the dataset.")
       if(length(wvars)==0) stop("No variables in weight function w ~ ... specified.")
       
       # Determine constraint
       mmwconstraint <- stringr::str_match(mmwstring, "(constraint|c)\\s*=\\s*([^,)]+)") %>% trimws()
       if(!is.na(mmwconstraint[1])) {
-        mmwconstraint <- mmwconstraint[3] %>% as.numeric()
-        if(!mmwconstraint %in% c(1,2)) stop("Constraint must be either 1 or 2")
+        mmwconstraint <- mmwconstraint[3] %>% as.logical()
+        if(!is.logical(mmwconstraint)) stop("Constraint must be either TRUE or FALSE")
       } else {
-        mmwconstraint <- 1 # default
+        mmwconstraint <- T # default 
       }
       
       # Determine whether auto-regressive random effect is TRUE or FALSE
@@ -152,11 +153,11 @@ dissectFormula <- function(formula, family, data) {
     
   }
   
+  l23vars <- rhs[!sapply(rhs, \(x) any(str_starts(x, fixed(c("hm(", "mm(")))))]
+  
   # ---------------------------------------------------------------------------------------------- #
   # Collect terms and return
   # ---------------------------------------------------------------------------------------------- #
-  
-  l23vars <- rhs[!sapply(rhs, \(x) any(str_starts(x, fixed(c("hm(", "mm(", "1", "X0")))))] %>% append(., "X0", after=0)
   
   return(
     list(

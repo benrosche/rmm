@@ -100,3 +100,59 @@ monetPlot <- function(rmm, parameter, centrality="median", lab=F, r=3, sav=F) {
   
   return(p)
 }
+
+# NEW VERSION (INTEGRATE!)
+# monetPlot <- function(g.ergm, param, paramlabel = NULL, breaks = waiver(), yaxis = T) {
+#   
+#   if (is.null(paramlabel)) paramlabel = param
+#   
+#   if (is.null(g.ergm$sample)) stop("Not estimated by MCMC ...")
+#   mcmclist <- g.ergm$sample %>% as.mcmc.list()
+#   
+#   ggs.obj <- ggs(mcmclist, family = paste0("A", escapeRegex(param), "$"), 
+#                  par_labels = data.frame(Parameter = param, Label = paramlabel))
+#   
+#   p.median <- ggs.obj %>% pull(value) %>% median()
+#   
+#   p1 <-
+#     ggs_density(ggs.obj, hpd = TRUE) +
+#     geom_vline(xintercept = 0) +
+#     geom_vline(xintercept = p.median, linetype = "dashed") +
+#     scale_color_viridis_d(direction = -1) +
+#     scale_fill_viridis_d(direction = -1) +
+#     labs(y = if (isTRUE(yaxis)) "Density" else "") +
+#     theme_minimal() +
+#     theme(
+#       plot.margin = unit(c(0, 0, 0, 0), "cm"),
+#       legend.position = "none",
+#       panel.grid = element_blank(),
+#       axis.ticks = element_blank(),
+#       axis.title.x = element_blank(),
+#       axis.text = element_blank(),
+#       strip.text = element_text(size=15, face-"bold", color="black"),
+#       strip.background = element_blank()
+#     )
+#   
+#   p2 <-
+#     ggs_traceplot(ggs.obj, original_burnin = FALSE) +
+#     geom_hline(yintercept = 0) +
+#     geom_hline(yintercept = p.median, linetype = "dashed") +
+#     coord_flip() +
+#     scale_y_continuous(breaks = breaks) +
+#     scale_color_viridis_d(direction = -1) +
+#     labs(
+#       x = if (isTRUE(yaxis)) paste0("Scans (", ggs.obj %>% pull(Chain) %>% max(), " chains)") else "",
+#       y = ""
+#     ) +
+#     theme_minimal() +
+#     theme(
+#       plot.margin = unit(c(-0.6, 0, 0, 0), "cm"),
+#       legend.position = "none",
+#       panel.grid = element_blank(),
+#       axis.text.y = element_blank(),
+#       strip.text = element_blank()
+#     )
+#   
+#   return(plot_grid(p1, p2, align = "v", nrow = 2))
+# }
+

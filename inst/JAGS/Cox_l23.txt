@@ -6,7 +6,6 @@ model {
       dN[j,r] ~ dpois(Idt[j,r]); # Poisson trick
       Idt[j,r] <- Y[j,r] * dL0[r] * exp(inprod(inprod(X.l2[j,], b.l2) + l3[l3id[j]])
     }
-    
     # Prior on the increments of the log-hazard
     dL0[r] ~ dgamma(mu[r], c)
     mu[r] <- dL0.star[r] * c

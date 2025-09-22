@@ -47,6 +47,7 @@ createData <- function(data, ids, vars, l1, l3) {
     wdat <- 
       data %>%
       dplyr::add_count(l2id, name="n") %>% 
+      dplyr::mutate(X0=1) %>% 
       dplyr::select(l1id, l2id, all_of(wvars)) 
     
   } else { # no l1
@@ -120,7 +121,7 @@ createData <- function(data, ids, vars, l1, l3) {
     dplyr::arrange(l2id) %>%
     dplyr::mutate(l1i2=cumsum(l1n), l1i1=lag(l1i2)+1) %>%
     dplyr::mutate(l1i1 = ifelse(row_number()==1, 1, l1i1)) %>%
-    dplyr::mutate(X0 = 1) %>%
+    dplyr::mutate(X0=1) %>% 
     dplyr::select(l2id, l3id, l1i1, l1i2, l1n, all_of(lhs), all_of(l2vars)) 
   
   # Collect return ------------------------------------------------------------------------------- #

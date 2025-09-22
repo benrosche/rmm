@@ -79,6 +79,8 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, weig
     gsub("\r\n", "\n", str, fixed = TRUE)
   }
   
+  # Change modelstring --------------------------------------------------------------------------- #
+  
   modelstring <- win2unix(modelstring)
   
   # Add predicted values of the dependent variable?
@@ -117,9 +119,9 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, weig
   # Weight function
   if(mm) {
     
-    # Translate weight function into JAGS format
+    # Translate weight function into JAGS format 
 
-    # Replace parameters in mmwfunction with JAGS code
+    # - Replace parameters in user-written mmwfunction with JAGS code
     if(length(wparams)>0) {
       mmwpriors <- c()
       for(i in 1:length(wparams)) {
@@ -128,27 +130,28 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, weig
       }
     }
 
-    # Replace variables
+    # - Replace variables in user-written mmwfunction with JAGS code
     for(i in 1:length(wvars)) {
       mmwfunction <- str_replace_all(mmwfunction, paste0("\\b", wvars[i], "\\b"), paste0("X.w[i,", i, "]")) # replace variables 
     }
-    
-    # Replace w
-    mmwfunction <- stringr::str_replace(mmwfunction, "w ~", "uw[i] <- ")
 
     # Insert mmwfunction into modelstring
-    modelstring <- stringr::str_replace(modelstring, fixed("uw[i] <- 1/X.w[i,1]"), mmwfunction)
-    
-    # Insert constraint into modelstring
-    if(mmwconstraint == 2) {
-      modelstring <- stringr::str_replace(modelstring, fixed("w[i] <- uw[i] / sum(uw[l1i1.l1[i]:l1i2.l1[i]])"), "w[i] <- uw[i] * n.l2/sum(uw[]) # rescale to sum up to n.l1")
+    if(mmwconstraint == F) {
+      # w/o constraint
+      mmwfunction <- stringr::str_replace(mmwfunction, "w ~", "w[i] <-")
+      modelstring <- stringr::str_replace(modelstring, fixed("uw[i] <- 1/X.w[i,1]"), mmwfunction)
+      modelstring <- stringr::str_remove(modelstring, fixed("w[i] <- uw[i] / sum(uw[l1i1.l1[i]:l1i2.l1[i]])\n"))
+    } else {
+      # with constraint (default)
+      mmwfunction <- stringr::str_replace(mmwfunction, "w ~", "uw[i] <-")
+      modelstring <- stringr::str_replace(modelstring, fixed("uw[i] <- 1/X.w[i,1]"), mmwfunction)
     }
     
     # Insert priors into modelstring
-    if(stringr::str_detect(mmwfunction, "b.w\\[.\\]")) { 
-      modelstring <- stringr::str_replace(modelstring, fixed("b.w # placeholder\n"), paste0(mmwpriors, collapse = "")) 
+    if(length(wparams)>0) { 
+      modelstring <- stringr::str_replace(modelstring, fixed("# b.w (placeholder)\n"), paste0(mmwpriors, collapse = "")) 
     } else {
-      modelstring <- stringr::str_replace(modelstring, fixed("b.w # placeholder\n"), "") 
+      modelstring <- stringr::str_replace(modelstring, fixed("# b.w (placeholder)\n"), "") 
     }
     
   }
@@ -185,13 +188,6 @@ editModelstring <- function(family, priors, l1, l3, level1, level2, level3, weig
       
     }
   
-  }
-  
-  # Save or read modelstring
-  if(isTRUE(modelfile)) {
-    readr::write_file(modelstring, paste0(DIR, "/temp/modelstring.txt")) # save model to file
-  } else if(!isFALSE(modelfile) & length(modelfile)>0) {
-    modelstring <- readr::read_file(modelfile) # read model from file
   }
   
   return(modelstring)

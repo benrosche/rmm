@@ -2,16 +2,12 @@ model {
   
   # Likelihood
   for(j in 1:n.l2) {
-    
     # Logistic regression
     Y[j] ~ dbern(p[j])
-    
     # Link function
     logit(p[j]) <- l2[j]
-    
     # Level 2: systematic component
     l2[j] <- inprod(X.l2[j,], b.l2)
-
   }
   
   # Prior: regression coefficients
